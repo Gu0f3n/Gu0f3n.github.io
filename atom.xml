@@ -6,7 +6,7 @@
   <link href="https://gu0f3n.github.io/atom.xml" rel="self"/>
   
   <link href="https://gu0f3n.github.io/"/>
-  <updated>2024-07-17T08:46:55.816Z</updated>
+  <updated>2024-07-17T13:25:20.387Z</updated>
   <id>https://gu0f3n.github.io/</id>
   
   <author>
@@ -15,6 +15,19 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>反弹shell实验</title>
+    <link href="https://gu0f3n.github.io/2024/07/17/%E5%8F%8D%E5%BC%B9shell%E5%AE%9E%E9%AA%8C/"/>
+    <id>https://gu0f3n.github.io/2024/07/17/%E5%8F%8D%E5%BC%B9shell%E5%AE%9E%E9%AA%8C/</id>
+    <published>2024-07-17T13:25:20.000Z</published>
+    <updated>2024-07-17T13:25:20.387Z</updated>
+    
+    
+    
+    
+    
+  </entry>
   
   <entry>
     <title>Hello World</title>
