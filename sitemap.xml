@@ -2,6 +2,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://gu0f3n.github.io/2024/08/08/CTFSHOW/</loc>
+    
+    <lastmod>2024-08-08</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://gu0f3n.github.io/2024/08/06/NSSCTF-sql/</loc>
     
     <lastmod>2024-08-07</lastmod>
@@ -128,14 +137,14 @@
 
   
   <url>
-    <loc>https://gu0f3n.github.io/tags/%E5%A4%8D%E7%8E%B0/</loc>
+    <loc>https://gu0f3n.github.io/tags/SQL/</loc>
     <lastmod>2024-08-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://gu0f3n.github.io/tags/%E5%AE%9E%E9%AA%8C/</loc>
+    <loc>https://gu0f3n.github.io/tags/%E5%A4%8D%E7%8E%B0/</loc>
     <lastmod>2024-08-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -149,13 +158,20 @@
   </url>
   
   <url>
-    <loc>https://gu0f3n.github.io/tags/SQL/</loc>
+    <loc>https://gu0f3n.github.io/tags/%E5%AE%9E%E9%AA%8C/</loc>
     <lastmod>2024-08-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
 
+  
+  <url>
+    <loc>https://gu0f3n.github.io/categories/sql%E5%88%B7%E9%A2%98%E7%AC%94%E8%AE%B0/</loc>
+    <lastmod>2024-08-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
   
   <url>
     <loc>https://gu0f3n.github.io/categories/ciscn/</loc>
@@ -173,13 +189,6 @@
   
   <url>
     <loc>https://gu0f3n.github.io/categories/ctfshow/</loc>
-    <lastmod>2024-08-08</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://gu0f3n.github.io/categories/sql%E5%88%B7%E9%A2%98%E7%AC%94%E8%AE%B0/</loc>
     <lastmod>2024-08-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
