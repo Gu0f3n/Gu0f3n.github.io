@@ -2,9 +2,18 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>https://gu0f3n.github.io/2024/11/14/suid%E6%8F%90%E6%9D%83/</loc>
+    <loc>https://gu0f3n.github.io/2024/11/19/Pickle%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/</loc>
     
-    <lastmod>2024-11-14</lastmod>
+    <lastmod>2024-11-19</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://gu0f3n.github.io/2024/09/11/python%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0/</loc>
+    
+    <lastmod>2024-11-19</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -12,6 +21,33 @@
   
   <url>
     <loc>https://gu0f3n.github.io/2024/11/14/session%E4%BC%AA%E9%80%A0/</loc>
+    
+    <lastmod>2024-11-19</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://gu0f3n.github.io/2024/11/16/php%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-GC%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/</loc>
+    
+    <lastmod>2024-11-16</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://gu0f3n.github.io/2024/11/16/php-%E4%BC%AA%E5%8D%8F%E8%AE%AE/</loc>
+    
+    <lastmod>2024-11-16</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://gu0f3n.github.io/2024/11/14/suid%E6%8F%90%E6%9D%83/</loc>
     
     <lastmod>2024-11-14</lastmod>
     
@@ -32,15 +68,6 @@
     <loc>https://gu0f3n.github.io/2024/09/10/java%E5%9F%BA%E7%A1%80/</loc>
     
     <lastmod>2024-11-11</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://gu0f3n.github.io/2024/09/11/python%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0/</loc>
-    
-    <lastmod>2024-09-11</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -193,7 +220,7 @@
 
   <url>
     <loc>https://gu0f3n.github.io/</loc>
-    <lastmod>2024-11-14</lastmod>
+    <lastmod>2024-11-19</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
@@ -201,56 +228,70 @@
   
   <url>
     <loc>https://gu0f3n.github.io/tags/SQL/</loc>
-    <lastmod>2024-11-14</lastmod>
+    <lastmod>2024-11-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://gu0f3n.github.io/tags/%E5%A4%8D%E7%8E%B0/</loc>
-    <lastmod>2024-11-14</lastmod>
+    <lastmod>2024-11-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://gu0f3n.github.io/tags/java/</loc>
-    <lastmod>2024-11-14</lastmod>
+    <lastmod>2024-11-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://gu0f3n.github.io/tags/unserialize/</loc>
+    <lastmod>2024-11-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://gu0f3n.github.io/tags/CISCN/</loc>
-    <lastmod>2024-11-14</lastmod>
+    <lastmod>2024-11-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://gu0f3n.github.io/tags/python/</loc>
-    <lastmod>2024-11-14</lastmod>
+    <lastmod>2024-11-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://gu0f3n.github.io/tags/php/</loc>
+    <lastmod>2024-11-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://gu0f3n.github.io/tags/session/</loc>
-    <lastmod>2024-11-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://gu0f3n.github.io/tags/%E5%AE%9E%E9%AA%8C/</loc>
-    <lastmod>2024-11-14</lastmod>
+    <lastmod>2024-11-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://gu0f3n.github.io/tags/%E6%8F%90%E6%9D%83/</loc>
-    <lastmod>2024-11-14</lastmod>
+    <lastmod>2024-11-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://gu0f3n.github.io/tags/%E5%AE%9E%E9%AA%8C/</loc>
+    <lastmod>2024-11-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
@@ -259,56 +300,70 @@
   
   <url>
     <loc>https://gu0f3n.github.io/categories/sql%E5%88%B7%E9%A2%98%E7%AC%94%E8%AE%B0/</loc>
-    <lastmod>2024-11-14</lastmod>
+    <lastmod>2024-11-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://gu0f3n.github.io/categories/ciscn/</loc>
-    <lastmod>2024-11-14</lastmod>
+    <lastmod>2024-11-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://gu0f3n.github.io/categories/java/</loc>
-    <lastmod>2024-11-14</lastmod>
+    <lastmod>2024-11-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://gu0f3n.github.io/categories/unserialize/</loc>
+    <lastmod>2024-11-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://gu0f3n.github.io/categories/pollute/</loc>
-    <lastmod>2024-11-14</lastmod>
+    <lastmod>2024-11-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://gu0f3n.github.io/categories/ctfshow/</loc>
-    <lastmod>2024-11-14</lastmod>
+    <lastmod>2024-11-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://gu0f3n.github.io/categories/python/</loc>
-    <lastmod>2024-11-14</lastmod>
+    <lastmod>2024-11-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://gu0f3n.github.io/categories/php/</loc>
+    <lastmod>2024-11-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://gu0f3n.github.io/categories/session/</loc>
-    <lastmod>2024-11-14</lastmod>
+    <lastmod>2024-11-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://gu0f3n.github.io/categories/%E6%8F%90%E6%9D%83/</loc>
-    <lastmod>2024-11-14</lastmod>
+    <lastmod>2024-11-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
