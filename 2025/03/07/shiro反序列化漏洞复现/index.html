@@ -1,0 +1,431 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>shiro反序列化漏洞复现 | Gu0f3n's blog</title><meta name="author" content="Gu0f3n"><meta name="copyright" content="Gu0f3n"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="vulhub靶场复现 漏洞原理 Apache Shiro框架提供了记住密码的功能（RememberMe），用户登录成功后会生成经过加密并编码的cookie。在服务端对rememberMe的cookie值，先base64解码然后AES解密再反序列化，就导致了反序列化RCE漏洞。 那么，Payload产生的过程： 命令&#x3D;&gt;序列化&#x3D;&gt;AES加密&#x3D;&gt;base">
+<meta property="og:type" content="article">
+<meta property="og:title" content="shiro反序列化漏洞复现">
+<meta property="og:url" content="https://gu0f3n.github.io/2025/03/07/shiro%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/index.html">
+<meta property="og:site_name" content="Gu0f3n&#39;s blog">
+<meta property="og:description" content="vulhub靶场复现 漏洞原理 Apache Shiro框架提供了记住密码的功能（RememberMe），用户登录成功后会生成经过加密并编码的cookie。在服务端对rememberMe的cookie值，先base64解码然后AES解密再反序列化，就导致了反序列化RCE漏洞。 那么，Payload产生的过程： 命令&#x3D;&gt;序列化&#x3D;&gt;AES加密&#x3D;&gt;base">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gu0f3n.github.io/img/3.jpg">
+<meta property="article:published_time" content="2025-03-07T11:40:51.000Z">
+<meta property="article:modified_time" content="2025-03-20T10:13:17.967Z">
+<meta property="article:author" content="Gu0f3n">
+<meta property="article:tag" content="shiro">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gu0f3n.github.io/img/3.jpg"><link rel="shortcut icon" href="/img/1.png"><link rel="canonical" href="https://gu0f3n.github.io/2025/03/07/shiro%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.14.0-b3"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.16/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.35/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>(()=>{
+      const saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+      
+      window.btf = {
+        saveToLocal: saveToLocal,
+        getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+          script.src = url
+          script.async = true
+          script.onerror = reject
+          script.onload = script.onreadystatechange = function() {
+            const loadState = this.readyState
+            if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+            script.onload = script.onreadystatechange = null
+            resolve()
+          }
+
+          Object.keys(attr).forEach(key => {
+            script.setAttribute(key, attr[key])
+          })
+
+          document.head.appendChild(script)
+        }),
+
+        getCSS: (url, id = false) => new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+          link.rel = 'stylesheet'
+          link.href = url
+          if (id) link.id = id
+          link.onerror = reject
+          link.onload = link.onreadystatechange = function() {
+            const loadState = this.readyState
+            if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+            link.onload = link.onreadystatechange = null
+            resolve()
+          }
+          document.head.appendChild(link)
+        }),
+
+        addGlobalFn: (key, fn, name = false, parent = window) => {
+          const pjaxEnable = true
+          if (!pjaxEnable && key.startsWith('pjax')) return
+
+          const globalFn = parent.globalFn || {}
+          const keyObj = globalFn[key] || {}
+    
+          if (name && keyObj[name]) return
+    
+          name = name || Object.keys(keyObj).length
+          keyObj[name] = fn
+          globalFn[key] = keyObj
+          parent.globalFn = globalFn
+        }
+      }
+    
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+      
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })()</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":true,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体中文","cht_to_chs":"你已切换为简体中文","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'shiro反序列化漏洞复现',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2025-03-20 18:13:17'
+}</script><link rel="stylesheet" href="/css/1.css?1"><link rel="stylesheet" href="/css/2.css?1"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Gu0f3n's blog" type="application/atom+xml">
+</head><body><div id="loading-box" onclick="document.getElementById(&quot;loading-box&quot;).classList.add(&quot;loaded&quot;)"><div class="loading-bg"><div class="loading-img"></div><div class="loading-image-dot"></div></div></div><script>const preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',()=> { preloader.endLoading() })
+
+if (true) {
+  document.addEventListener('pjax:send', () => { preloader.initLoading() })
+  document.addEventListener('pjax:complete', () => { preloader.endLoading() })
+}</script><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/1.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">31</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">19</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw &lt;i class=&quot;fa-light fa-igloo&quot;&gt;&lt;/i&gt;"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 列表</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa-sharp-duotone fa-solid fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa-solid fa-heart-pulse"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/3.jpg')"><nav id="nav"><div id="nav-group"><span id="blog-info"><a href="/" title="回到主页"><span class="site-name"></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw &lt;i class=&quot;fa-light fa-igloo&quot;&gt;&lt;/i&gt;"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 列表</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa-sharp-duotone fa-solid fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa-solid fa-heart-pulse"></i><span> 关于我</span></a></div></div></div><div id="nav-right"><div id="travellings"><a class="site-page" target="_blank" rel="noopener" href="https://travellings.cn/go.html" title="随机前往一个开往项目网站"><i class="iconfont icat-subway"></i></a></div><div id="random"><a class="site-page" href="javascript:toRandomPost()" title="随机前往一个文章"><i class="iconfont icat-random"></i></a></div><div id="search-button"><a class="site-page social-icon search"><i class="iconfont icat-search"></i></a></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);" title="搜索本站文章"><i class="iconfont icat-bars"></i></a></div></div></div></nav><div id="post-info"><h1 class="post-title">shiro反序列化漏洞复现</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-03-07T11:40:51.000Z" title="发表于 2025-03-07 19:40:51">2025-03-07</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-03-20T10:13:17.967Z" title="更新于 2025-03-20 18:13:17">2025-03-20</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">1.3k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>4分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="shiro反序列化漏洞复现"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>vulhub靶场复现</p>
+<p>漏洞原理</p>
+<p>Apache Shiro框架提供了记住密码的功能（RememberMe），用户登录成功后会生成经过加密并编码的cookie。在服务端对rememberMe的cookie值，先base64解码然后AES解密再反序列化，就导致了反序列化RCE漏洞。 那么，Payload产生的过程： 命令&#x3D;&gt;序列化&#x3D;&gt;AES加密&#x3D;&gt;base64编码&#x3D;&gt;RememberMe Cookie值 在整个漏洞利用过程中，比较重要的是AES加密的密钥，如果没有修改默认的密钥那么就很容易就知道密钥了,Payload构造起来也是十分的简单。</p>
+<p>这是一个典型的 <strong>Shiro RememberMe 反序列化漏洞</strong>的触发路径。用大白话解释就是：</p>
+<hr>
+<h3 id="场景比喻"><a href="#场景比喻" class="headerlink" title="场景比喻"></a><strong>场景比喻</strong></h3><p>想象你进了一家高级会所，前台给你一张<strong>加密的会员卡（RememberMe Cookie）</strong>，下次来不用输密码，直接刷卡进。但这家会所的会员卡加密方式有问题——<strong>用的是一把通用钥匙（默认密钥）</strong>，导致坏人能伪造任意会员卡。</p>
+<hr>
+<h3 id="流程拆解"><a href="#流程拆解" class="headerlink" title="流程拆解"></a><strong>流程拆解</strong></h3><ol>
+<li><strong>登录成功</strong>：<br>你输入账号密码正确，前台（Shiro）说：“记住这个用户，下次直接刷会员卡进！”<br>→ 触发 <code>onSuccessfulLogin</code> 方法。</li>
+<li><strong>制作会员卡</strong>：<br>前台把你的信息（用户名、权限）​<strong>打包成快递（序列化）​</strong>，用<strong>会所统一包装盒（加密）​</strong>封好，再贴个快递单（Base64编码）。<br>→ 调用 <code>rememberIdentity</code> → <code>rememberSerializedIdentity</code>。</li>
+<li><strong>快递配送</strong>：<br>前台把包装好的快递（加密后的数据）塞进你的浏览器，变成一张<strong>会员卡（Cookie）​</strong>。<br>→ 设置Cookie值 <code>rememberMe=加密后的Base64字符串</code>。</li>
+<li><strong>漏洞在哪</strong>：<ul>
+<li><strong>通用钥匙</strong>：所有会员卡都用同一把钥匙加密（Shiro默认硬编码密钥）。</li>
+<li><strong>包装盒可破解</strong>：序列化数据用的是可预测的加密方式（AES-CBC）。<br>→ 坏人拿到你的会员卡，拆开包装盒，换上自己的毒包裹（恶意代码），再用原样封好，系统会正常解密执行。</li>
+</ul>
+</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.首先正常登录，然后生成带有rememberme的返回cookie值。 2.生成cookie，shiro会提供rememberme功能，可以通过cookie记录登录用户，从而记录登录用户的身份认证信息，即下次无需登录即可访问。处理rememberme的cookie的类为org.apache.shiro.web.mgt.CookieRememberMeManager 3.之后进入serialize，对登录认证信息进行序列化 4.然后加密，调用aes算法。 5.加密结束，然后在在org/apache/shiro/web/mgt/CookieRememberMeManager.java的rememberSerializedIdentity方法中进行base64编码，并通过response返回 6.解析cookie 7.先解密在反序列化 8.AES是对称加密，加解密密钥都是相同的，并且shiro都是将密钥硬编码 9.调用crypt方法利用密文，key，iv进行解密,解密完成后进入反序列化，看上面的public AbstractRememberMeManager这里用的是默认反序列化类,然后触发生成反序列化</span><br></pre></td></tr></table></figure>
+
+<p>生成带有Rememberme的返回cookie-&gt;处理rememberme的cookie的类为org.apache.shiro.web.mgt.CookieRememberMeManager-&gt;序列化登录信息-&gt;交给aes进行加密-&gt;加密后org&#x2F;apache&#x2F;shiro&#x2F;web&#x2F;mgt&#x2F;CookieRememberMeManager.java的rememberSerializedIdentity进行base64编码-&gt;解析cookie-&gt;先解密在反序列化</p>
+<p>判断AES密钥</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">密钥不正确或类型转换异常时，目标Response包含Set-Cookie：rememberMe=deleteMe字段，</span><br><span class="line"></span><br><span class="line">而当密钥正确且没有类型转换异常时，返回包不存在Set-Cookie：rememberMe=deleteMe字段</span><br></pre></td></tr></table></figure>
+
+<p>工具：<a target="_blank" rel="noopener" href="https://github.com/feihong-cs/ShiroExploit-Deprecated/releases">https://github.com/feihong-cs/ShiroExploit-Deprecated/releases</a></p>
+<p>shrio-550使用的是默认密钥kPH+blxk5D2deZilxcaaaA&#x3D;&#x3D;</p>
+<p>工具非常给力可以获得密钥</p>
+<p><img src="https://raw.githubusercontent.com/Gu0f3n/img/mian/1741351728827.jpg"></p>
+<p>这就不去复现了</p>
+<h1 id="Shiro-认证绕过漏洞-CVE-2020-1957"><a href="#Shiro-认证绕过漏洞-CVE-2020-1957" class="headerlink" title="[Shiro-认证绕过漏洞(CVE-2020-1957)]"></a>[Shiro-认证绕过漏洞(CVE-2020-1957)]</h1><p>核心点就是</p>
+<ol>
+<li><p><strong>场景设定</strong>：</p>
+<ul>
+<li><strong>门卫（Shiro）</strong>：负责检查每个客人能不能进VIP室，规则是”所有想进 <code>/vip</code> 房间的人必须出示会员卡”。</li>
+<li><strong>管家（Spring）</strong>：负责带客人去实际房间，但它有个怪癖——<strong>看到分号 <code>;</code> 就会自动截断</strong>后面的内容。</li>
+</ul>
+</li>
+<li><p><strong>坏人如何混进VIP室</strong>：<br>坏人不去正门 <code>/vip</code>，而是故意走歪路：</p>
+<ul>
+<li><strong>构造假路径</strong>：<code>/vip;/../秘密通道</code></li>
+<li><strong>门卫视角</strong>：检查路径是 <code>/vip</code>（因为Shiro看到分号 <code>;</code> 就停下），发现规则是允许所有人访问 <code>/vip</code>（未配置需要登录），直接放行。</li>
+<li><strong>管家视角</strong>：处理路径时，看到分号 <code>;</code> 就截断成 <code>/vip</code>，实际却把客人带到 <code>/秘密通道</code>（VIP室后门）。</li>
+</ul>
+<p>→ <strong>门卫以为你去的是公开区域，管家却把你带进了VIP室</strong>，全程没查会员卡！</p>
+</li>
+</ol>
+<p>这个文章写的也很好<a target="_blank" rel="noopener" href="https://www.cnblogs.com/dhan/p/18423713">https://www.cnblogs.com/dhan/p/18423713</a></p>
+<p>这个文章主流payload是</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/xxx/..;/admin/</span><br></pre></td></tr></table></figure>
+
+<p>首先shiro处理的</p>
+<p>将分号后面的内容直接处理了得到xxx&#x2F;..，显示不是要去&#x2F;admin可以直接bypass掉了shiro认证</p>
+<p>spring认证</p>
+<p>跟进removeSemicolonContentInternal(requestUri)方法，他的作用就是：<code>移除uri中/与/之间的;分号以及;分号后面的内容</code></p>
+<p>根据这句话可以得知最后的uri应该是：</p>
+<p><code>/xxx/../admin/ == /admin/</code></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://Gu0f3n.github.io">Gu0f3n</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://gu0f3n.github.io/2025/03/07/shiro%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/">https://gu0f3n.github.io/2025/03/07/shiro%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://Gu0f3n.github.io" target="_blank">Gu0f3n's blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/shiro/">shiro</a></div><div class="post_share"><div class="social-share" data-image="/img/3.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2025/03/07/weblogic%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%A4%8D%E7%8E%B0/" title="weblogic反序列化复现"><img class="cover" src="/img/3.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">weblogic反序列化复现</div></div></a></div><div class="next-post pull-right"><a href="/2025/03/03/%E2%80%9Cfastjson%E5%88%9D%E6%8E%A2%E2%80%9D/" title="“fastjson初探”"><img class="cover" src="/img/3.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">“fastjson初探”</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/1.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Gu0f3n</div><div class="author-info__description">石匠敲击石头的101次</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">31</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">19</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Gu0f3n?tab=repositories"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/Gu0f3n?tab=repositories" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:xxxxxx@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://weibo.com/u/3833024804" target="_blank" title="microblog"><i class="fa-brands fa-microblog" style="color: #FF0000;"></i></a><a class="social-icon" href="https://space.bilibili.com/282616786?spm_id_from=333.337.0.0" target="_blank" title="Bilibili"><i class="fa-brands fa-bilibili" style="color: #FFC0CB;"></i></a><a class="social-icon" href="https://www.douyin.com/user/MS4wLjABAAAA13z3eSKpDESynATlUFIUGCPdSHi7oID9u2rz2bHH6aE" target="_blank" title="tiktok"><i class="fa-brands fa-tiktok" style="color: #000000;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%BA%E6%99%AF%E6%AF%94%E5%96%BB"><span class="toc-number">1.</span> <span class="toc-text">场景比喻</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%81%E7%A8%8B%E6%8B%86%E8%A7%A3"><span class="toc-number">2.</span> <span class="toc-text">流程拆解</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Shiro-%E8%AE%A4%E8%AF%81%E7%BB%95%E8%BF%87%E6%BC%8F%E6%B4%9E-CVE-2020-1957"><span class="toc-number"></span> <span class="toc-text">[Shiro-认证绕过漏洞(CVE-2020-1957)]</span></a></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2025/03/19/cc1%E5%88%86%E6%9E%90/" title="cc1分析"><img src="https://raw.githubusercontent.com/Gu0f3n/img/mian/image-1725933602516-333.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="cc1分析"/></a><div class="content"><a class="title" href="/2025/03/19/cc1%E5%88%86%E6%9E%90/" title="cc1分析">cc1分析</a><time datetime="2025-03-19T11:48:51.000Z" title="发表于 2025-03-19 19:48:51">2025-03-19</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/03/15/%E8%B7%9F%E7%9D%80%E5%B0%8F%E8%BF%AA%E7%9A%84%E7%AC%AC%E4%BA%94%E5%A4%A9/" title="跟着小迪的第五天"><img src="/img/3.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="跟着小迪的第五天"/></a><div class="content"><a class="title" href="/2025/03/15/%E8%B7%9F%E7%9D%80%E5%B0%8F%E8%BF%AA%E7%9A%84%E7%AC%AC%E4%BA%94%E5%A4%A9/" title="跟着小迪的第五天">跟着小迪的第五天</a><time datetime="2025-03-15T02:10:40.000Z" title="发表于 2025-03-15 10:10:40">2025-03-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/03/10/xxe%E6%BC%8F%E6%B4%9E/" title="xxe漏洞"><img src="/img/3.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="xxe漏洞"/></a><div class="content"><a class="title" href="/2025/03/10/xxe%E6%BC%8F%E6%B4%9E/" title="xxe漏洞">xxe漏洞</a><time datetime="2025-03-10T13:47:11.000Z" title="发表于 2025-03-10 21:47:11">2025-03-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/03/09/%E8%B7%9F%E7%9D%80%E5%B0%8F%E8%BF%AA%E7%9A%84%E7%AC%AC%E5%9B%9B%E5%A4%A9/" title="跟着小迪的第四天"><img src="/img/3.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="跟着小迪的第四天"/></a><div class="content"><a class="title" href="/2025/03/09/%E8%B7%9F%E7%9D%80%E5%B0%8F%E8%BF%AA%E7%9A%84%E7%AC%AC%E5%9B%9B%E5%A4%A9/" title="跟着小迪的第四天">跟着小迪的第四天</a><time datetime="2025-03-09T03:24:40.000Z" title="发表于 2025-03-09 11:24:40">2025-03-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/03/08/%E8%B7%9F%E7%9D%80%E5%B0%8F%E8%BF%AA%E7%9A%84%E7%AC%AC%E4%B8%89%E5%A4%A9/" title="跟着小迪的第三天"><img src="/img/3.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="跟着小迪的第三天"/></a><div class="content"><a class="title" href="/2025/03/08/%E8%B7%9F%E7%9D%80%E5%B0%8F%E8%BF%AA%E7%9A%84%E7%AC%AC%E4%B8%89%E5%A4%A9/" title="跟着小迪的第三天">跟着小迪的第三天</a><time datetime="2025-03-08T01:42:12.000Z" title="发表于 2025-03-08 09:42:12">2025-03-08</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/3.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2025 By Gu0f3n</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"></div><div id="rightside-config-show"><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.14.0-b3"></script><script src="/js/main.js?v=4.14.0-b3"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.35/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@5.2.0/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.16/dist/snackbar.min.js"></script><script>(() => {
+  const panguFn = () => {
+    if (typeof pangu === 'object') pangu.autoSpacingPage()
+    else {
+      btf.getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+        .then(() => {
+          pangu.autoSpacingPage()
+        })
+    }
+  }
+
+  const panguInit = () => {
+    if (false){
+      GLOBAL_CONFIG_SITE.isPost && panguFn()
+    } else {
+      panguFn()
+    }
+  }
+
+  btf.addGlobalFn('pjaxComplete', panguInit, 'pangu')
+  document.addEventListener('DOMContentLoaded', panguInit)
+})()</script><div class="js-pjax"><script>(() => {
+  const runMermaid = (ele) => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from(ele).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+    
+    codeMermaidEle.forEach(ele => {
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.innerHTML = `<pre class="mermaid-src" hidden>${ele.textContent}</pre>`
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js').then(runMermaidFn)
+  }
+  
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><div class="aplayer no-destroy" data-id="12384198565" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="true"> </div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><div class="fb-customerchat" id="fb-customer-chat" attribution="biz_inbox"></div><script>(() => {
+  document.getElementById('fb-root') ? '' : document.body.insertAdjacentHTML('afterend', '<div id="fb-root"></div>')
+
+  window.fbAsyncInit = function() {
+    FB.init({
+      xfbml: true,
+      version: 'v16.0'
+    });
+  };
+
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = 'https://connect.facebook.net/zh_CN/sdk/xfbml.customerchat.js';
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+
+  const isChatBtn = false
+  const isChatHideShow = false
+
+  if (isChatBtn) {
+    window.chatBtnFn = () => {
+      const isShow = document.querySelector('.fb_customer_chat_bounce_in_v2')
+      isShow ? FB.CustomerChat.hide() : FB.CustomerChat.show()
+    }
+  } else if (isChatHideShow) {
+    window.chatBtn = {
+      hide: () => {
+        FB.CustomerChat.hide()
+      },
+      show: () => {
+        FB.CustomerChat.show(false)
+      }
+    }
+  }
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const loadMeting = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'loadMeting')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+const triggerPjaxFn = (val) => {
+  if (!val) return
+  Object.values(val).forEach(fn => { fn() })
+}
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener
+  btf.removeGlobalFnEvent('pjax')
+  btf.removeGlobalFnEvent('themeChange')
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  triggerPjaxFn(window.globalFn.pjaxSend)
+})
+
+document.addEventListener('pjax:complete', () => {
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  triggerPjaxFn(window.globalFn.pjaxComplete)
+})
+
+document.addEventListener('pjax:error', e => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=4.14.0-b3"></script></div></div></body></html>
