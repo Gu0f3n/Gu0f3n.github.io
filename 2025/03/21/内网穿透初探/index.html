@@ -1,0 +1,512 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>内网穿透初探 | Gu0f3n's blog</title><meta name="author" content="Gu0f3n"><meta name="copyright" content="Gu0f3n"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="学习一下网络知识 主要学习下DNS,因为在后续的内网渗透与应急感觉用的会比较多 DNS解析流程有个大致的了解 这里就不一一细谈了主要还是学习一下域名解析记录 域名解析记录A记录（快递地址簿）****代表Address，用来指定域名对应的IP地址，如将item.taobao.com指定到115.238.23.xxx，将switch.taobao.com指定到121.14.24.xxx。A****记录">
+<meta property="og:type" content="article">
+<meta property="og:title" content="内网穿透初探">
+<meta property="og:url" content="https://gu0f3n.github.io/2025/03/21/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F%E5%88%9D%E6%8E%A2/index.html">
+<meta property="og:site_name" content="Gu0f3n&#39;s blog">
+<meta property="og:description" content="学习一下网络知识 主要学习下DNS,因为在后续的内网渗透与应急感觉用的会比较多 DNS解析流程有个大致的了解 这里就不一一细谈了主要还是学习一下域名解析记录 域名解析记录A记录（快递地址簿）****代表Address，用来指定域名对应的IP地址，如将item.taobao.com指定到115.238.23.xxx，将switch.taobao.com指定到121.14.24.xxx。A****记录">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gu0f3n.github.io/img/3.jpg">
+<meta property="article:published_time" content="2025-03-21T05:07:31.000Z">
+<meta property="article:modified_time" content="2025-03-21T08:15:47.935Z">
+<meta property="article:author" content="Gu0f3n">
+<meta property="article:tag" content="network">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gu0f3n.github.io/img/3.jpg"><link rel="shortcut icon" href="/img/1.png"><link rel="canonical" href="https://gu0f3n.github.io/2025/03/21/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F%E5%88%9D%E6%8E%A2/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.14.0-b3"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.16/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.35/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>(()=>{
+      const saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+      
+      window.btf = {
+        saveToLocal: saveToLocal,
+        getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+          script.src = url
+          script.async = true
+          script.onerror = reject
+          script.onload = script.onreadystatechange = function() {
+            const loadState = this.readyState
+            if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+            script.onload = script.onreadystatechange = null
+            resolve()
+          }
+
+          Object.keys(attr).forEach(key => {
+            script.setAttribute(key, attr[key])
+          })
+
+          document.head.appendChild(script)
+        }),
+
+        getCSS: (url, id = false) => new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+          link.rel = 'stylesheet'
+          link.href = url
+          if (id) link.id = id
+          link.onerror = reject
+          link.onload = link.onreadystatechange = function() {
+            const loadState = this.readyState
+            if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+            link.onload = link.onreadystatechange = null
+            resolve()
+          }
+          document.head.appendChild(link)
+        }),
+
+        addGlobalFn: (key, fn, name = false, parent = window) => {
+          const pjaxEnable = true
+          if (!pjaxEnable && key.startsWith('pjax')) return
+
+          const globalFn = parent.globalFn || {}
+          const keyObj = globalFn[key] || {}
+    
+          if (name && keyObj[name]) return
+    
+          name = name || Object.keys(keyObj).length
+          keyObj[name] = fn
+          globalFn[key] = keyObj
+          parent.globalFn = globalFn
+        }
+      }
+    
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+      
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })()</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":true,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体中文","cht_to_chs":"你已切换为简体中文","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '内网穿透初探',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2025-03-21 16:15:47'
+}</script><link rel="stylesheet" href="/css/1.css?1"><link rel="stylesheet" href="/css/2.css?1"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Gu0f3n's blog" type="application/atom+xml">
+</head><body><div id="loading-box" onclick="document.getElementById(&quot;loading-box&quot;).classList.add(&quot;loaded&quot;)"><div class="loading-bg"><div class="loading-img"></div><div class="loading-image-dot"></div></div></div><script>const preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',()=> { preloader.endLoading() })
+
+if (true) {
+  document.addEventListener('pjax:send', () => { preloader.initLoading() })
+  document.addEventListener('pjax:complete', () => { preloader.endLoading() })
+}</script><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/1.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">32</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">19</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">12</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw &lt;i class=&quot;fa-light fa-igloo&quot;&gt;&lt;/i&gt;"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 列表</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa-sharp-duotone fa-solid fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa-solid fa-heart-pulse"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/3.jpg')"><nav id="nav"><div id="nav-group"><span id="blog-info"><a href="/" title="回到主页"><span class="site-name"></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw &lt;i class=&quot;fa-light fa-igloo&quot;&gt;&lt;/i&gt;"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 列表</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa-sharp-duotone fa-solid fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa-solid fa-heart-pulse"></i><span> 关于我</span></a></div></div></div><div id="nav-right"><div id="travellings"><a class="site-page" target="_blank" rel="noopener" href="https://travellings.cn/go.html" title="随机前往一个开往项目网站"><i class="iconfont icat-subway"></i></a></div><div id="random"><a class="site-page" href="javascript:toRandomPost()" title="随机前往一个文章"><i class="iconfont icat-random"></i></a></div><div id="search-button"><a class="site-page social-icon search"><i class="iconfont icat-search"></i></a></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);" title="搜索本站文章"><i class="iconfont icat-bars"></i></a></div></div></div></nav><div id="post-info"><h1 class="post-title">内网穿透初探</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-03-21T05:07:31.000Z" title="发表于 2025-03-21 13:07:31">2025-03-21</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-03-21T08:15:47.935Z" title="更新于 2025-03-21 16:15:47">2025-03-21</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/network/">network</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">4.3k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>13分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="内网穿透初探"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>学习一下网络知识</p>
+<p>主要学习下DNS,因为在后续的内网渗透与应急感觉用的会比较多</p>
+<p>DNS解析流程有个大致的了解 这里就不一一细谈了主要还是学习一下域名解析记录</p>
+<h2 id="域名解析记录"><a href="#域名解析记录" class="headerlink" title="域名解析记录"></a>域名解析记录</h2><h3 id="A记录（快递地址簿）"><a href="#A记录（快递地址簿）" class="headerlink" title="A记录（快递地址簿）****"></a><strong>A记录</strong>（快递地址簿）****</h3><p>代表Address，用来指定域名对应的IP地址，如将item.taobao.com指定到115.238.23.xxx，将switch.taobao.com指定到121.14.24.xxx。<strong>A****记录可以将多个域名解析到一个IP地址，但是不能将一个域名解析到多个IP地址</strong></p>
+<p><em>例子</em>：<code>item.taobao.com</code>指向<code>115.238.23.xxx</code>，相当于告诉快递员“淘宝商品页的快递送到这个地址”</p>
+<p><strong>特点</strong>：</p>
+<ul>
+<li>一个域名只能对应一个IP，但多个域名可以指向同一个IP（比如淘宝的多个子页面共用服务器）</li>
+<li>如果服务器搬家（换IP），得手动改地址簿</li>
+</ul>
+<h3 id="MX记录（邮局分拣员）"><a href="#MX记录（邮局分拣员）" class="headerlink" title="MX记录（邮局分拣员）"></a><strong>MX记录（邮局分拣员）</strong></h3><p>Mail Exchange，就是可以将某个域名下的邮件服务器指向自己的Mail Server，如taobao.com域名的A记录IP地址是115.238.25.xxx，如果将MX记录设置为115.238.25.xxx，即<a href="mailto:&#x78;&#120;&#x78;&#x40;&#116;&#x61;&#111;&#x62;&#97;&#x6f;&#46;&#99;&#111;&#109;">&#x78;&#120;&#x78;&#x40;&#116;&#x61;&#111;&#x62;&#97;&#x6f;&#46;&#99;&#111;&#109;</a>的邮件路由，DNS会将邮件发送到115.238.25.xxx所在的服务器，而正常通过Web请求的话仍然解析到A记录的IP地址<br><strong>功能</strong>：专门管邮件的“快递路线”。告诉别人发到你这个域名的邮件该送到哪个邮局（邮件服务器）。<em>例子</em>：<code>xxx@taobao.com</code>的邮件会被送到<code>115.238.25.xxx</code>的服务器，而网页访问还是走A记录的地址</p>
+<p><strong>特点</strong>：</p>
+<ul>
+<li>可以设多个邮局，优先级数字小的先送（比如优先级5的服务器优先于10的）</li>
+<li>邮件服务器坏了，备用的会自动顶上</li>
+</ul>
+<h3 id="CNAME记录（连锁店别名）"><a href="#CNAME记录（连锁店别名）" class="headerlink" title="CNAME记录（连锁店别名）"></a><strong>CNAME记录（连锁店别名）</strong></h3><p>Canonical Name，即别名解析。所谓别名解析就是可以为一个域名设置一个或者多个别名，如将aaa.com解析到bbb.net、将ccc.com也解析到bbb.net，其中bbb.net分别是aaa.com和ccc.com的别名</p>
+<p><strong>功能</strong>：给域名起外号，多个名字指向同一个地方</p>
+<p><em>例子</em>：<code>aaa.com</code>和<code>ccc.com</code>都指向<code>bbb.net</code>，就像“肯德基”和“KFC”是同一家店</p>
+<p><strong>特点</strong></p>
+<p>换服务器地址时，只用改主域名（比如<code>bbb.net</code>的IP），所有别名自动更新，不用一个个改</p>
+<p>必须带前缀（比如<code>www.taobao.com</code>不能直接叫<code>taobao.com</code>，得用A记录</p>
+<h3 id="NS记录（快递公司总部）"><a href="#NS记录（快递公司总部）" class="headerlink" title="NS记录（快递公司总部）"></a><strong>NS记录（快递公司总部）</strong></h3><p>为某个域名指定DNS解析服务器，也就是这个域名由指定的IP地址的DNS服务器取解析</p>
+<p><strong>功能</strong>：指定谁负责你家域名的“快递分拣”（DNS解析）。<br><em>例子</em>：如果你用腾讯云的DNS服务，NS记录会写成<code>ns1.dnspod.com</code>，相当于把快递分拣工作外包给腾讯</p>
+<p><strong>特点</strong></p>
+<p>一个域名可以有多个分拣中心（比如主备DNS服务器）</p>
+<p>改NS记录后，全球生效需要24-48小时（因为各地快递公司更新地址簿要时间）</p>
+<h3 id="TXT记录（店铺留言板）"><a href="#TXT记录（店铺留言板）" class="headerlink" title="TXT记录（店铺留言板）"></a><strong>TXT记录（店铺留言板）</strong></h3><p>为某个主机名或域名设置说明，如可以为ddd.net设置TXT记录为”这是XXX的博客”这样的说明</p>
+<p><strong>功能</strong>：给域名贴个“备注标签”，用来验证身份或防垃圾邮件</p>
+<p><em>例子</em>：</p>
+<p>验证域名所有权：加一条TXT记录<code>google-site-verification=xxxxx</code>，证明你是网站主人</p>
+<p>防垃圾邮件：设置SPF记录<code>v=spf1 include:aliyun.com ~all</code>，告诉别人“只有阿里云的服务器能代表我发邮件</p>
+<p><strong>特点</strong></p>
+<p>内容随便写，但格式要对（比如SPF记录必须以<code>v=spf1</code>开头）</p>
+<p>简单学习了这个协议的基础知识之后就准备学习内网穿透的知识</p>
+<h1 id="内网渗透系列：内网穿透（隧道）学习"><a href="#内网渗透系列：内网穿透（隧道）学习" class="headerlink" title="内网渗透系列：内网穿透（隧道）学习"></a>内网渗透系列：内网穿透（隧道）学习</h1><h2 id="内网穿透概述"><a href="#内网穿透概述" class="headerlink" title="内网穿透概述"></a>内网穿透概述</h2><h5 id="内网穿透"><a href="#内网穿透" class="headerlink" title="内网穿透"></a>内网穿透</h5><p>利用各种隧道技术，以网络防火墙允许的协议，绕过网络防火墙的封锁，实现访问被封锁的目标网络</p>
+<p><em>内网穿透，也即 NAT 穿透，进行 NAT 穿透是为了使具有某一个特定源 IP 地址和源端口号的数据包不被 NAT 设备屏蔽而正确路由到内网主机。</em></p>
+<p>简单来说内网穿透的目的是：让外网能访问你本地的应用，例如在外网打开你本地<a target="_blank" rel="noopener" href="http://127.0.0.1指向的web站点.举例子我的世界你想要进行局域网联机同时要和你远在天边的朋友进行游玩那么盆友就可以利用内网穿透来达成与你玩的目的/">http://127.0.0.1指向的Web站点。举例子我的世界你想要进行局域网联机同时要和你远在天边的朋友进行游玩那么盆友就可以利用内网穿透来达成与你玩的目的</a></p>
+<p>这里简单了解下NAT协议</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">**NAT 协议（Network Address Translation）** 的应用场景如同它的名称——网络地址转换，应用于内部网到外部网的地址转换过程中。</span><br><span class="line"></span><br><span class="line">**核心功能**：把内网设备的“私有门牌号”（私有IP）转换成外网的“公共门牌号”（公网IP），方便内外网通信</span><br><span class="line"></span><br><span class="line">*例子*：你家在小区3号楼（内网IP `192.168.1.5`），但快递单上只能写小区大门地址（公网IP `219.155.6.240`），门卫（NAT设备）负责把快递送到你家</span><br><span class="line"></span><br><span class="line">**为什么需要NAT？****</span><br><span class="line"></span><br><span class="line">**根本原因**：全球公网IP不够用（类似门牌号不够），而小区（内网）可以无限复制私有门牌号</span><br></pre></td></tr></table></figure>
+
+<p>那么想要实现内网穿透就得进行一个搭建桥梁</p>
+<h3 id="常见实现方式（怎么搭桥？）"><a href="#常见实现方式（怎么搭桥？）" class="headerlink" title="常见实现方式（怎么搭桥？）****"></a><strong>常见实现方式</strong>（怎么搭桥？）****</h3><p>端口映射 反向代理，vpn隧道，NAT进行穿透</p>
+<p>端口映射就是把内网的ip都映射到一个公网的端口上面所有的流量就会从公网ip端口进入到你的内网ip</p>
+<p>反向代理 就比如说我们租一个云服务器，别人对云服务的公网ip进行访问，服务器会把别人访问的流量转接到我们内网的设备</p>
+<p><strong>例子</strong>：用frp工具把内网摄像头画面通过云服务器暴露给外网</p>
+<p>vpn就是开一条新的隧道 直接到公网不会经过运营商</p>
+<p>内网穿透（NAT穿透）蒋NAT设备记录用来把内部网络的私有IP地址映射到外部网络的合法IP地址上去</p>
+<p>搞清楚内网穿透的基本原理</p>
+<p>终于到隧道技术了</p>
+<h1 id="隧道技术"><a href="#隧道技术" class="headerlink" title="隧道技术"></a><strong>隧道技术</strong></h1><p>一种通过使用互联网络的基础设施在网络之间传递数据的方式，包括数据封装、传输和解包在内的全过程。使用隧道传递的数据(或负载)可以是不同协议的数据帧或包。</p>
+<p>用大白话解释<strong>隧道技术</strong>，可以想象成<strong>给数据包穿马甲过安检</strong>的过程</p>
+<p>整个过程就像快递员要把违禁品送过安检，必须套个合法的包装，过了检查再拆开还原。具体分三步走</p>
+<h3 id="第一步：穿马甲（封装）"><a href="#第一步：穿马甲（封装）" class="headerlink" title="第一步：穿马甲（封装）"></a><strong>第一步：穿马甲（封装）</strong></h3><p><strong>伪装需求</strong>：比如你想从公司内网传文件到家里，但公司防火墙只允许HTTP流量通过（其他协议全被拦截）</p>
+<p><strong>套外壳</strong>：隧道技术会把你的文件数据（比如SSH协议）塞进HTTP协议的“快递箱”里，并贴上新标签（如目标地址、端口）</p>
+<p><em>就像把私密信件塞进月饼盒，外面写上“节日礼品”蒙混过关。</em></p>
+<h3 id="第二步：过安检（传输）"><a href="#第二步：过安检（传输）" class="headerlink" title="第二步：过安检（传输）"></a><strong>第二步：过安检（传输）</strong></h3><p><strong>走公共通道</strong>：伪装后的数据包通过公共网络（比如互联网）传输，防火墙看到的是合法的HTTP流量，直接放行<em>比如用微信发文件，实际走的是微信的服务器通道，而不是直连对方电脑。</em></p>
+<p><strong>路由中转</strong>：数据包可能经过多个路由器跳转，但全程保持“马甲”不脱落<em>类似快递从北京发广州，中间经过郑州、长沙中转站，但月饼盒始终完好</em></p>
+<h3 id="第三步：拆包裹（解包）"><a href="#第三步：拆包裹（解包）" class="headerlink" title="第三步：拆包裹（解包）"></a><strong>第三步：拆包裹（解包）</strong></h3><p><strong>目的地验收</strong>：数据包到达目标服务器后，隧道端点（如家里的VPN服务器）会拆掉HTTP的“马甲”，还原出原始数据（SSH协议文件）</p>
+<p><em>就像收到月饼盒后拆开，取出里面的私密信件</em><strong>精准投递</strong>：解包后的数据按原始协议送到最终设备（如你的家用电脑）</p>
+<p>按所处的协议层分层：</p>
+<ul>
+<li>网络层隧道：ICMP隧道等</li>
+<li>传输层隧道：TCP隧道、UDP隧道</li>
+<li>应用层隧道：HTTP、DNS、SSH等隧道</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/Gu0f3n/img/mian/20250321142723.png"></p>
+<p>那么内网里面除了刚才了解到的http协议可以通过防火墙进行出网还有哪些协议呢</p>
+<h3 id="内网主机所有可能的出网方式"><a href="#内网主机所有可能的出网方式" class="headerlink" title="内网主机所有可能的出网方式"></a>内网主机所有可能的出网方式</h3><h5 id="允许ICMP协议出网"><a href="#允许ICMP协议出网" class="headerlink" title="允许ICMP协议出网"></a>允许ICMP协议出网</h5><h2 id="ICMP隧道原理"><a href="#ICMP隧道原理" class="headerlink" title="ICMP隧道原理"></a>ICMP隧道原理</h2><p>首先了解下ICMP这个协议</p>
+<p>ICMP（Internet Control Message Protocol）Internet控制报文协议。它是TCP&#x2F;IP协议簇的一个子协议，用于在IP主机、路由器之间传递控制消息。控制消息是指网络通不通、主机是否可达、路由是否可用等网络本身的消息。这些控制消息虽然并不传输用户数据，但是对于用户数据的传递起着重要的作用。</p>
+<p>简单来说就是一个检查网络可不可达的协议</p>
+<p>原理</p>
+<p>由于ICMP报文自身可以携带数据，而且ICMP报文是由系统内核处理的，不占用任何端口，因此具有很高的隐蔽性。</p>
+<p>通常ICMP隧道技术采用ICMP的ICMP_ECHO和ICMP_ECHOREPLY两种报文，把数据隐藏在ICMP数据包包头的选项域中，利用ping命令建立隐蔽通道。</p>
+<p><img src="https://raw.githubusercontent.com/Gu0f3n/img/mian/6a123b327b673db81ffb5ffb471e2cc.png"></p>
+<p>进行隐蔽传输的时候，肉鸡(防火墙内部)运行并接受外部攻击端的ICMP_ECHO数据包，攻击端把需要执行的命令隐藏在ICMP_ECHO数据包中，肉鸡接收到该数据包，解出其中隐藏的命令，并在防火墙内部主机上执行，再把执行结果隐藏在ICMP_ECHOREPLY数据包中，发送给外部攻击端。</p>
+<p>比如：攻击者把指令<code>whoami</code>藏在数据区，发到内网机器，内网机器执行<code>whoami</code>后，把结果藏在回应的ICMP包里发回去</p>
+<h3 id="ICMP隧道能干啥？"><a href="#ICMP隧道能干啥？" class="headerlink" title="ICMP隧道能干啥？"></a><strong>ICMP隧道能干啥？</strong></h3><p><strong>绕过防火墙</strong>：</p>
+<p>内网机器被限制只能<code>ping</code>外网，但通过ICMP隧道可以偷偷传文件或远程控制</p>
+<ul>
+<li><em>例子：公司内网禁止SSH，但允许<code>ping</code>，员工用ICMP隧道传敏感文件。</em></li>
+</ul>
+<p><strong>反弹Shell</strong></p>
+<p>攻击者通过ICMP包向受害机器发送指令，受害机器执行后通过ICMP包返回结果，实现远程控制</p>
+<p><strong>内网穿透</strong></p>
+<p>内网主机通过ICMP隧道将流量转发到公网代理，实现访问外网资源（类似早年免费上网的“黑科技”）</p>
+<h3 id="三、ICMP隧道的优缺点"><a href="#三、ICMP隧道的优缺点" class="headerlink" title="三、ICMP隧道的优缺点"></a><strong>三、ICMP隧道的优缺点</strong></h3><h4 id="优点"><a href="#优点" class="headerlink" title="优点"></a><strong>优点</strong></h4><p><strong>隐蔽性强</strong>：数据藏在<code>ping</code>包里，防火墙一般不管</p>
+<p><strong>无需端口</strong>：直接利用系统内核处理ICMP协议，不依赖特定端口</p>
+<h4 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a><strong>缺点</strong></h4><p><strong>速度慢</strong>：ICMP包默认数据量小（Windows 32字节、Linux 48字节），大文件传输像蚂蚁搬家</p>
+<p><strong>不稳定</strong>：ICMP是无连接协议，容易丢包，适合传小指令，不适合高清视频</p>
+<p><strong>权限要求高</strong>：修改ICMP数据需要管理员权限（普通用户玩不转）</p>
+<h3 id="检测"><a href="#检测" class="headerlink" title="检测"></a>检测</h3><ul>
+<li><p>检测同一来源 ICMP 数据包的数量。一个正常的 ping 每秒最多只会发送两个数据包，而使用 ICMP隧道的浏览器在同一时间会产生上千个 ICMP 数据包。</p>
+</li>
+<li><p>寻找那些响应数据包中 payload 跟请求数据包不一致的 ICMP 数据包。</p>
+</li>
+<li><p>注意那些 ICMP 数据包中 payload 大于 64 比特的数据包。当然 icmptunnel 可以配置限制所有数据包的 payload 为 64 比特，这样会使得更难以被检测到。</p>
+</li>
+<li><p>检查ICMP数据包的协议标签，例如icmptunnel 会在所有的 ICMPpayload 前面增加 ‘TUNL’ 标记以用于识别隧道，这就是特征。</p>
+</li>
+</ul>
+<h1 id="允许特定的TCP或UDP协议端口出网"><a href="#允许特定的TCP或UDP协议端口出网" class="headerlink" title="允许特定的TCP或UDP协议端口出网"></a>允许特定的TCP或UDP协议端口出网</h1><p>络防火墙允许特定的TCP或者UDP端口出网，比如连接外网的22、53、80、443、3389等常见应用的默认监听端口。</p>
+<p>在一个不能出网的网络环境里面，将所有的TCP和UPD端口都探测一遍，通常都能发现有一两个常见的端口能出网。这通常是由于网络管理员的错误配置和偷懒行为导致：</p>
+<p>比如配置的防火墙规则前后矛盾，解析的时候遇到匹配规则就退出执行<br>比如网络管理员配置允许web服务器访问另一子网的mysql数据库的3306端口。网络管理员配置时偷懒，可能会直接放行web服务器到任意ip地址的3306端口</p>
+<h1 id="DNS隧道"><a href="#DNS隧道" class="headerlink" title="DNS隧道"></a>DNS隧道</h1><h5 id="允许特定的应用层协议出网（比如HTTP、SSH、DNS等应用层协议）"><a href="#允许特定的应用层协议出网（比如HTTP、SSH、DNS等应用层协议）" class="headerlink" title="允许特定的应用层协议出网（比如HTTP、SSH、DNS等应用层协议）"></a>允许特定的应用层协议出网（比如HTTP、SSH、DNS等应用层协议）</h5><p>这种网络防火墙能识别应用层的协议，放行允许出网的协议，比如HTTP、SSH、DNS、RDP等应用层协议</p>
+<p>原理</p>
+<p>端口不和服务绑定，可以传输任何数据。</p>
+<p>详细聊聊这段文字 端口不和服务绑定是什么意思呢，意思就是DNS的53号端口它如果只能传递带有DNS头的数据包的流量这个就叫做端口和服务进行绑定但是DNS端口可以传输文件，指令甚至可以传输电影 这个意思就是端口和服务没有进行绑定 这就造成了我们对DNS隧道的一个利用</p>
+<p>C&amp;C服务器在建立连接后将指令传递给客户端上的后门程序。</p>
+<p>客户端后门程序进行DNS查询时，如果查询的域名不在DNS服务器本机的缓存中，就会访问互联网进行查询，然后返回结果，如果互联网上有一台攻击者设置的服务器，那么服务器就可以依靠域名解析的响应进行数据包的交换，从DNS协议的角度来看，这样的操作只是反复查询某个或者某些特定的域名并且得到解析结果，但其本质是，DNS预期的返回结果应该是一个IP地址，而事实上返回的可以是任意字符串，包括加密的C&amp;C指令，从而将其他协议封装在DNS协议中进行传输。<br>DNS隧道（直联型）木马的通信结构如下：</p>
+<p><img src="https://raw.githubusercontent.com/Gu0f3n/img/mian/c35866a915140c30a95b310e6f3fe54.png"></p>
+<p>直连也就是客户端直接和指定的目标DNS Server(Authoritative NS Server)连接，通过将数据编码封装在DNS协议中进行通信，这种方式速度更快，但是隐蔽性较差，容易被WAF或者IDS设备探测到，另外限制比较高，很多实际场景下不允许攻击者来自定义DNS Server，否则很容易被发现。</p>
+<p>名中继型：</p>
+<p>通过DNS递归查询实现的中继隧道，比较隐蔽，但同时因为数据包到达目标DNS Server前需要经过多个节点，所以速度上较直连慢很多(其实就类似伪造一台私有DNS Server，当然也许大佬神仙们真有一台权威DNS Server也说不一定哈)，同时我们还需要规避本地客户端的DNS缓存，这里可以使用随机域名生成算法（DGA）。很多恶意软件利用该算法生成随机域名，有效绕过黑名单检测，通过轮询的方式尝试连接，寻找C2控制中心。（DGA算法的检测测方法也有不少，这里按下不表）<br><img src="C:\Users\GuoFen\AppData\Roaming\Typora\typora-user-images\image-20250321154330405.png" alt="image-20250321154330405"></p>
+<p>①受到木马控制的PC将数据封装到DNS数据报文里，向位于内网的本地域名服务器请求查询baidu.com</p>
+<p>②本地域名服务器透过防火墙向根域名服务器发送查询请求</p>
+<p>③经过大量的递归重定向，查询请求发到baidu.com的（伪造）权威域名服务器</p>
+<p>④baidu.com（伪造）权威域名服务器是在攻击者控制下，解析并发送响应包</p>
+<p>⑤dns响应包穿透内网防火墙</p>
+<p>⑥进入内网</p>
+<p>⑦本地域名服务器将响应包返回给受控客户端检测：</p>
+<p>缺点：</p>
+<ul>
+<li><strong>速度慢</strong>：DNS查询需要来回多次，传大文件会急死人。</li>
+<li><strong>可能被检测</strong>：防火墙发现大量异常DNS请求会报警。</li>
+<li><strong>需要自建NS服务器</strong>：得有个服务器随时待命处理查询。</li>
+</ul>
+<h3 id="检测-1"><a href="#检测-1" class="headerlink" title="检测"></a>检测</h3><ul>
+<li>每个IP地址的DNS流量异常，DNS报文数量大</li>
+<li>DNS消息中TXT或NULL等不常用的记录类型多</li>
+<li>DNS消息中域名有部分固定不变</li>
+<li>DNS服务器的地理位置异常</li>
+<li>访问非受信的DNS服务器</li>
+<li>基于请求域名长度及请求频率统计分析方法</li>
+<li>dnscat 查询中包含了dnscat 字符串</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://Gu0f3n.github.io">Gu0f3n</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://gu0f3n.github.io/2025/03/21/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F%E5%88%9D%E6%8E%A2/">https://gu0f3n.github.io/2025/03/21/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F%E5%88%9D%E6%8E%A2/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://Gu0f3n.github.io" target="_blank">Gu0f3n's blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/network/">network</a></div><div class="post_share"><div class="social-share" data-image="/img/3.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2025/03/19/cc1%E5%88%86%E6%9E%90/" title="cc1分析"><img class="cover" src="https://raw.githubusercontent.com/Gu0f3n/img/mian/image-1725933602516-333.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">cc1分析</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/1.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Gu0f3n</div><div class="author-info__description">石匠敲击石头的101次</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">32</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">19</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">12</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Gu0f3n?tab=repositories"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/Gu0f3n?tab=repositories" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:xxxxxx@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://weibo.com/u/3833024804" target="_blank" title="microblog"><i class="fa-brands fa-microblog" style="color: #FF0000;"></i></a><a class="social-icon" href="https://space.bilibili.com/282616786?spm_id_from=333.337.0.0" target="_blank" title="Bilibili"><i class="fa-brands fa-bilibili" style="color: #FFC0CB;"></i></a><a class="social-icon" href="https://www.douyin.com/user/MS4wLjABAAAA13z3eSKpDESynATlUFIUGCPdSHi7oID9u2rz2bHH6aE" target="_blank" title="tiktok"><i class="fa-brands fa-tiktok" style="color: #000000;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%9F%E5%90%8D%E8%A7%A3%E6%9E%90%E8%AE%B0%E5%BD%95"><span class="toc-number">1.</span> <span class="toc-text">域名解析记录</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#A%E8%AE%B0%E5%BD%95%EF%BC%88%E5%BF%AB%E9%80%92%E5%9C%B0%E5%9D%80%E7%B0%BF%EF%BC%89"><span class="toc-number">1.1.</span> <span class="toc-text">A记录（快递地址簿）****</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MX%E8%AE%B0%E5%BD%95%EF%BC%88%E9%82%AE%E5%B1%80%E5%88%86%E6%8B%A3%E5%91%98%EF%BC%89"><span class="toc-number">1.2.</span> <span class="toc-text">MX记录（邮局分拣员）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CNAME%E8%AE%B0%E5%BD%95%EF%BC%88%E8%BF%9E%E9%94%81%E5%BA%97%E5%88%AB%E5%90%8D%EF%BC%89"><span class="toc-number">1.3.</span> <span class="toc-text">CNAME记录（连锁店别名）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#NS%E8%AE%B0%E5%BD%95%EF%BC%88%E5%BF%AB%E9%80%92%E5%85%AC%E5%8F%B8%E6%80%BB%E9%83%A8%EF%BC%89"><span class="toc-number">1.4.</span> <span class="toc-text">NS记录（快递公司总部）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#TXT%E8%AE%B0%E5%BD%95%EF%BC%88%E5%BA%97%E9%93%BA%E7%95%99%E8%A8%80%E6%9D%BF%EF%BC%89"><span class="toc-number">1.5.</span> <span class="toc-text">TXT记录（店铺留言板）</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F%E7%B3%BB%E5%88%97%EF%BC%9A%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F%EF%BC%88%E9%9A%A7%E9%81%93%EF%BC%89%E5%AD%A6%E4%B9%A0"><span class="toc-number"></span> <span class="toc-text">内网渗透系列：内网穿透（隧道）学习</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">内网穿透概述</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F"><span class="toc-number">1.0.0.1.</span> <span class="toc-text">内网穿透</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E5%AE%9E%E7%8E%B0%E6%96%B9%E5%BC%8F%EF%BC%88%E6%80%8E%E4%B9%88%E6%90%AD%E6%A1%A5%EF%BC%9F%EF%BC%89"><span class="toc-number">1.1.</span> <span class="toc-text">常见实现方式（怎么搭桥？）****</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%9A%A7%E9%81%93%E6%8A%80%E6%9C%AF"><span class="toc-number"></span> <span class="toc-text">隧道技术</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E6%AD%A5%EF%BC%9A%E7%A9%BF%E9%A9%AC%E7%94%B2%EF%BC%88%E5%B0%81%E8%A3%85%EF%BC%89"><span class="toc-number">0.1.</span> <span class="toc-text">第一步：穿马甲（封装）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E6%AD%A5%EF%BC%9A%E8%BF%87%E5%AE%89%E6%A3%80%EF%BC%88%E4%BC%A0%E8%BE%93%EF%BC%89"><span class="toc-number">0.2.</span> <span class="toc-text">第二步：过安检（传输）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E4%B8%89%E6%AD%A5%EF%BC%9A%E6%8B%86%E5%8C%85%E8%A3%B9%EF%BC%88%E8%A7%A3%E5%8C%85%EF%BC%89"><span class="toc-number">0.3.</span> <span class="toc-text">第三步：拆包裹（解包）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E7%BD%91%E4%B8%BB%E6%9C%BA%E6%89%80%E6%9C%89%E5%8F%AF%E8%83%BD%E7%9A%84%E5%87%BA%E7%BD%91%E6%96%B9%E5%BC%8F"><span class="toc-number">0.4.</span> <span class="toc-text">内网主机所有可能的出网方式</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%85%81%E8%AE%B8ICMP%E5%8D%8F%E8%AE%AE%E5%87%BA%E7%BD%91"><span class="toc-number">0.4.0.1.</span> <span class="toc-text">允许ICMP协议出网</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ICMP%E9%9A%A7%E9%81%93%E5%8E%9F%E7%90%86"><span class="toc-number">1.</span> <span class="toc-text">ICMP隧道原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ICMP%E9%9A%A7%E9%81%93%E8%83%BD%E5%B9%B2%E5%95%A5%EF%BC%9F"><span class="toc-number">1.1.</span> <span class="toc-text">ICMP隧道能干啥？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E3%80%81ICMP%E9%9A%A7%E9%81%93%E7%9A%84%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="toc-number">1.2.</span> <span class="toc-text">三、ICMP隧道的优缺点</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BC%98%E7%82%B9"><span class="toc-number">1.2.1.</span> <span class="toc-text">优点</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BC%BA%E7%82%B9"><span class="toc-number">1.2.2.</span> <span class="toc-text">缺点</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A3%80%E6%B5%8B"><span class="toc-number">1.3.</span> <span class="toc-text">检测</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%81%E8%AE%B8%E7%89%B9%E5%AE%9A%E7%9A%84TCP%E6%88%96UDP%E5%8D%8F%E8%AE%AE%E7%AB%AF%E5%8F%A3%E5%87%BA%E7%BD%91"><span class="toc-number"></span> <span class="toc-text">允许特定的TCP或UDP协议端口出网</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#DNS%E9%9A%A7%E9%81%93"><span class="toc-number"></span> <span class="toc-text">DNS隧道</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%85%81%E8%AE%B8%E7%89%B9%E5%AE%9A%E7%9A%84%E5%BA%94%E7%94%A8%E5%B1%82%E5%8D%8F%E8%AE%AE%E5%87%BA%E7%BD%91%EF%BC%88%E6%AF%94%E5%A6%82HTTP%E3%80%81SSH%E3%80%81DNS%E7%AD%89%E5%BA%94%E7%94%A8%E5%B1%82%E5%8D%8F%E8%AE%AE%EF%BC%89"><span class="toc-number">0.0.0.1.</span> <span class="toc-text">允许特定的应用层协议出网（比如HTTP、SSH、DNS等应用层协议）</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A3%80%E6%B5%8B-1"><span class="toc-number">0.1.</span> <span class="toc-text">检测</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2025/03/21/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F%E5%88%9D%E6%8E%A2/" title="内网穿透初探"><img src="/img/3.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="内网穿透初探"/></a><div class="content"><a class="title" href="/2025/03/21/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F%E5%88%9D%E6%8E%A2/" title="内网穿透初探">内网穿透初探</a><time datetime="2025-03-21T05:07:31.000Z" title="发表于 2025-03-21 13:07:31">2025-03-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/03/19/cc1%E5%88%86%E6%9E%90/" title="cc1分析"><img src="https://raw.githubusercontent.com/Gu0f3n/img/mian/image-1725933602516-333.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="cc1分析"/></a><div class="content"><a class="title" href="/2025/03/19/cc1%E5%88%86%E6%9E%90/" title="cc1分析">cc1分析</a><time datetime="2025-03-19T11:48:51.000Z" title="发表于 2025-03-19 19:48:51">2025-03-19</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/03/15/%E8%B7%9F%E7%9D%80%E5%B0%8F%E8%BF%AA%E7%9A%84%E7%AC%AC%E4%BA%94%E5%A4%A9/" title="跟着小迪的第五天"><img src="/img/3.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="跟着小迪的第五天"/></a><div class="content"><a class="title" href="/2025/03/15/%E8%B7%9F%E7%9D%80%E5%B0%8F%E8%BF%AA%E7%9A%84%E7%AC%AC%E4%BA%94%E5%A4%A9/" title="跟着小迪的第五天">跟着小迪的第五天</a><time datetime="2025-03-15T02:10:40.000Z" title="发表于 2025-03-15 10:10:40">2025-03-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/03/10/xxe%E6%BC%8F%E6%B4%9E/" title="xxe漏洞"><img src="/img/3.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="xxe漏洞"/></a><div class="content"><a class="title" href="/2025/03/10/xxe%E6%BC%8F%E6%B4%9E/" title="xxe漏洞">xxe漏洞</a><time datetime="2025-03-10T13:47:11.000Z" title="发表于 2025-03-10 21:47:11">2025-03-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/03/09/%E8%B7%9F%E7%9D%80%E5%B0%8F%E8%BF%AA%E7%9A%84%E7%AC%AC%E5%9B%9B%E5%A4%A9/" title="跟着小迪的第四天"><img src="/img/3.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="跟着小迪的第四天"/></a><div class="content"><a class="title" href="/2025/03/09/%E8%B7%9F%E7%9D%80%E5%B0%8F%E8%BF%AA%E7%9A%84%E7%AC%AC%E5%9B%9B%E5%A4%A9/" title="跟着小迪的第四天">跟着小迪的第四天</a><time datetime="2025-03-09T03:24:40.000Z" title="发表于 2025-03-09 11:24:40">2025-03-09</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/3.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2025 By Gu0f3n</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"></div><div id="rightside-config-show"><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.14.0-b3"></script><script src="/js/main.js?v=4.14.0-b3"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.35/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@5.2.0/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.16/dist/snackbar.min.js"></script><script>(() => {
+  const panguFn = () => {
+    if (typeof pangu === 'object') pangu.autoSpacingPage()
+    else {
+      btf.getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+        .then(() => {
+          pangu.autoSpacingPage()
+        })
+    }
+  }
+
+  const panguInit = () => {
+    if (false){
+      GLOBAL_CONFIG_SITE.isPost && panguFn()
+    } else {
+      panguFn()
+    }
+  }
+
+  btf.addGlobalFn('pjaxComplete', panguInit, 'pangu')
+  document.addEventListener('DOMContentLoaded', panguInit)
+})()</script><div class="js-pjax"><script>(() => {
+  const runMermaid = (ele) => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from(ele).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+    
+    codeMermaidEle.forEach(ele => {
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.innerHTML = `<pre class="mermaid-src" hidden>${ele.textContent}</pre>`
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js').then(runMermaidFn)
+  }
+  
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><div class="aplayer no-destroy" data-id="12384198565" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="true"> </div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><div class="fb-customerchat" id="fb-customer-chat" attribution="biz_inbox"></div><script>(() => {
+  document.getElementById('fb-root') ? '' : document.body.insertAdjacentHTML('afterend', '<div id="fb-root"></div>')
+
+  window.fbAsyncInit = function() {
+    FB.init({
+      xfbml: true,
+      version: 'v16.0'
+    });
+  };
+
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = 'https://connect.facebook.net/zh_CN/sdk/xfbml.customerchat.js';
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+
+  const isChatBtn = false
+  const isChatHideShow = false
+
+  if (isChatBtn) {
+    window.chatBtnFn = () => {
+      const isShow = document.querySelector('.fb_customer_chat_bounce_in_v2')
+      isShow ? FB.CustomerChat.hide() : FB.CustomerChat.show()
+    }
+  } else if (isChatHideShow) {
+    window.chatBtn = {
+      hide: () => {
+        FB.CustomerChat.hide()
+      },
+      show: () => {
+        FB.CustomerChat.show(false)
+      }
+    }
+  }
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const loadMeting = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'loadMeting')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+const triggerPjaxFn = (val) => {
+  if (!val) return
+  Object.values(val).forEach(fn => { fn() })
+}
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener
+  btf.removeGlobalFnEvent('pjax')
+  btf.removeGlobalFnEvent('themeChange')
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  triggerPjaxFn(window.globalFn.pjaxSend)
+})
+
+document.addEventListener('pjax:complete', () => {
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  triggerPjaxFn(window.globalFn.pjaxComplete)
+})
+
+document.addEventListener('pjax:error', e => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=4.14.0-b3"></script></div></div></body></html>
