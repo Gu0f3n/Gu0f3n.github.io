@@ -1,0 +1,867 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>java内存马基础 | Gu0f3n's blog</title><meta name="author" content="Gu0f3n"><meta name="copyright" content="Gu0f3n"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Java Web 三大件Java Web 三大件，也就是 Servlet，Filter，Listener 当 Tomcat 接收到请求时候，依次会经过 Listener -&gt; Filter -&gt; Servlet Servlet https:&#x2F;&#x2F;www.cnblogs.com&#x2F;fwnboke&#x2F;p&#x2F;9119244.html  这里简单总结下 我尽量用大白话解释一下这个链接里的内容：  Se">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java内存马基础">
+<meta property="og:url" content="https://gu0f3n.github.io/2025/03/28/java%E5%86%85%E5%AD%98%E9%A9%AC%E5%9F%BA%E7%A1%80/index.html">
+<meta property="og:site_name" content="Gu0f3n&#39;s blog">
+<meta property="og:description" content="Java Web 三大件Java Web 三大件，也就是 Servlet，Filter，Listener 当 Tomcat 接收到请求时候，依次会经过 Listener -&gt; Filter -&gt; Servlet Servlet https:&#x2F;&#x2F;www.cnblogs.com&#x2F;fwnboke&#x2F;p&#x2F;9119244.html  这里简单总结下 我尽量用大白话解释一下这个链接里的内容：  Se">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/Gu0f3n/img/mian/640%20(3).png">
+<meta property="article:published_time" content="2025-03-28T06:38:44.000Z">
+<meta property="article:modified_time" content="2025-03-29T10:11:48.907Z">
+<meta property="article:author" content="Gu0f3n">
+<meta property="article:tag" content="java">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/Gu0f3n/img/mian/640%20(3).png"><link rel="shortcut icon" href="/img/1.png"><link rel="canonical" href="https://gu0f3n.github.io/2025/03/28/java%E5%86%85%E5%AD%98%E9%A9%AC%E5%9F%BA%E7%A1%80/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.14.0-b3"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.16/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.35/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>(()=>{
+      const saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+      
+      window.btf = {
+        saveToLocal: saveToLocal,
+        getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+          script.src = url
+          script.async = true
+          script.onerror = reject
+          script.onload = script.onreadystatechange = function() {
+            const loadState = this.readyState
+            if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+            script.onload = script.onreadystatechange = null
+            resolve()
+          }
+
+          Object.keys(attr).forEach(key => {
+            script.setAttribute(key, attr[key])
+          })
+
+          document.head.appendChild(script)
+        }),
+
+        getCSS: (url, id = false) => new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+          link.rel = 'stylesheet'
+          link.href = url
+          if (id) link.id = id
+          link.onerror = reject
+          link.onload = link.onreadystatechange = function() {
+            const loadState = this.readyState
+            if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+            link.onload = link.onreadystatechange = null
+            resolve()
+          }
+          document.head.appendChild(link)
+        }),
+
+        addGlobalFn: (key, fn, name = false, parent = window) => {
+          const pjaxEnable = true
+          if (!pjaxEnable && key.startsWith('pjax')) return
+
+          const globalFn = parent.globalFn || {}
+          const keyObj = globalFn[key] || {}
+    
+          if (name && keyObj[name]) return
+    
+          name = name || Object.keys(keyObj).length
+          keyObj[name] = fn
+          globalFn[key] = keyObj
+          parent.globalFn = globalFn
+        }
+      }
+    
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+      
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })()</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":true,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体中文","cht_to_chs":"你已切换为简体中文","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'java内存马基础',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2025-03-29 18:11:48'
+}</script><link rel="stylesheet" href="/css/1.css?1"><link rel="stylesheet" href="/css/2.css?1"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Gu0f3n's blog" type="application/atom+xml">
+</head><body><div id="loading-box" onclick="document.getElementById(&quot;loading-box&quot;).classList.add(&quot;loaded&quot;)"><div class="loading-bg"><div class="loading-img"></div><div class="loading-image-dot"></div></div></div><script>const preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',()=> { preloader.endLoading() })
+
+if (true) {
+  document.addEventListener('pjax:send', () => { preloader.initLoading() })
+  document.addEventListener('pjax:complete', () => { preloader.endLoading() })
+}</script><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/1.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">38</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">20</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw &lt;i class=&quot;fa-light fa-igloo&quot;&gt;&lt;/i&gt;"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 列表</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa-sharp-duotone fa-solid fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa-solid fa-heart-pulse"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://raw.githubusercontent.com/Gu0f3n/img/mian/640%20(3).png')"><nav id="nav"><div id="nav-group"><span id="blog-info"><a href="/" title="回到主页"><span class="site-name"></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw &lt;i class=&quot;fa-light fa-igloo&quot;&gt;&lt;/i&gt;"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 列表</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa-sharp-duotone fa-solid fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa-solid fa-heart-pulse"></i><span> 关于我</span></a></div></div></div><div id="nav-right"><div id="travellings"><a class="site-page" target="_blank" rel="noopener" href="https://travellings.cn/go.html" title="随机前往一个开往项目网站"><i class="iconfont icat-subway"></i></a></div><div id="random"><a class="site-page" href="javascript:toRandomPost()" title="随机前往一个文章"><i class="iconfont icat-random"></i></a></div><div id="search-button"><a class="site-page social-icon search"><i class="iconfont icat-search"></i></a></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);" title="搜索本站文章"><i class="iconfont icat-bars"></i></a></div></div></div></nav><div id="post-info"><h1 class="post-title">java内存马基础</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-03-28T06:38:44.000Z" title="发表于 2025-03-28 14:38:44">2025-03-28</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-03-29T10:11:48.907Z" title="更新于 2025-03-29 18:11:48">2025-03-29</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/java/">java</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">4.5k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>14分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="java内存马基础"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="Java-Web-三大件"><a href="#Java-Web-三大件" class="headerlink" title="Java Web 三大件"></a>Java Web 三大件</h2><p>Java Web 三大件，也就是 Servlet，Filter，Listener</p>
+<p>当 Tomcat 接收到请求时候，依次会经过 Listener -&gt; Filter -&gt; Servlet</p>
+<h1 id="Servlet"><a href="#Servlet" class="headerlink" title="Servlet"></a>Servlet</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/fwnboke/p/9119244.html">https://www.cnblogs.com/fwnboke/p/9119244.html</a></li>
+</ul>
+<p>这里简单总结下</p>
+<p>我尽量用大白话解释一下这个链接里的内容：</p>
+<ol>
+<li><strong>Servlet是什么</strong>：</li>
+</ol>
+<ul>
+<li>你可以把Servlet理解成”服务员”，专门处理网站的各种请求。比如你点外卖（发送请求），服务员（Servlet）接单后去厨房（服务器）做好，再打包（生成网页）送给你。</li>
+</ul>
+<ol>
+<li><strong>Servlet的工作场景</strong>：</li>
+</ol>
+<ul>
+<li>动态生成网页（比如淘宝的商品页面，每个人看到的都不一样）</li>
+<li>把请求转交给其他”服务员”处理（像餐厅里服务员之间交接工作）</li>
+<li>连接数据库（比如查你的快递信息）</li>
+<li>读取客户的小纸条（Cookie）</li>
+</ul>
+<ol>
+<li><strong>四个重要工具</strong>：</li>
+</ol>
+<ul>
+<li><strong>请求单子（HttpServletRequest）</strong>：记录客户的所有要求（比如搜索关键词）</li>
+<li><strong>回复盒子（HttpServletResponse）</strong>：用来打包要返回给客户的东西</li>
+<li><strong>个人工作牌（ServletConfig）</strong>：每个服务员独有的配置（比如专属的调料配方）</li>
+<li><strong>餐厅公告板（ServletContext）</strong>：所有服务员共享的信息（比如今日特价菜）</li>
+</ul>
+<ol>
+<li><strong>服务员的工作流程</strong>：</li>
+</ol>
+<ul>
+<li>上班签到（init()）：第一次被叫时做准备</li>
+<li>处理订单（service()）：根据客户要求（GET&#x2F;POST）选择处理方法</li>
+<li>下班收工（destroy()）：关灯关煤气，收拾东西</li>
+</ul>
+<ol>
+<li><strong>两种上班方式</strong>：</li>
+</ol>
+<ul>
+<li>有客人叫才起床（默认）</li>
+<li>提前到岗待命（配置load-on-startup，数字越小越早上班）</li>
+</ul>
+<ol>
+<li><strong>配置小窍门</strong>：</li>
+</ol>
+<ul>
+<li>整个餐厅的配置用（比如统一打8折）</li>
+<li>个人配置用（比如某服务员专属的围裙颜色）</li>
+<li>现在流行用@WebInitParam这种贴标签的方式配置（类似便利贴）</li>
+</ul>
+<ol>
+<li><strong>常用小功能</strong>：</li>
+</ol>
+<ul>
+<li>获取客户要求：request.getParameter()（比如查快递单号）</li>
+<li>设置返回格式：response.setContentType()（告诉浏览器返回的是网页还是图片）</li>
+<li>存取临时数据：request.setAttribute()（像服务员之间传递小纸条）</li>
+</ul>
+<p>简单来说，Servlet就是网站后台的”服务员团队”，负责接收用户请求、处理数据、生成网页，最后把结果返回给用户浏览器的整个过程。这些服务员们各司其职，有的专门处理登录，有的专门处理支付，共同维持网站的正常运作。</p>
+<h1 id="Tomcat"><a href="#Tomcat" class="headerlink" title="Tomcat"></a>Tomcat</h1><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_53287512/article/details/129278148">https://blog.csdn.net/qq_53287512/article/details/129278148</a></p>
+<p><strong>Tomcat 就像是一个“Java网站服务员”</strong><br>你可以把它想象成餐厅里专门负责接待顾客的服务员。当你用 Java 写了一个网站（比如一个购物网站），Tomcat 的作用就是：</p>
+<ol>
+<li><strong>接电话</strong>：<br>当用户用浏览器访问你的网站（比如输入网址），Tomcat 会第一时间“接电话”，听懂用户想要什么（比如打开首页、提交订单）。</li>
+<li><strong>喊厨师干活</strong>：<br>Tomcat 自己不会处理复杂的业务（比如计算价格、查数据库），但它会喊你写的 Java 代码（比如 Servlet）来干活，就像服务员把订单传给后厨。</li>
+<li><strong>上菜</strong>：<br>等 Java 代码处理完数据，Tomcat 会把结果（比如生成的网页、数据）打包好，“端”回给用户的浏览器。</li>
+</ol>
+<p><strong>为什么需要 Tomcat？</strong></p>
+<ul>
+<li>没有它，你的 Java 代码就像不会接客的厨师，空有功能但没人能用。</li>
+<li>它帮你处理了网络通信、多线程等复杂问题，你只需要专注写业务逻辑。</li>
+</ul>
+<p><strong>日常比喻</strong></p>
+<ul>
+<li><p>安装 Tomcat ≈ 雇一个服务员</p>
+</li>
+<li><p>部署网站 ≈ 把菜谱交给服务员</p>
+</li>
+<li><p>启动 Tomcat ≈ 让服务员开始上班接客</p>
+</li>
+<li><p>端口冲突 ≈ 服务员抢了别人的对讲机频道（比如默认用 8080 端口）</p>
+<h2 id="Tomcat-中的三个-Context-的理解"><a href="#Tomcat-中的三个-Context-的理解" class="headerlink" title="Tomcat 中的三个 Context 的理解"></a>Tomcat 中的三个 Context 的理解</h2><ul>
+<li><p>Context：代表一个web应用，一个应用可以有多个Context，<strong>Context 就是代码的“剧组场记”</strong> —— 它记住所有环境细节，让每个组件（Servlet&#x2F;Filter）不用自己带剧本，走到哪都能立刻入戏！</p>
+<p><strong>Context 就是「当前环境的所有信息」</strong>，相当于拍电影时导演喊卡后，对演员说：<strong>“你刚刚是在被追杀时喊‘奥利给’，不是吃饭时喊的！”</strong> —— 这个“被追杀”的背景就是 Context。</p>
+<h3 id="Java-中的-ServletContext-是什么？"><a href="#Java-中的-ServletContext-是什么？" class="headerlink" title="Java 中的 ServletContext 是什么？"></a><strong>Java 中的 ServletContext 是什么？</strong></h3><p><strong>ServletContext 就是整个 Web 应用的“剧组档案库”</strong>，它保存着这个 Web 应用的所有“拍摄信息”(大概就是规定了如果要实现一个WEB容器，他的Context里面要有这些东西：获取路径，获取参数，获取当前的filter，获取当前的servlet等)：</p>
+<p><strong>全局道具清单</strong>（全局参数）</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 存：setAttribute(&quot;道具名&quot;, 道具)</span></span><br><span class="line">context.setAttribute(<span class="string">&quot;database_url&quot;</span>, <span class="string">&quot;jdbc:mysql://localhost:3306/mydb&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 取：getAttribute(&quot;道具名&quot;)</span></span><br><span class="line"><span class="type">String</span> <span class="variable">dbUrl</span> <span class="operator">=</span> (String) context.getAttribute(<span class="string">&quot;database_url&quot;</span>);</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+<p><strong>演员名单</strong>（Servlet&#x2F;Filter&#x2F;Listener 配置）</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 动态添加一个“群演”（Servlet）</span></span><br><span class="line">ServletRegistration.<span class="type">Dynamic</span> <span class="variable">servlet</span> <span class="operator">=</span> context.addServlet(<span class="string">&quot;MyServlet&quot;</span>, MyServlet.class);</span><br><span class="line">servlet.addMapping(<span class="string">&quot;/my-url&quot;</span>);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><strong>拍摄场地地图</strong>（资源路径）</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 获取文件在服务器上的真实路径（比如找剧本文件）</span></span><br><span class="line"><span class="type">String</span> <span class="variable">realPath</span> <span class="operator">=</span> context.getRealPath(<span class="string">&quot;/WEB-INF/config.xml&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="StandardContext"><a href="#StandardContext" class="headerlink" title="StandardContext"></a>StandardContext</h3><hr>
+<h3 id="StandardContext-是什么？"><a href="#StandardContext-是什么？" class="headerlink" title="StandardContext 是什么？"></a><strong>StandardContext 是什么？</strong></h3><p><strong>StandardContext 就是 Tomcat 的「包裹处理中枢」</strong>，它负责：</p>
+<ol>
+<li><strong>管理所有快递员（Servlet&#x2F;Filter&#x2F;Listener）</strong>：记录每个快递员负责的区域（URL 路径）和操作规范（配置）</li>
+<li><strong>监控包裹（请求）流转</strong>：从快递车（HTTP 请求）到达分拣中心开始，到包裹派送完成（响应返回）的全流程</li>
+<li><strong>处理突发事件</strong>：比如包裹破损（请求错误）、超重（请求数据过大）等情况</li>
+</ol>
+<hr>
+<h3 id="具体功能大白话版"><a href="#具体功能大白话版" class="headerlink" title="具体功能大白话版"></a><strong>具体功能大白话版</strong></h3><ol>
+<li><p><strong>包裹登记处</strong></p>
+<ul>
+<li><p>每个新到的快递（Web 应用）都要在这里注册信息，比如：</p>
+<ul>
+<li><p>📦 包裹类型：是文件（静态资源）还是生鲜（动态请求）？</p>
+<p><strong>2</strong></p>
+</li>
+<li><p>📦 派送规则：哪些快递员（Servlet）处理哪些区域的包裹？</p>
+<p><strong>2</strong></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>快递员调度中心</strong></p>
+<ul>
+<li><p>管理三大类工作人员：</p>
+<ul>
+<li><p>🚚 </p>
+<p>卸货组（Listener）</p>
+<p>：包裹刚到分拣中心时检查外包装（请求初始化）</p>
+<hr>
+</li>
+<li><p>🔍 <strong>分拣组（Filter）</strong>：给包裹贴标签、消毒（参数处理&#x2F;安全检查）</p>
+</li>
+<li><p>🚛 <strong>派送组（Servlet）</strong>：把包裹送到正确地址（生成响应）</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>异常处理机制</strong></p>
+<ul>
+<li><p>如果发现危险品（恶意请求），会启动：</p>
+<ul>
+<li><p>🔒 自动拦截（返回 403 错误）</p>
+</li>
+<li><p>📢 触发警报（记录日志&#x2F;通知管理员）</p>
+<hr>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h3 id="和-ApplicationContext-的区别-6"><a href="#和-ApplicationContext-的区别-6" class="headerlink" title="和 ApplicationContext 的区别****6"></a><strong>和 ApplicationContext 的区别****6</strong></h3><table>
+<thead>
+<tr>
+<th align="center"></th>
+<th align="center">StandardContext（快递分拣中心）</th>
+<th align="center">ApplicationContext（智能中央厨房）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><strong>所属系统</strong></td>
+<td align="center">Tomcat 专属</td>
+<td align="center">Spring 框架专属</td>
+</tr>
+<tr>
+<td align="center"><strong>主要功能</strong></td>
+<td align="center">管理 Web 应用的请求处理流程</td>
+<td align="center">管理 Spring Bean 和依赖注入</td>
+</tr>
+<tr>
+<td align="center"><strong>数据存储</strong></td>
+<td align="center">存 Servlet&#x2F;Filter 配置</td>
+<td align="center">存业务对象和组件关系</td>
+</tr>
+<tr>
+<td align="center"><strong>典型操作</strong></td>
+<td align="center">添加监听器、配置错误页面</td>
+<td align="center">加载配置文件、管理事务</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="实际开发中的存在感"><a href="#实际开发中的存在感" class="headerlink" title="实际开发中的存在感"></a><strong>实际开发中的存在感</strong></h3><p>当你在 Tomcat 的 <code>conf/server.xml</code> 里写这样的配置时：</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">Context</span> <span class="attr">path</span>=<span class="string">&quot;/shop&quot;</span> <span class="attr">docBase</span>=<span class="string">&quot;D:\myapp&quot;</span> <span class="attr">reloadable</span>=<span class="string">&quot;true&quot;</span>/&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>背后的 <strong>StandardContext</strong> 就会：</p>
+<ol>
+<li>📂 把 <code>D:\myapp</code> 文件夹识别为「shop 专区」</li>
+<li>🔄 开启自动监控（reloadable），文件改动时自动刷新</li>
+<li>🛡️ 给这个专区分配独立的安全策略（比如单独的登录验证）</li>
+</ol>
+<hr>
+<h3 id="一句话总结"><a href="#一句话总结" class="headerlink" title="一句话总结"></a><strong>一句话总结</strong></h3><p><strong>StandardContext 就是 Tomcat 的「分拣中心主管」</strong>，它知道：</p>
+<ul>
+<li>每个包裹（请求）该走哪条流水线 🚚</li>
+<li>所有工作人员（Servlet&#x2F;Filter）的排班表 📅</li>
+<li>遇到突发状况时该启动哪套应急预案 🚨</li>
+</ul>
+<p>没有它，Tomcat 就像没有调度系统的快递站，包裹会乱成一锅粥！</p>
+<h3 id="一、三种-Context-的关系与角色"><a href="#一、三种-Context-的关系与角色" class="headerlink" title="一、三种 Context 的关系与角色"></a><strong>一、三种 Context 的关系与角色</strong></h3><table>
+<thead>
+<tr>
+<th align="center"></th>
+<th align="center"><strong>ServletContext</strong></th>
+<th align="center"><strong>ApplicationContext</strong></th>
+<th align="center"><strong>StandardContext</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><strong>身份定位</strong></td>
+<td align="center">官方菜单（规范）<strong>3</strong></td>
+<td align="center">前台接待（门面）<strong>2****3</strong></td>
+<td align="center">后厨主管（实际干活）<strong>2****6</strong></td>
+</tr>
+<tr>
+<td align="center"><strong>职责</strong></td>
+<td align="center">规定餐厅要有哪些功能（接口）</td>
+<td align="center">对外隐藏后厨细节，只展示规范功能</td>
+<td align="center">实际安排厨师、备菜、处理订单</td>
+</tr>
+<tr>
+<td align="center"><strong>存在感</strong></td>
+<td align="center">顾客看不见，但所有菜品都按它制作</td>
+<td align="center">服务员拿菜单给顾客看</td>
+<td align="center">在厨房里吼着调度人员</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="二、具体功能大白话版"><a href="#二、具体功能大白话版" class="headerlink" title="二、具体功能大白话版"></a><strong>二、具体功能大白话版</strong></h3><h4 id="1-ServletContext-——-官方《餐饮业标准菜单》"><a href="#1-ServletContext-——-官方《餐饮业标准菜单》" class="headerlink" title="1. ServletContext —— 官方《餐饮业标准菜单》"></a><strong>1. ServletContext —— 官方《餐饮业标准菜单》</strong></h4><p>- </p>
+<p>  作用</p>
+<p>  ：国家规定所有餐厅必须支持的功能，比如：</p>
+<ul>
+<li><p>📜 <strong>必须能查菜品价格</strong> → <code>getInitParameter(&quot;折扣&quot;)</code></p>
+</li>
+<li><p>📜 <strong>必须有服务员名单</strong> → <code>getServletRegistrations()</code></p>
+</li>
+<li><p>📜 <strong>必须能记录客流量</strong> → <code>setAttribute(&quot;今日客流&quot;, 1000)</code></p>
+</li>
+<li><p>特点</p>
+<p>：</p>
+<ul>
+<li><p>所有餐厅（Web 应用）都必须遵守这套规范</p>
+<p><strong>3</strong></p>
+</li>
+<li><p>顾客（开发者）看不到它，但菜单（功能）都是它规定的</p>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="2-ApplicationContext-——-餐厅前台服务员"><a href="#2-ApplicationContext-——-餐厅前台服务员" class="headerlink" title="2. ApplicationContext —— 餐厅前台服务员"></a><strong>2. ApplicationContext —— 餐厅前台服务员</strong></h4><p>- </p>
+<p>  作用</p>
+<p>  ：把复杂的后厨操作包装成简单指令，比如：</p>
+<ul>
+<li><p>🧑🍳 <strong>加新菜</strong> → <code>addServlet(&quot;麻辣香锅&quot;, SpicyPot.class)</code></p>
+</li>
+<li><p>🧹 <strong>换餐具</strong> → <code>addFilter(&quot;消毒过滤器&quot;, DisinfectionFilter.class)</code></p>
+</li>
+<li><p>特点</p>
+<p>：</p>
+<ul>
+<li><p>对顾客（开发者）隐藏了后厨切菜、炒菜的过程（底层 StandardContext 的复杂操作）</p>
+<p><strong>2</strong></p>
+</li>
+<li><p>本质是 StandardContext 的“马甲”（门面模式）</p>
+<p><strong>3</strong></p>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="3-StandardContext-——-暴躁后厨主管"><a href="#3-StandardContext-——-暴躁后厨主管" class="headerlink" title="3. StandardContext —— 暴躁后厨主管"></a><strong>3. StandardContext —— 暴躁后厨主管</strong></h4><p>- </p>
+<p>  实际干活</p>
+<p>  ：</p>
+<ul>
+<li><p>📌 <strong>管理所有厨师</strong>（Servlet&#x2F;Filter&#x2F;Listener）的排班表</p>
+</li>
+<li><p>📌 </p>
+<p>监控订单流程</p>
+<p>：从接单到上菜的每个环节（Pipeline-Valve 责任链）</p>
+<p><strong>6</strong></p>
+</li>
+<li><p>📌 <strong>处理突发状况</strong>：比如食材不足（请求错误）时启动备用方案</p>
+</li>
+<li><p>配置方式</p>
+<p>（三种后厨管理模式）：</p>
+<ul>
+<li><p>📂 </p>
+<p>默认模式</p>
+<p>：把菜谱（WAR 包）丢进固定柜子（webapps 目录），自动识别</p>
+<p><strong>4</strong></p>
+</li>
+<li><p>📝 </p>
+<p>手写模式</p>
+<p>：在总账本（server.xml）里写死菜单，重启生效</p>
+<p><strong>4</strong></p>
+</li>
+<li><p>🗒️ </p>
+<p>便利贴模式</p>
+<p>：在厨房墙上贴便利贴（conf&#x2F;Catalina 目录下的 XML），随时修改</p>
+<p><strong>4</strong></p>
+<p><strong>6</strong></p>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="三、实际开发中的经典场景"><a href="#三、实际开发中的经典场景" class="headerlink" title="三、实际开发中的经典场景"></a><strong>三、实际开发中的经典场景</strong></h3><h4 id="场景-1：统计全站访问量"><a href="#场景-1：统计全站访问量" class="headerlink" title="场景 1：统计全站访问量"></a><strong>场景 1：统计全站访问量</strong></h4><p>java</p>
+<p>复制</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 用 ServletContext 存全局计数</span></span><br><span class="line"><span class="type">ServletContext</span> <span class="variable">context</span> <span class="operator">=</span> getServletContext();</span><br><span class="line">context.setAttribute(<span class="string">&quot;visit_count&quot;</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 每次访问时 +1</span></span><br><span class="line"><span class="keyword">synchronized</span>(context) &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">count</span> <span class="operator">=</span> (<span class="type">int</span>) context.getAttribute(<span class="string">&quot;visit_count&quot;</span>);</span><br><span class="line">    context.setAttribute(<span class="string">&quot;visit_count&quot;</span>, count + <span class="number">1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="场景-2：动态添加接口"><a href="#场景-2：动态添加接口" class="headerlink" title="场景 2：动态添加接口"></a><strong>场景 2：动态添加接口</strong></h4><p>java</p>
+<p>复制</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 通过 ApplicationContext 加新功能</span></span><br><span class="line">ServletRegistration.<span class="type">Dynamic</span> <span class="variable">servlet</span> <span class="operator">=</span> context.addServlet(<span class="string">&quot;ApiServlet&quot;</span>, ApiServlet.class);</span><br><span class="line">servlet.addMapping(<span class="string">&quot;/api/*&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<h4 id="场景-3：紧急封禁-IP"><a href="#场景-3：紧急封禁-IP" class="headerlink" title="场景 3：紧急封禁 IP"></a><strong>场景 3：紧急封禁 IP</strong></h4><p>java</p>
+<p>复制</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 操作 StandardContext 加黑名单过滤器</span></span><br><span class="line"><span class="type">StandardContext</span> <span class="variable">stdContext</span> <span class="operator">=</span> (StandardContext) request.getContext(); <span class="comment">// 获取后厨主管</span></span><br><span class="line">stdContext.addFilter(<span class="keyword">new</span> <span class="title class_">FilterDef</span>(<span class="keyword">new</span> <span class="title class_">IpBlockFilter</span>())); <span class="comment">// 塞个过滤器给他</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="四、一句话总结"><a href="#四、一句话总结" class="headerlink" title="四、一句话总结"></a><strong>四、一句话总结</strong></h3><ul>
+<li><strong>ServletContext</strong> 是行业标准（菜单必须有哪些菜）</li>
+<li><strong>ApplicationContext</strong> 是服务员（按标准给顾客点菜）</li>
+<li><strong>StandardContext</strong> 是后厨（实际炒菜、处理订单）</li>
+</ul>
+<p>三者就像餐厅的 <strong>「标准 → 接口 → 实现」</strong>，共同保证 Tomcat 能高效处理每个请求！</p>
+<h1 id="TomCat与Servlet的关系"><a href="#TomCat与Servlet的关系" class="headerlink" title="TomCat与Servlet的关系"></a>TomCat与Servlet的关系</h1><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_46225503/article/details/135307399">https://blog.csdn.net/weixin_46225503/article/details/135307399</a></p>
+<p><strong>想象一个餐厅：</strong></p>
+<ul>
+<li><strong>Tomcat</strong> 就像餐厅的前台和传菜员。它负责接待客人（接收浏览器发来的请求），安排座位（管理网络连接），然后把客人点的菜单交给后厨（Servlet），最后把做好的菜端回给客人（把处理结果返回给浏览器）。</li>
+<li><strong>Servlet</strong> 就像后厨的厨师。它不直接和客人打交道，但拿到菜单（HTTP请求）后，负责按需求炒菜（处理业务逻辑，比如登录、查询数据），然后把炒好的菜（生成的HTML页面或数据）交给传菜员（Tomcat）。</li>
+</ul>
+<hr>
+<p><strong>具体关系：</strong></p>
+<ol>
+<li><strong>Tomcat 是 Servlet 的“运行环境”</strong><br>就像手机需要安卓&#x2F;iOS系统才能运行APP一样，Servlet 必须放在 Tomcat 这类“容器”里才能工作。Tomcat 负责管理 Servlet 的创建、调用和销毁。</li>
+<li><strong>分工明确</strong><ul>
+<li><strong>Tomcat 干粗活</strong>：处理网络通信（监听端口、解析HTTP协议）、多线程管理、安全性等底层细节。</li>
+<li><strong>Servlet 干细活</strong>：专注写业务逻辑（比如用户注册、数据查询），不用管网络怎么传数据。</li>
+</ul>
+</li>
+<li><strong>协作流程</strong><br>当你在浏览器输入网址时：<ul>
+<li>Tomcat 先接收到请求，分析要找哪个 Servlet（比如处理登录的 LoginServlet）。</li>
+<li>Tomcat 调用对应的 Servlet，把请求信息（参数、请求头等）传给它。</li>
+<li>Servlet 处理完，把结果（比如生成的HTML页面）交给 Tomcat。</li>
+<li>Tomcat 把结果包装成HTTP响应，发回给浏览器。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<p><strong>一句话总结：</strong><br>Tomcat 是 Servlet 的“服务员+管家”，Servlet 是 Tomcat 的“打工人”。没有 Tomcat，Servlet 无法独立工作；没有 Servlet，Tomcat 只是个空壳。</p>
+<h1 id="Filter"><a href="#Filter" class="headerlink" title="Filter"></a>Filter</h1><p>Filter（过滤器）就像是你在网上点外卖时候的”中间商”。比如你下单后，外卖小哥送餐前会先检查你的订单是否正常，有没有违禁品，或者给你的餐盒加个保温袋，这就相当于过滤器的作用。</p>
+<p>JavaWeb 的三大管家：</p>
+<ol>
+<li>Servlet：负责处理请求（像餐厅后厨）</li>
+<li>Filter：负责检查&#x2F;加工请求和响应（像外卖打包员）</li>
+<li>Listener：负责监听事件（像监控摄像头）</li>
+</ol>
+<p>过滤器具体能干这些事：</p>
+<ul>
+<li>请求到达服务器前：可以检查用户是否登录（像进小区要刷卡）</li>
+<li>服务器处理请求时：可以给请求数据消毒（像给快递消毒）</li>
+<li>服务器返回响应时：可以压缩数据（像快递打包）</li>
+<li>返回给用户前：可以屏蔽敏感词（像自动打马赛克）</li>
+</ul>
+<p>举个例子：<br>比如你写了个论坛网站，用过滤器可以：</p>
+<ol>
+<li>自动把用户发的脏话替换成***</li>
+<li>检查用户是否登录才能发帖</li>
+<li>记录每个访问的IP地址</li>
+<li>给网页内容自动加上防拷贝水印</li>
+</ol>
+<p>代码示例理解：<br>就像你雇了个保安（Filter），每个访客（请求）进公司（服务器）之前，保安会检查工牌（登录状态）。如果检查通过，就放行（chain.doFilter）；如果没工牌，就拦在门外（跳转到登录页）。</p>
+<p>整个过程就像流水线加工：<br>浏览器 → 过滤器1（比如检查登录）→ 过滤器2（比如记录日志）→ 服务器处理 → 过滤器3（比如压缩数据）→ 返回给浏览器</p>
+<p>最大的好处是：不用改网站原有代码，就能批量增加各种安全检查和附加功能，就像给手机装各种滤镜APP一样方便。</p>
+<h1 id="Listener"><a href="#Listener" class="headerlink" title="Listener"></a>Listener</h1><hr>
+<h3 id="Listener-大白话解释"><a href="#Listener-大白话解释" class="headerlink" title="Listener 大白话解释"></a><strong>Listener 大白话解释</strong></h3><p><strong>Listener 就像快递站的「自动监控系统」</strong>，它不直接处理快递（请求&#x2F;响应），但能自动感知快递站里发生的各种事件，比如：</p>
+<ul>
+<li>📦 <strong>有人来取件</strong>（用户创建了会话）</li>
+<li>📦 <strong>快递被退回</strong>（用户关闭了浏览器）</li>
+<li>📦 <strong>快递站开门&#x2F;关门</strong>（服务器启动&#x2F;关闭）</li>
+<li>📦 <strong>货架上的包裹被移动</strong>（数据被修改）</li>
+</ul>
+<p><strong>只要这些事件发生，监听器就会自动触发对应的操作</strong>，比如发短信通知你、更新库存、记录日志等等。</p>
+<hr>
+<h3 id="举个实际例子"><a href="#举个实际例子" class="headerlink" title="举个实际例子"></a><strong>举个实际例子</strong></h3><p><strong>场景</strong>：你想统计网站的在线人数<br><strong>用 Listener 怎么做</strong>：</p>
+<ol>
+<li><strong>当用户登录时</strong>（创建了一个 Session），自动给在线人数 +1</li>
+<li><strong>当用户退出或 Session 过期时</strong>，自动给在线人数 -1</li>
+<li><strong>当服务器重启时</strong>，自动清零在线人数</li>
+</ol>
+<p><strong>全程不需要你手动写代码去统计</strong>，监听器像个小雷达一样自动帮你盯着这些事件！</p>
+<hr>
+<h3 id="Listener-能监听哪些事？"><a href="#Listener-能监听哪些事？" class="headerlink" title="Listener 能监听哪些事？"></a><strong>Listener 能监听哪些事？</strong></h3><p>1. </p>
+<p>   服务器级别</p>
+<p>   ：</p>
+<ul>
+<li>服务器启动（比如加载数据库配置）</li>
+<li>服务器关闭（比如保存未处理完的数据）</li>
+</ul>
+<p>2. </p>
+<p>   用户会话（Session）级别</p>
+<p>   ：</p>
+<ul>
+<li>用户第一次访问（创建 Session）</li>
+<li>用户关闭浏览器（销毁 Session）</li>
+</ul>
+<p>3. </p>
+<p>   数据变化</p>
+<p>   ：</p>
+<ul>
+<li>某个数据被添加、修改、删除（比如购物车商品变化）</li>
+</ul>
+<hr>
+<h3 id="Listener-vs-Filter-区别"><a href="#Listener-vs-Filter-区别" class="headerlink" title="Listener vs Filter 区别"></a><strong>Listener vs Filter 区别</strong></h3><ul>
+<li>🔧 <strong>Filter（过滤器）</strong>：像保安，<strong>主动检查</strong>每个进出的人（请求&#x2F;响应），不通过就拦下。</li>
+<li>📡 <strong>Listener（监听器）</strong>：像监控摄像头，<strong>被动感知</strong>事件发生，默默执行后台任务。</li>
+</ul>
+<hr>
+<h3 id="一句话总结-1"><a href="#一句话总结-1" class="headerlink" title="一句话总结"></a><strong>一句话总结</strong></h3><p><strong>Listener 就是给服务器装了个「智能感应器」</strong>，它能自动感知各种事件，并在背后帮你干活，就像你家的智能家居自动开灯关灯一样省心！</p>
+<h1 id="JSP-基础"><a href="#JSP-基础" class="headerlink" title="JSP 基础"></a>JSP 基础</h1><p>JSP（Java Server Pages），是Java的一种动态网页技术。在早期Java的开发技术中，Java程序员如果想要向浏览器输出一些数据，就必须得手动<code>println</code>一行行的HTML代码。为了解决这一繁琐的问题，Java开发了JSP技术。</p>
+<p>JSP可以看作一个Java Servlet，主要用于实现Java web应用程序的用户界面部分。网页开发者们通过结合HTML代码、XHTML代码、XML元素以及嵌入JSP操作和命令来编写JSP。</p>
+<p>当第一次访问JSP页面时，Tomcat服务器会将JSP页面翻译成一个java文件，并将其编译为.class文件。JSP通过网页表单获取用户输入数据、访问数据库及其他数据源，然后动态地创建网页。</p>
+<h3 id="JSP内置对象"><a href="#JSP内置对象" class="headerlink" title="JSP内置对象"></a>JSP内置对象</h3><p>JSP有九大内置对象，他们能够在客户端和服务器端交互的过程中分别完成不同的功能。其特点如下</p>
+<ul>
+<li><p>由 JSP 规范提供，不用编写者实例化</p>
+</li>
+<li><p>通过 Web 容器实现和管理</p>
+</li>
+<li><p>所有 JSP 页面均可使用</p>
+</li>
+<li><p>只有在脚本元素的表达式或代码段中才能使用</p>
+</li>
+<li></li>
+<li><table>
+<thead>
+<tr>
+<th>对 象</th>
+<th>类型</th>
+<th>说 明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://drun1baby.top/jsp2/request.html">request</a></td>
+<td>javax.servlet.http.HttpServletRequest</td>
+<td>获取用户请求信息</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://drun1baby.top/jsp2/response.html">response</a></td>
+<td>javax.servlet.http.HttpServletResponse</td>
+<td>响应客户端请求，并将处理信息返回到客户端</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://drun1baby.top/jsp2/out.html">out</a></td>
+<td>javax.servlet.jsp.JspWriter</td>
+<td>输出内容到 HTML 中</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://drun1baby.top/jsp2/session.html">session</a></td>
+<td>javax.servlet.http.HttpSession</td>
+<td>用来保存用户信息</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://drun1baby.top/jsp2/application.html">application</a></td>
+<td>javax.servlet.ServletContext</td>
+<td>所有用户共享信息</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://drun1baby.top/jsp2/config.html">config</a></td>
+<td>javax.servlet.ServletConfig</td>
+<td>这是一个 Servlet 配置对象，用于 Servlet 和页面的初始化参数</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://drun1baby.top/jsp2/pagecontext.html">pageContext</a></td>
+<td>javax.servlet.jsp.PageContext</td>
+<td>JSP 的页面容器，用于访问 page、request、application 和 session 的属性</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://drun1baby.top/jsp2/page_object.html">page</a></td>
+<td>javax.servlet.jsp.HttpJspPage</td>
+<td>类似于 Java 类的 this 关键字，表示当前 JSP 页面</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://drun1baby.top/jsp2/page.html">exception</a></td>
+<td>java.lang.Throwable</td>
+<td>该对象用于处理 JSP 文件执行时发生的错误和异常；只有在 JSP 页面的 page 指令中指定 isErrorPage 的取值 true 时，才可以在本页面使用 exception 对象。</td>
+</tr>
+</tbody></table>
+</li>
+</ul>
+<p>from:<a target="_blank" rel="noopener" href="https://drun1baby.top/2022/08/19/Java%E5%86%85%E5%AD%98%E9%A9%AC%E7%B3%BB%E5%88%97-01-%E5%9F%BA%E7%A1%80%E5%86%85%E5%AE%B9%E5%AD%A6%E4%B9%A0/">https://drun1baby.top/2022/08/19/Java%E5%86%85%E5%AD%98%E9%A9%AC%E7%B3%BB%E5%88%97-01-%E5%9F%BA%E7%A1%80%E5%86%85%E5%AE%B9%E5%AD%A6%E4%B9%A0/</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://Gu0f3n.github.io">Gu0f3n</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://gu0f3n.github.io/2025/03/28/java%E5%86%85%E5%AD%98%E9%A9%AC%E5%9F%BA%E7%A1%80/">https://gu0f3n.github.io/2025/03/28/java%E5%86%85%E5%AD%98%E9%A9%AC%E5%9F%BA%E7%A1%80/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://Gu0f3n.github.io" target="_blank">Gu0f3n's blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/java/">java</a></div><div class="post_share"><div class="social-share" data-image="https://raw.githubusercontent.com/Gu0f3n/img/mian/640%20(3).png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2025/03/27/%E5%B8%B8%E8%A7%81%E5%AE%89%E5%85%A8%E8%AE%BE%E5%A4%87%E6%80%BB%E7%BB%93%E2%80%9C/" title="常见安全设备总结"><img class="cover" src="https://raw.githubusercontent.com/Gu0f3n/img/mian/640%20(2).png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">常见安全设备总结</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2024/10/23/Java%E5%8F%8D%E5%B0%84%E6%9C%BA%E5%88%B6%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F/" title="Java反射机制是什么？"><img class="cover" src="https://raw.githubusercontent.com/Gu0f3n/img/mian/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20241023150130.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-10-23</div><div class="title">Java反射机制是什么？</div></div></a></div><div><a href="/2025/03/23/URLDNS/" title="URLDNS"><img class="cover" src="https://raw.githubusercontent.com/Gu0f3n/img/mian/微信图片_20250323160357.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2025-03-23</div><div class="title">URLDNS</div></div></a></div><div><a href="/2025/03/19/cc1%E5%88%86%E6%9E%90/" title="cc1分析"><img class="cover" src="https://raw.githubusercontent.com/Gu0f3n/img/mian/image-1725933602516-333.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2025-03-19</div><div class="title">cc1分析</div></div></a></div><div><a href="/2025/03/27/cc5/" title="cc5"><img class="cover" src="https://raw.githubusercontent.com/Gu0f3n/img/mian/640%20(1).png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2025-03-27</div><div class="title">cc5</div></div></a></div><div><a href="/2025/03/24/cc6/" title="cc6"><img class="cover" src="https://raw.githubusercontent.com/Gu0f3n/img/mian/c056efc3f6d31229615539c9584b9949.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2025-03-24</div><div class="title">cc6</div></div></a></div><div><a href="/2024/09/10/java%E5%9F%BA%E7%A1%80/" title="java基础"><img class="cover" src="https://raw.githubusercontent.com/Gu0f3n/img/mian/image-1725933602516-333.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-09-10</div><div class="title">java基础</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/1.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Gu0f3n</div><div class="author-info__description">石匠敲击石头的101次</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">38</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">20</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Gu0f3n?tab=repositories"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/Gu0f3n?tab=repositories" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:xxxxxx@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://weibo.com/u/3833024804" target="_blank" title="microblog"><i class="fa-brands fa-microblog" style="color: #FF0000;"></i></a><a class="social-icon" href="https://space.bilibili.com/282616786?spm_id_from=333.337.0.0" target="_blank" title="Bilibili"><i class="fa-brands fa-bilibili" style="color: #FFC0CB;"></i></a><a class="social-icon" href="https://www.douyin.com/user/MS4wLjABAAAA13z3eSKpDESynATlUFIUGCPdSHi7oID9u2rz2bHH6aE" target="_blank" title="tiktok"><i class="fa-brands fa-tiktok" style="color: #000000;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Java-Web-%E4%B8%89%E5%A4%A7%E4%BB%B6"><span class="toc-number">1.</span> <span class="toc-text">Java Web 三大件</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Servlet"><span class="toc-number"></span> <span class="toc-text">Servlet</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Tomcat"><span class="toc-number"></span> <span class="toc-text">Tomcat</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Tomcat-%E4%B8%AD%E7%9A%84%E4%B8%89%E4%B8%AA-Context-%E7%9A%84%E7%90%86%E8%A7%A3"><span class="toc-number">1.</span> <span class="toc-text">Tomcat 中的三个 Context 的理解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Java-%E4%B8%AD%E7%9A%84-ServletContext-%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">1.1.</span> <span class="toc-text">Java 中的 ServletContext 是什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#StandardContext"><span class="toc-number">1.2.</span> <span class="toc-text">StandardContext</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#StandardContext-%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">1.3.</span> <span class="toc-text">StandardContext 是什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B7%E4%BD%93%E5%8A%9F%E8%83%BD%E5%A4%A7%E7%99%BD%E8%AF%9D%E7%89%88"><span class="toc-number">1.4.</span> <span class="toc-text">具体功能大白话版</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%92%8C-ApplicationContext-%E7%9A%84%E5%8C%BA%E5%88%AB-6"><span class="toc-number">1.5.</span> <span class="toc-text">和 ApplicationContext 的区别****6</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E9%99%85%E5%BC%80%E5%8F%91%E4%B8%AD%E7%9A%84%E5%AD%98%E5%9C%A8%E6%84%9F"><span class="toc-number">1.6.</span> <span class="toc-text">实际开发中的存在感</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E5%8F%A5%E8%AF%9D%E6%80%BB%E7%BB%93"><span class="toc-number">1.7.</span> <span class="toc-text">一句话总结</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%B8%89%E7%A7%8D-Context-%E7%9A%84%E5%85%B3%E7%B3%BB%E4%B8%8E%E8%A7%92%E8%89%B2"><span class="toc-number">1.8.</span> <span class="toc-text">一、三种 Context 的关系与角色</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%85%B7%E4%BD%93%E5%8A%9F%E8%83%BD%E5%A4%A7%E7%99%BD%E8%AF%9D%E7%89%88"><span class="toc-number">1.9.</span> <span class="toc-text">二、具体功能大白话版</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-ServletContext-%E2%80%94%E2%80%94-%E5%AE%98%E6%96%B9%E3%80%8A%E9%A4%90%E9%A5%AE%E4%B8%9A%E6%A0%87%E5%87%86%E8%8F%9C%E5%8D%95%E3%80%8B"><span class="toc-number">1.9.1.</span> <span class="toc-text">1. ServletContext —— 官方《餐饮业标准菜单》</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-ApplicationContext-%E2%80%94%E2%80%94-%E9%A4%90%E5%8E%85%E5%89%8D%E5%8F%B0%E6%9C%8D%E5%8A%A1%E5%91%98"><span class="toc-number">1.9.2.</span> <span class="toc-text">2. ApplicationContext —— 餐厅前台服务员</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-StandardContext-%E2%80%94%E2%80%94-%E6%9A%B4%E8%BA%81%E5%90%8E%E5%8E%A8%E4%B8%BB%E7%AE%A1"><span class="toc-number">1.9.3.</span> <span class="toc-text">3. StandardContext —— 暴躁后厨主管</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%AE%9E%E9%99%85%E5%BC%80%E5%8F%91%E4%B8%AD%E7%9A%84%E7%BB%8F%E5%85%B8%E5%9C%BA%E6%99%AF"><span class="toc-number">1.10.</span> <span class="toc-text">三、实际开发中的经典场景</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9C%BA%E6%99%AF-1%EF%BC%9A%E7%BB%9F%E8%AE%A1%E5%85%A8%E7%AB%99%E8%AE%BF%E9%97%AE%E9%87%8F"><span class="toc-number">1.10.1.</span> <span class="toc-text">场景 1：统计全站访问量</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9C%BA%E6%99%AF-2%EF%BC%9A%E5%8A%A8%E6%80%81%E6%B7%BB%E5%8A%A0%E6%8E%A5%E5%8F%A3"><span class="toc-number">1.10.2.</span> <span class="toc-text">场景 2：动态添加接口</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9C%BA%E6%99%AF-3%EF%BC%9A%E7%B4%A7%E6%80%A5%E5%B0%81%E7%A6%81-IP"><span class="toc-number">1.10.3.</span> <span class="toc-text">场景 3：紧急封禁 IP</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E4%B8%80%E5%8F%A5%E8%AF%9D%E6%80%BB%E7%BB%93"><span class="toc-number">1.11.</span> <span class="toc-text">四、一句话总结</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#TomCat%E4%B8%8EServlet%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number"></span> <span class="toc-text">TomCat与Servlet的关系</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Filter"><span class="toc-number"></span> <span class="toc-text">Filter</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Listener"><span class="toc-number"></span> <span class="toc-text">Listener</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Listener-%E5%A4%A7%E7%99%BD%E8%AF%9D%E8%A7%A3%E9%87%8A"><span class="toc-number">0.1.</span> <span class="toc-text">Listener 大白话解释</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BE%E4%B8%AA%E5%AE%9E%E9%99%85%E4%BE%8B%E5%AD%90"><span class="toc-number">0.2.</span> <span class="toc-text">举个实际例子</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Listener-%E8%83%BD%E7%9B%91%E5%90%AC%E5%93%AA%E4%BA%9B%E4%BA%8B%EF%BC%9F"><span class="toc-number">0.3.</span> <span class="toc-text">Listener 能监听哪些事？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Listener-vs-Filter-%E5%8C%BA%E5%88%AB"><span class="toc-number">0.4.</span> <span class="toc-text">Listener vs Filter 区别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E5%8F%A5%E8%AF%9D%E6%80%BB%E7%BB%93-1"><span class="toc-number">0.5.</span> <span class="toc-text">一句话总结</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#JSP-%E5%9F%BA%E7%A1%80"><span class="toc-number"></span> <span class="toc-text">JSP 基础</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#JSP%E5%86%85%E7%BD%AE%E5%AF%B9%E8%B1%A1"><span class="toc-number">0.1.</span> <span class="toc-text">JSP内置对象</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2025/03/28/java%E5%86%85%E5%AD%98%E9%A9%AC%E5%9F%BA%E7%A1%80/" title="java内存马基础"><img src="https://raw.githubusercontent.com/Gu0f3n/img/mian/640%20(3).png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="java内存马基础"/></a><div class="content"><a class="title" href="/2025/03/28/java%E5%86%85%E5%AD%98%E9%A9%AC%E5%9F%BA%E7%A1%80/" title="java内存马基础">java内存马基础</a><time datetime="2025-03-28T06:38:44.000Z" title="发表于 2025-03-28 14:38:44">2025-03-28</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/03/27/%E5%B8%B8%E8%A7%81%E5%AE%89%E5%85%A8%E8%AE%BE%E5%A4%87%E6%80%BB%E7%BB%93%E2%80%9C/" title="常见安全设备总结"><img src="https://raw.githubusercontent.com/Gu0f3n/img/mian/640%20(2).png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="常见安全设备总结"/></a><div class="content"><a class="title" href="/2025/03/27/%E5%B8%B8%E8%A7%81%E5%AE%89%E5%85%A8%E8%AE%BE%E5%A4%87%E6%80%BB%E7%BB%93%E2%80%9C/" title="常见安全设备总结">常见安全设备总结</a><time datetime="2025-03-27T09:33:03.000Z" title="发表于 2025-03-27 17:33:03">2025-03-27</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/03/27/cc5/" title="cc5"><img src="https://raw.githubusercontent.com/Gu0f3n/img/mian/640%20(1).png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="cc5"/></a><div class="content"><a class="title" href="/2025/03/27/cc5/" title="cc5">cc5</a><time datetime="2025-03-27T01:36:35.000Z" title="发表于 2025-03-27 09:36:35">2025-03-27</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/03/26/MYSQL-UDF%E6%8F%90%E6%9D%83/" title="MYSQL UDF提权"><img src="https://raw.githubusercontent.com/Gu0f3n/img/mian/640.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="MYSQL UDF提权"/></a><div class="content"><a class="title" href="/2025/03/26/MYSQL-UDF%E6%8F%90%E6%9D%83/" title="MYSQL UDF提权">MYSQL UDF提权</a><time datetime="2025-03-26T12:37:26.000Z" title="发表于 2025-03-26 20:37:26">2025-03-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/03/25/W1R3S%201.0.1/" title="lW1R3S 1.0.1"><img src="https://raw.githubusercontent.com/Gu0f3n/img/mian/微信图片_20250325162730.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="lW1R3S 1.0.1"/></a><div class="content"><a class="title" href="/2025/03/25/W1R3S%201.0.1/" title="lW1R3S 1.0.1">lW1R3S 1.0.1</a><time datetime="2025-03-25T08:24:26.000Z" title="发表于 2025-03-25 16:24:26">2025-03-25</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('https://raw.githubusercontent.com/Gu0f3n/img/mian/640%20(3).png')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2025 By Gu0f3n</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"></div><div id="rightside-config-show"><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.14.0-b3"></script><script src="/js/main.js?v=4.14.0-b3"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.35/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@5.2.0/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.16/dist/snackbar.min.js"></script><script>(() => {
+  const panguFn = () => {
+    if (typeof pangu === 'object') pangu.autoSpacingPage()
+    else {
+      btf.getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+        .then(() => {
+          pangu.autoSpacingPage()
+        })
+    }
+  }
+
+  const panguInit = () => {
+    if (false){
+      GLOBAL_CONFIG_SITE.isPost && panguFn()
+    } else {
+      panguFn()
+    }
+  }
+
+  btf.addGlobalFn('pjaxComplete', panguInit, 'pangu')
+  document.addEventListener('DOMContentLoaded', panguInit)
+})()</script><div class="js-pjax"><script>(() => {
+  const runMermaid = (ele) => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from(ele).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+    
+    codeMermaidEle.forEach(ele => {
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.innerHTML = `<pre class="mermaid-src" hidden>${ele.textContent}</pre>`
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js').then(runMermaidFn)
+  }
+  
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><div class="aplayer no-destroy" data-id="12384198565" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="true"> </div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><div class="fb-customerchat" id="fb-customer-chat" attribution="biz_inbox"></div><script>(() => {
+  document.getElementById('fb-root') ? '' : document.body.insertAdjacentHTML('afterend', '<div id="fb-root"></div>')
+
+  window.fbAsyncInit = function() {
+    FB.init({
+      xfbml: true,
+      version: 'v16.0'
+    });
+  };
+
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = 'https://connect.facebook.net/zh_CN/sdk/xfbml.customerchat.js';
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+
+  const isChatBtn = false
+  const isChatHideShow = false
+
+  if (isChatBtn) {
+    window.chatBtnFn = () => {
+      const isShow = document.querySelector('.fb_customer_chat_bounce_in_v2')
+      isShow ? FB.CustomerChat.hide() : FB.CustomerChat.show()
+    }
+  } else if (isChatHideShow) {
+    window.chatBtn = {
+      hide: () => {
+        FB.CustomerChat.hide()
+      },
+      show: () => {
+        FB.CustomerChat.show(false)
+      }
+    }
+  }
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const loadMeting = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'loadMeting')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+const triggerPjaxFn = (val) => {
+  if (!val) return
+  Object.values(val).forEach(fn => { fn() })
+}
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener
+  btf.removeGlobalFnEvent('pjax')
+  btf.removeGlobalFnEvent('themeChange')
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  triggerPjaxFn(window.globalFn.pjaxSend)
+})
+
+document.addEventListener('pjax:complete', () => {
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  triggerPjaxFn(window.globalFn.pjaxComplete)
+})
+
+document.addEventListener('pjax:error', e => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=4.14.0-b3"></script></div></div></body></html>
